@@ -1,0 +1,127 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TravelTracker.MainPage"
+             Title="Thuyết Minh Ẩm Thực Q.4"
+             BackgroundColor="#F8F9FA">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <VerticalStackLayout Grid.Row="0" Padding="25,30,25,20" Spacing="5" BackgroundColor="White">
+            <Label Text="PHỐ VĨNH KHÁNH" 
+                   FontSize="14" 
+                   TextColor="#512BD4" 
+                   FontAttributes="Bold" 
+                   CharacterSpacing="2" />
+            <Label Text="Ăn gì hôm nay?" 
+                   FontSize="32" 
+                   FontAttributes="Bold" 
+                   TextColor="Black" />
+         
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" 
+                        ItemsSource="{Binding Stalls}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnStallSelected">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="20,10,20,20" Spacing="15">
+                    <Frame CornerRadius="20" Padding="20" BackgroundColor="#F0EDFF" BorderColor="Transparent" HasShadow="False">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="GIỚI THIỆU TỔNG QUAN" 
+                                   FontSize="13" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#512BD4" />
+
+                            <Label Text="The Vĩnh Khánh Food Street is one of the most vibrant street food destinations in Ho Chi Minh City, especially famous for its lively nightlife and authentic local flavors. In the evening, the street comes alive with bright lights, bustling crowds, and the irresistible aroma of grilled seafood. Visitors can experience a truly local atmosphere, sitting on small plastic stools along the sidewalk, enjoying food in an open, energetic setting. Vĩnh Khánh is best known for its wide variety of dishes, particularly fresh seafood such as snails, clams, grilled shrimp, and squid, all prepared with bold Vietnamese spices. It’s also a great place to try popular street snacks and enjoy a casual “eat and share” dining style, often accompanied by cold drinks. More than just a place to eat, the street offers a glimpse into local culture—friendly, social, and full of life. Affordable prices and diverse options make it ideal for travelers who want to explore multiple dishes in one visit. Located just a few minutes from the city center, it is easily accessible and a must visit for anyone seeking an authentic taste of Saigon’s street food scene." 
+                                   FontSize="15" 
+                                   TextColor="#444444"
+                                   LineHeight="1.4"
+                                   HorizontalTextAlignment="Justify" />
+
+                            <Button x:Name="btnToggleIntro"
+                                    Text="🎧 Nghe giới thiệu" 
+                                    Clicked="OnToggleStreetIntroClicked"
+                                    BackgroundColor="#512BD4" 
+                                    TextColor="White"
+                                    CornerRadius="20"
+                                    HeightRequest="45"
+                                    Padding="20,0"
+                                    HorizontalOptions="Start" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Label Text="DANH SÁCH HÀNG QUÁN" 
+                           FontSize="14" 
+                           FontAttributes="Bold" 
+                           TextColor="Gray" 
+                           Margin="5,10,0,0"/>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            
+            
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="20" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="20,0">
+                        <Frame HasShadow="True" 
+                               CornerRadius="20" 
+                               Padding="0" 
+                               IsClippedToBounds="True"
+                               BorderColor="Transparent">
+
+                            <Grid RowDefinitions="200, Auto">
+                                <Image Grid.Row="0" 
+                                       Source="{Binding ImageUrl}" 
+                                       Aspect="AspectFill" 
+                                       HeightRequest="200" />
+
+                                <BoxView Grid.Row="0" VerticalOptions="End" HeightRequest="60">
+                                    <BoxView.Background>
+                                        <LinearGradientBrush EndPoint="0,1">
+                                            <GradientStop Color="Transparent" Offset="0" />
+                                            <GradientStop Color="#CC000000" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </BoxView.Background>
+                                </BoxView>
+
+                                <Label Grid.Row="0" 
+                                       Text="{Binding Address}" 
+                                       TextColor="White" 
+                                       Margin="15" 
+                                       VerticalOptions="End" 
+                                       FontSize="13" />
+
+                                <VerticalStackLayout Grid.Row="1" Padding="20" Spacing="8" BackgroundColor="White">
+                                    <Label Text="{Binding Name}" 
+                                           FontSize="22" 
+                                           FontAttributes="Bold" />
+
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="🍴 Đặc sản:" FontAttributes="Bold" FontSize="14" TextColor="#512BD4" />
+                                        <Label Text="{Binding Specialty}" FontSize="14" TextColor="Black" />
+                                    </HorizontalStackLayout>
+
+                                    <Label Text="{Binding Description}" 
+                                           FontSize="14" 
+                                           TextColor="DimGray" 
+                                           MaxLines="2" 
+                                           LineBreakMode="TailTruncation" />
+
+                                    <Label Text="Xem chi tiết &amp; Nghe thuyết minh →" 
+                                           TextColor="#512BD4" 
+                                           FontSize="13" 
+                                           FontAttributes="Bold" 
+                                           Margin="0,10,0,0" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </Grid>
+</ContentPage>

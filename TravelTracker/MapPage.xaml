@@ -1,0 +1,17 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="TravelTracker.MapPage">
+
+    <Grid>
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+            <Label Text="📍 Màn hình Bản đồ" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+            <Label Text="(Tính năng bản đồ tạm ẩn trên Windows)" TextColor="Gray" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <Button Text="Xem chi tiết địa điểm" 
+            VerticalOptions="End" 
+            Margin="20"
+            Clicked="OnViewDetailClicked" />
+    </Grid>
+</ContentPage>
