@@ -12,6 +12,8 @@ namespace TravelTracker.Model
         public string Specialty { get; set; }   
         public string ImageUrl { get; set; }    
         public string Description { get; set; } 
-        public string PriceRange { get; set; } 
+        public string PriceRange { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 }
