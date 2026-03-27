@@ -4,6 +4,27 @@
              Title="Thuyết Minh Ẩm Thực Q.4"
              BackgroundColor="#F8F9FA">
 
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*, Auto" Padding="10,0,20,0">
+            <Label Grid.Column="0" 
+                   Text="Thuyết Minh Q.4" 
+                   TextColor="White" 
+                   FontAttributes="Bold" 
+                   FontSize="18" 
+                   VerticalOptions="Center" />
+
+            <Picker Grid.Column="1" 
+                    ItemsSource="{Binding Languages}" 
+                    ItemDisplayBinding="{Binding DisplayName}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    TextColor="White"
+                    TitleColor="White"
+                    Title="🌍 Ngôn ngữ"
+                    VerticalOptions="Center"
+                    WidthRequest="140" />
+        </Grid>
+    </Shell.TitleView>
+
     <Grid RowDefinitions="Auto, *">
 
         <VerticalStackLayout Grid.Row="0" Padding="25,30,25,20" Spacing="5" BackgroundColor="White">
@@ -35,12 +56,12 @@
                                    FontAttributes="Bold" 
                                    TextColor="#512BD4" />
 
-                            <Label Text="The Vĩnh Khánh Food Street is one of the most vibrant street food destinations in Ho Chi Minh City, especially famous for its lively nightlife and authentic local flavors..." 
+                            <Label Text="{Binding SelectedLanguage.IntroText}" 
                                    FontSize="15" 
                                    TextColor="#444444"
                                    LineHeight="1.4"
                                    HorizontalTextAlignment="Justify" />
-
+                            
                             <VerticalStackLayout Spacing="5">
                                 <ProgressBar x:Name="introProgressBar"
                                              Progress="0"
@@ -117,10 +138,10 @@
 
                                     <Grid ColumnDefinitions="*, Auto">
                                         <Label Grid.Column="0"
-                                               Text="{Binding Name}" 
-                                               FontSize="22" 
-                                               FontAttributes="Bold"
-                                               VerticalOptions="Center" />
+                                            Text="{Binding Name}" 
+                                            FontSize="22" 
+                                            FontAttributes="Bold"
+                                            VerticalOptions="Center" />
 
                                         <ImageButton Grid.Column="1"
                                                      Source="ggmap.png"

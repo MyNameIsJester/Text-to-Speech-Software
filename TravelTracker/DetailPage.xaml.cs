@@ -3,79 +3,72 @@ using TravelTracker.Model;
 
 namespace TravelTracker;
 
-[QueryProperty(nameof(CurrentStall), "SelectedStall")]
-public partial class DetailPage : ContentPage
+public partial class DetailPage : ContentPage, IQueryAttributable
 {
     private FoodStall _currentStall;
-    public FoodStall CurrentStall
+    private LanguageOption _currentLanguage;
+    CancellationTokenSource cts;
+    string[] sentences;
+    int currentIndex = 0;
+    bool isReading = false;
+
+    public DetailPage()
     {
-        get => _currentStall;
-        set
+        InitializeComponent();
+    }
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.ContainsKey("SelectedStall") && query["SelectedStall"] is FoodStall stall)
         {
-            _currentStall = value;
-            // Khi nhận được dữ liệu, gán nó vào giao diện (Binding)
+            _currentStall = stall;
             BindingContext = _currentStall;
 
-            if (_currentStall != null && !string.IsNullOrEmpty(_currentStall.Description))
+            if (!string.IsNullOrEmpty(_currentStall.Description))
             {
                 sentences = Regex.Split(_currentStall.Description, @"(?<=[.!?])\s+");
             }
-
-            // Reset lại vị trí đọc và trạng thái khi chuyển sang quán mới
-            currentIndex = 0;
-            isReading = false;
         }
-    }
 
-    //Khai báo bộ điều khiển hủy bỏ
-    CancellationTokenSource cts;
-    string[] sentences;       // Danh sách các câu đã chia nhỏ
-    int currentIndex = 0;    // Lưu vị trí câu đang đọc
-    bool isReading = false; // Trạng thái để kiểm tra đang đọc hay dừng
+        if (query.ContainsKey("SelectedLanguage") && query["SelectedLanguage"] is LanguageOption lang)
+        {
+            _currentLanguage = lang;
+        }
 
-    public DetailPage()
-	{
-		InitializeComponent();
+        currentIndex = 0;
+        isReading = false;
     }
 
     private async void OnListenClicked(object sender, EventArgs e)
     {
-
         if (isReading || sentences == null || sentences.Length == 0) return;
 
-        // Hủy lệnh cũ nếu có
         if (cts != null) cts.Cancel();
-        cts = new System.Threading.CancellationTokenSource();
-
+        cts = new CancellationTokenSource();
         isReading = true;
 
         try
         {
+            var locales = await TextToSpeech.Default.GetLocalesAsync();
+            var targetLocale = locales.FirstOrDefault(l => l.Language.StartsWith(_currentLanguage.LanguageCode));
+            var speechOptions = new SpeechOptions() { Locale = targetLocale };
+
             for (int i = currentIndex; i < sentences.Length; i++)
             {
-                currentIndex = i; //cập nhật vị trí hiện tại
+                currentIndex = i;
 
-                //Theo dõi App đọc
-                System.Diagnostics.Debug.WriteLine($"Đang đọc câu số: {i}");
+                // Đọc với tùy chọn ngôn ngữ đã cài đặt
+                await TextToSpeech.Default.SpeakAsync(sentences[i], speechOptions, cancelToken: cts.Token);
 
-                //đọc câu tương ứng 
-                await TextToSpeech.Default.SpeakAsync(sentences[i], cancelToken: cts.Token);
-
-                // Kiểm tra
                 if (cts.Token.IsCancellationRequested)
                     break;
             }
 
-            // Nếu đã đọc xong câu cuối cùng, tự động quay về câu đầu
             if (!cts.Token.IsCancellationRequested && currentIndex >= sentences.Length - 1)
             {
                 currentIndex = 0;
             }
         }
-        catch (OperationCanceledException)
-        {
-
-        }
+        catch (OperationCanceledException) { }
         finally
         {
             isReading = false;
@@ -87,7 +80,7 @@ public partial class DetailPage : ContentPage
     {
         if (cts != null)
         {
-            cts.Cancel(); // Ra lệnh dừng ngay lập tức
+            cts.Cancel();
             isReading = false;
         }
     }
@@ -96,5 +89,12 @@ public partial class DetailPage : ContentPage
         OnStopClicked(sender, e);
         currentIndex = 0;
         DisplayAlert("Thông báo", "Đã đặt lại vị trí đọc về ban đầu.", "OK");
+    }
+
+    // Tự động tắt tiếng khi người dùng thoát trang
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (cts != null) cts.Cancel();
     }
 }

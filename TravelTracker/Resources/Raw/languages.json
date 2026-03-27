@@ -1,0 +1,97 @@
+﻿[
+  {
+    "FlagIcon": "us.png",
+    "DisplayName": "🇺🇸 English",
+    "LanguageCode": "en",
+    "IntroText": "The Vĩnh Khánh Food Street is one of the most vibrant street food destinations in Ho Chi Minh City, especially famous for its lively nightlife and authentic local flavors. In the evening, the street comes alive with bright lights, bustling crowds, and the irresistible aroma of grilled seafood. Visitors can experience a truly local atmosphere, sitting on small plastic stools along the sidewalk, enjoying food in an open, energetic setting. Vĩnh Khánh is best known for its wide variety of dishes, particularly fresh seafood such as snails, clams, grilled shrimp, and squid, all prepared with bold Vietnamese spices. It’s also a great place to try popular street snacks and enjoy a casual “eat and share” dining style, often accompanied by cold drinks. More than just a place to eat, the street offers a glimpse into local culture—friendly, social, and full of life. Affordable prices and diverse options make it ideal for travelers who want to explore multiple dishes in one visit. Located just a few minutes from the city center, it is easily accessible and a must visit for anyone seeking an authentic taste of Saigon’s street food scene.",
+    "Stalls": [
+      {
+        "Name": "Oc Oanh Seafood",
+        "Address": "534 Vinh Khanh St, Ward 8, Dist 4, HCMC",
+        "Specialty": "Coconut stir-fried snails, Salted roasted crab claws, Grilled shrimp with chili salt, Grilled scallops with scallion oil,...",
+        "PriceRange": "50,000VND - 200,000VND",
+        "ImageUrl": "oc_oanh.jpg",
+        "Latitude": 10.7627,
+        "Longitude": 106.7022,
+        "Description": "Oc Oanh is one of the most famous and oldest seafood street food stalls on Vinh Khanh Street. It's renowned for its fresh, flavorful seafood and has even been mentioned by Michelin."
+      },
+      {
+        "Name": "Nha Chay Beef Hotpot",
+        "Address": "130/50 Le Quoc Hung St, Ward 12, Dist 4, HCMC",
+        "Specialty": "Mixed beef hotpot",
+        "PriceRange": "150,000VND - 300,000VND",
+        "ImageUrl": "lau_bo_nha_chay.png",
+        "Latitude": 10.7621,
+        "Longitude": 106.7025,
+        "Description": "Nha Chay Beef Hot Pot Restaurant is a popular local eatery in District 4, renowned for its traditional Vietnamese beef hot pot. It's favored for its rich broth, fresh ingredients, and affordable prices. \r\nWhat makes it special is its unique alleyway setting, with small eateries clustered together, creating a cozy and lively atmosphere, especially at night."
+      },
+      {
+        "Name": "Oc Vu Seafood",
+        "Address": "37 Vinh Khanh St, Ward 8, Dist 4, HCMC",
+        "Specialty": "Mixed beef hotpot, Grilled beef with fish sauce,...",
+        "PriceRange": "150,000VND - 300,000VND",
+        "ImageUrl": "lau_bo_nha_chay.png",
+        "Latitude": 10.7621,
+        "Longitude": 106.7025,
+        "Description": "A super delicious and affordable beef hotpot restaurant located in a small apartment alley, featuring sweet broth and tender beef."
+      }
+    ]
+  },
+  {
+    "FlagIcon": "vn.png",
+    "DisplayName": "🇻🇳 Tiếng Việt",
+    "LanguageCode": "vi",
+    "IntroText": "Phố ẩm thực Vĩnh Khánh là một trong những điểm đến ẩm thực đường phố sôi động nhất tại Thành phố Hồ Chí Minh, đặc biệt nổi tiếng với cuộc sống về đêm nhộn nhịp và hương vị địa phương đích thực. Vào buổi tối, con phố trở nên sống động với ánh đèn rực rỡ, đám đông tấp nập và mùi thơm khó cưỡng của hải sản nướng. Du khách có thể trải nghiệm bầu không khí thực sự của người dân địa phương, ngồi trên những chiếc ghế nhựa nhỏ dọc vỉa hè, thưởng thức đồ ăn trong một không gian mở, tràn đầy năng lượng. Vĩnh Khánh được biết đến nhiều nhất với các món ăn đa dạng, đặc biệt là hải sản tươi sống như ốc, nghêu, tôm nướng và mực, tất cả đều được chế biến với các loại gia vị đậm đà của Việt Nam. Đây cũng là một nơi tuyệt vời để thử các món ăn vặt đường phố phổ biến và tận hưởng phong cách ăn uống giản dị. Không chỉ là một nơi để ăn uống, con phố này còn mang đến cái nhìn sâu sắc về văn hóa địa phương—thân thiện, hòa đồng và tràn đầy sức sống.",
+    "Stalls": [
+      {
+        "Name": "Ốc Oanh",
+        "Address": "534 Đ. Vĩnh Khánh, P8, Q4, HCM",
+        "Specialty": "ốc len xào dừa, càng ghẹ rang muối, tôm nướng muối ớt và sò điệp nướng mỡ hành,... ",
+        "PriceRange": "50.000đ - 200.000đ",
+        "ImageUrl": "oc_oanh.jpg",
+        "Latitude": 10.7627,
+        "Longitude": 106.7022,
+        "Description": "Ốc Oanh là một trong những quán ốc nổi tiếng và lâu đời nhất trên đường Vĩnh Khánh. Quán nổi tiếng với hải sản tươi ngon, hương vị đậm đà và đã từng được Michelin nhắc đến."
+      },
+      {
+        "Name": "Lẩu Bò Khu Nhà Cháy",
+        "Address": "130/50 Đ. Lê Quốc Hưng, P12, Q4, HCM",
+        "Specialty": "Lẩu bò thập cẩm, Bò nướng mắm nhĩ,...",
+        "PriceRange": "150.000đ - 300.000đ",
+        "ImageUrl": "lau_bo_nha_chay.png",
+        "Latitude": 10.7621,
+        "Longitude": 106.7025,
+        "Description": "Nhà hàng lẩu bò Nha Chay là một quán ăn địa phương nổi tiếng ở Quận 4, nổi tiếng với món lẩu bò truyền thống Việt Nam. Nơi đây được ưa chuộng nhờ nước dùng đậm đà, nguyên liệu tươi ngon và giá cả phải chăng. Điều làm nên sự đặc biệt của nhà hàng chính là không gian hẻm độc đáo, với những quán ăn nhỏ san sát nhau, tạo nên một bầu không khí ấm cúng và sống động, đặc biệt là vào ban đêm."
+      },
+      {
+        "Name": "Ốc Vũ",
+        "Address": "37 Đ. Vĩnh Khánh, P8, Khánh Hội, HCM",
+        "Specialty": "Ốc len xào dừa, Sò huyết xào tỏi",
+        "PriceRange": "40.000đ - 150.000đ",
+        "ImageUrl": "oc_vu.jpg",
+        "Latitude": 10.7615,
+        "Longitude": 106.7032,
+        "Description": "Ốc Vũ là một nhà hàng phục vụ nhanh chóng với thực đơn đa dạng gồm ốc và hải sản giá cả phải chăng. Điều làm nên sự khác biệt của nhà hàng này là không gian thư giãn và không quá đông đúc, cho phép thực khách dễ dàng ngồi, ăn và thưởng thức bữa ăn một cách thoải mái."
+      }
+    ]
+  },
+  {
+    "FlagIcon": "kr.png",
+    "DisplayName": "🇰🇷 한국어",
+    "LanguageCode": "ko",
+    "IntroText": "빈칸 먹자골목은 호치민시에서 가장 활기찬 길거리 음식 명소 중 하나로, 특히 화려한 야간 밤문화와 현지의 맛으로 유명합니다. 저녁이 되면 화려한 조명과 북적이는 사람들, 그리고 거부할 수 없는 구운 해산물 향기로 거리가 활기를 띱니다. 방문객들은 인도에 놓인 작은 플라스틱 의자에 앉아 활기찬 분위기 속에서 식사를 즐기며 진정한 현지 분위기를 경험할 수 있습니다. 빈칸은 달팽이, 조개, 구운 새우, 오징어 등 신선한 해산물을 베트남 특유의 강렬한 향신료로 조리한 다양한 요리로 가장 잘 알려져 있습니다. 단순히 밥을 먹는 곳을 넘어, 이 거리는 친근하고 사교적이며 활기찬 현지 문화를 엿볼 수 있는 곳입니다."
+  },
+  {
+    "FlagIcon": "jp.png",
+    "DisplayName": "🇯🇵 日本語",
+    "LanguageCode": "ja",
+    "IntroText": "ビンカン フードストリートは、ホーチミン市で最も活気のある屋台街の1つであり、特に賑やかなナイトライフと本格的な地元の味で有名です。夕方になると、明るい光、賑やかな群衆、そして魅力的な焼きシーフードの香りで通りが活気づきます。歩道に並ぶ小さなプラスチックの椅子に座り、オープンでエネルギッシュな環境で食事を楽しみながら、真の地元の雰囲気を体験できます。ビンカンは、カタツムリ、アサリ、エビのグリル、イカなどの新鮮なシーフードを、ベトナムの力強いスパイスで調理した様々な料理で最もよく知られています。単なる食事の場所にとどまらず、この通りはフレンドリーで社交的、そして活気に満ちた地元の文化を垣間見ることができます。"
+  },
+  {
+    "FlagIcon": "cn.png",
+    "DisplayName": "🇨🇳 中文",
+    "LanguageCode": "zh",
+    "IntroText": "永庆 美食街是胡志明市最具活力的街头美食目的地之一，以其热闹的夜生活和地道的当地风味而闻名。傍晚时分，明亮的灯光、熙熙攘攘的人群和令人无法抗拒的烤海鲜香气让这条街充满了生机。游客可以坐在人行道旁的小塑料凳上，在开放、充满活力的环境中享用美食，体验真正的当地氛围。永庆以其种类繁多的菜肴而闻名，尤其是新鲜的海鲜，如蜗牛、蛤蜊、烤虾和鱿鱼，这些海鲜都采用浓郁的越南香料烹制而成。不仅仅是一个吃饭的地方，这条街还提供了一窥当地文化的机会——友好、社交和充满活力。"
+  }
+]
+
