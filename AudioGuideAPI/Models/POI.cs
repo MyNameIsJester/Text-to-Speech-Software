@@ -1,19 +1,19 @@
-﻿namespace AudioGuideAPI.Models    //Một địa chỉ giúp biết class này nằm ở đâu 
+﻿namespace AudioGuideAPI.Models
 {
-    public class POI    //định nghĩa một POI - mỗi quán ăn gồm có những thuộc tính gì?
+    public class POI
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public double Latitude { get; set; }    //App sẽ dùng GPS để so sánh với tọa độ này
+        public double Latitude { get; set; }
 
-        public double Longitude { get; set; }   //App sẽ dùng GPS để so sánh với tọa độ này
+        public double Longitude { get; set; }
 
-        public double Radius { get; set; }      //Khi user vào vùng bán kính sẽ phát audio
+        public double Radius { get; set; }
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string AudioUrl { get; set; }  
+        public string AudioUrl { get; set; } = string.Empty;
     }
 }
