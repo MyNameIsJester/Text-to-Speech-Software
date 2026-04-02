@@ -35,6 +35,8 @@ public partial class MainPage : ContentPage
                     {
                         Stalls.Add(stall);
                     }
+
+                    _ = UpdateStallDistancesAsync();
                 }
             }
         }
@@ -45,8 +47,6 @@ public partial class MainPage : ContentPage
     string[] introSentences;
     int currentIntroIndex = 0;
     bool isReadingIntro = false;
-
-    //string introFullText = "The Vĩnh Khánh Food Street is one of the most vibrant street food destinations in Ho Chi Minh City, especially famous for its lively nightlife and authentic local flavors. In the evening, the street comes alive with bright lights, bustling crowds, and the irresistible aroma of grilled seafood. Visitors can experience a truly local atmosphere, sitting on small plastic stools along the sidewalk, enjoying food in an open, energetic setting. Vĩnh Khánh is best known for its wide variety of dishes, particularly fresh seafood such as snails, clams, grilled shrimp, and squid, all prepared with bold Vietnamese spices. It’s also a great place to try popular street snacks and enjoy a casual “eat and share” dining style, often accompanied by cold drinks. More than just a place to eat, the street offers a glimpse into local culture—friendly, social, and full of life. Affordable prices and diverse options make it ideal for travelers who want to explore multiple dishes in one visit. Located just a few minutes from the city center, it is easily accessible and a must visit for anyone seeking an authentic taste of Saigon’s street food scene.";
 
     public MainPage()
     {
@@ -59,6 +59,23 @@ public partial class MainPage : ContentPage
 
         BindingContext = this;
     }
+    private async Task UpdateStallDistancesAsync()
+    {
+        var myLocation = await LocationService.GetCurrentLocationAsync();
+
+        if (myLocation == null || Stalls == null || Stalls.Count == 0)
+            return;
+
+        foreach (var stall in Stalls)
+        {
+            var stallLocation = new Location(stall.Latitude, stall.Longitude);
+
+            double distance = Location.CalculateDistance(myLocation, stallLocation, DistanceUnits.Kilometers);
+
+            stall.DistanceText = $"📍 Cách {Math.Round(distance, 1)} km";
+        }
+    }
+
     private async Task LoadLanguageDataAsync()
     {
         try
@@ -78,7 +95,7 @@ public partial class MainPage : ContentPage
 
                 if (Languages.Count > 0)
                 {
-                    SelectedLanguage = Languages[0]; // Khi gán, nó sẽ tự động chạy lệnh Set ở trên để nạp Stalls
+                    SelectedLanguage = Languages[0];
                 }
             }
         }

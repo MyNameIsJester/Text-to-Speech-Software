@@ -1,7 +1,7 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TravelTracker.MainPage"
-             Title="Thuyết Minh Ẩm Thực Q.4"
+             Title="Thuyết Minh Khu Ẩm Thực Q.4"
              BackgroundColor="#F8F9FA">
 
     <Shell.TitleView>
@@ -114,7 +114,7 @@
 
                             <Grid RowDefinitions="200, Auto">
                                 <Image Grid.Row="0" 
-                                       Source="{Binding ImageUrl}" 
+                                       Source="{Binding ImageUrl}"  
                                        Aspect="AspectFill" 
                                        HeightRequest="200" />
 
@@ -137,11 +137,17 @@
                                 <VerticalStackLayout Grid.Row="1" Padding="20" Spacing="8" BackgroundColor="White">
 
                                     <Grid ColumnDefinitions="*, Auto">
-                                        <Label Grid.Column="0"
-                                            Text="{Binding Name}" 
-                                            FontSize="22" 
-                                            FontAttributes="Bold"
-                                            VerticalOptions="Center" />
+
+                                        <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding Name}" 
+                                                   FontSize="22" 
+                                                   FontAttributes="Bold" />
+
+                                            <Label Text="{Binding DistanceText}" 
+                                                   FontSize="13" 
+                                                   TextColor="#E03131" 
+                                                   FontAttributes="Bold" />
+                                        </VerticalStackLayout>
 
                                         <ImageButton Grid.Column="1"
                                                      Source="ggmap.png"

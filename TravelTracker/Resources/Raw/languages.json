@@ -11,28 +11,28 @@
         "Specialty": "Coconut stir-fried snails, Salted roasted crab claws, Grilled shrimp with chili salt, Grilled scallops with scallion oil,...",
         "PriceRange": "50,000VND - 200,000VND",
         "ImageUrl": "oc_oanh.jpg",
-        "Latitude": 10.7627,
-        "Longitude": 106.7022,
+        "Latitude": 10.76054,
+        "Longitude": 106.70325,
         "Description": "Oc Oanh is one of the most famous and oldest seafood street food stalls on Vinh Khanh Street. It's renowned for its fresh, flavorful seafood and has even been mentioned by Michelin."
       },
       {
         "Name": "Nha Chay Beef Hotpot",
         "Address": "130/50 Le Quoc Hung St, Ward 12, Dist 4, HCMC",
-        "Specialty": "Mixed beef hotpot",
+        "Specialty": "Mixed beef hotpot, Grilled beef with fish sauce,...",
         "PriceRange": "150,000VND - 300,000VND",
         "ImageUrl": "lau_bo_nha_chay.png",
-        "Latitude": 10.7621,
-        "Longitude": 106.7025,
+        "Latitude": 10.76189,
+        "Longitude": 106.70321,
         "Description": "Nha Chay Beef Hot Pot Restaurant is a popular local eatery in District 4, renowned for its traditional Vietnamese beef hot pot. It's favored for its rich broth, fresh ingredients, and affordable prices. \r\nWhat makes it special is its unique alleyway setting, with small eateries clustered together, creating a cozy and lively atmosphere, especially at night."
       },
       {
         "Name": "Oc Vu Seafood",
         "Address": "37 Vinh Khanh St, Ward 8, Dist 4, HCMC",
-        "Specialty": "Mixed beef hotpot, Grilled beef with fish sauce,...",
-        "PriceRange": "150,000VND - 300,000VND",
-        "ImageUrl": "lau_bo_nha_chay.png",
-        "Latitude": 10.7621,
-        "Longitude": 106.7025,
+        "Specialty": "Grilled snails with salt and chili, Stir-fried razor clams with garlic,...",
+        "PriceRange": "50,000VND - 120,000VND",
+        "ImageUrl": "oc_vu.jpg",
+        "Latitude": 10.761474737809701,
+        "Longitude": 106.70299707464166,
         "Description": "A super delicious and affordable beef hotpot restaurant located in a small apartment alley, featuring sweet broth and tender beef."
       }
     ]
@@ -49,8 +49,8 @@
         "Specialty": "ốc len xào dừa, càng ghẹ rang muối, tôm nướng muối ớt và sò điệp nướng mỡ hành,... ",
         "PriceRange": "50.000đ - 200.000đ",
         "ImageUrl": "oc_oanh.jpg",
-        "Latitude": 10.7627,
-        "Longitude": 106.7022,
+        "Latitude": 10.76054,
+        "Longitude": 106.70325,
         "Description": "Ốc Oanh là một trong những quán ốc nổi tiếng và lâu đời nhất trên đường Vĩnh Khánh. Quán nổi tiếng với hải sản tươi ngon, hương vị đậm đà và đã từng được Michelin nhắc đến."
       },
       {
@@ -59,8 +59,8 @@
         "Specialty": "Lẩu bò thập cẩm, Bò nướng mắm nhĩ,...",
         "PriceRange": "150.000đ - 300.000đ",
         "ImageUrl": "lau_bo_nha_chay.png",
-        "Latitude": 10.7621,
-        "Longitude": 106.7025,
+        "Latitude": 10.76189,
+        "Longitude": 106.70321,
         "Description": "Nhà hàng lẩu bò Nha Chay là một quán ăn địa phương nổi tiếng ở Quận 4, nổi tiếng với món lẩu bò truyền thống Việt Nam. Nơi đây được ưa chuộng nhờ nước dùng đậm đà, nguyên liệu tươi ngon và giá cả phải chăng. Điều làm nên sự đặc biệt của nhà hàng chính là không gian hẻm độc đáo, với những quán ăn nhỏ san sát nhau, tạo nên một bầu không khí ấm cúng và sống động, đặc biệt là vào ban đêm."
       },
       {
@@ -69,8 +69,8 @@
         "Specialty": "Ốc len xào dừa, Sò huyết xào tỏi",
         "PriceRange": "40.000đ - 150.000đ",
         "ImageUrl": "oc_vu.jpg",
-        "Latitude": 10.7615,
-        "Longitude": 106.7032,
+        "Latitude": 10.761474737809701,
+        "Longitude": 106.70299707464166,
         "Description": "Ốc Vũ là một nhà hàng phục vụ nhanh chóng với thực đơn đa dạng gồm ốc và hải sản giá cả phải chăng. Điều làm nên sự khác biệt của nhà hàng này là không gian thư giãn và không quá đông đúc, cho phép thực khách dễ dàng ngồi, ăn và thưởng thức bữa ăn một cách thoải mái."
       }
     ]

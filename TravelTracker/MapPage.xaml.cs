@@ -1,4 +1,15 @@
+using System.Text.Json;
+using System.Net.Http;
 using TravelTracker.Model;
+using Mapsui;
+using Mapsui.Projections;
+using Mapsui.UI.Maui;
+using Mapsui.Tiling;
+using Microsoft.Maui.Graphics;
+using Mapsui.Layers;
+using Mapsui.Styles;
+using Mapsui.Nts;
+using NetTopologySuite.Geometries;
 
 namespace TravelTracker;
 
@@ -9,96 +20,114 @@ public partial class MapPage : ContentPage, IQueryAttributable
     public MapPage()
     {
         InitializeComponent();
+
+        mapView.Map?.Layers.Add(OpenStreetMap.CreateTileLayer());
+
+        mapView.PinClicked += (s, e) =>
+        {
+            e.Handled = true;
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await DisplayAlert("📍 Thông tin", e.Pin.Label, "Đóng");
+            });
+        };
     }
+
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.ContainsKey("TargetStall") && query["TargetStall"] is FoodStall stall)
         {
             _targetStall = stall;
-            // Chỉ lưu dữ liệu và đổi Title, KHÔNG gọi LoadMap ở đây nữa
-            Title = $"Vị trí: {_targetStall.Name}";
+            Title = _targetStall.Name;
         }
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
 
-        if (_targetStall != null)
+        var myLocation = await LocationService.GetCurrentLocationAsync();
+
+        double destLat = _targetStall != null ? _targetStall.Latitude : 10.7607;
+        double destLng = _targetStall != null ? _targetStall.Longitude : 106.7033;
+        string destName = _targetStall != null ? _targetStall.Name : "Phố ẩm thực Vĩnh Khánh";
+
+        LoadMap(destLat, destLng, destName, myLocation);
+
+        if (myLocation != null)
         {
-            // Để OnAppearing đảm nhiệm việc tải bản đồ khi giao diện đã sẵn sàng
-            LoadMap(_targetStall.Latitude, _targetStall.Longitude, _targetStall.Name);
-        }
-        else
-        {
-            LoadMap(10.7607, 106.7033, "Phố ẩm thực Vĩnh Khánh");
-            Title = "Bản đồ ẩm thực";
+            await DrawRouteAsync(myLocation.Latitude, myLocation.Longitude, destLat, destLng);
         }
     }
 
-    /* public void ApplyQueryAttributes(IDictionary<string, object> query)
+    private void LoadMap(double destLat, double destLng, string destName, Microsoft.Maui.Devices.Sensors.Location myLocation)
     {
-        if (query.ContainsKey("TargetStall") && query["TargetStall"] is FoodStall stall)
-        {
-            _targetStall = stall;
+        var destPosition = SphericalMercator.FromLonLat(destLng, destLat);
+        var centerPoint = new MPoint(destPosition.x, destPosition.y);
 
-            Title = $"Vị trí: {_targetStall.Name}";
-            LoadMap(_targetStall.Latitude, _targetStall.Longitude, _targetStall.Name);
+        mapView.Map.Navigator.CenterOnAndZoomTo(centerPoint, 1);
+        mapView.Pins.Clear();
+
+        mapView.Pins.Add(new Pin(mapView)
+        {
+            Position = new Mapsui.UI.Maui.Position(destLat, destLng),
+            Label = destName,
+            Type = PinType.Pin,
+            Color = Microsoft.Maui.Graphics.Colors.Red,
+            Scale = 0.8f
+        });
+
+        if (myLocation != null)
+        {
+            mapView.Pins.Add(new Pin(mapView)
+            {
+                Position = new Mapsui.UI.Maui.Position(myLocation.Latitude, myLocation.Longitude),
+                Label = "Bạn đang ở đây",
+                Type = PinType.Pin,
+                Color = Microsoft.Maui.Graphics.Colors.Blue,
+                Scale = 0.8f
+            });
         }
     }
-  
 
-     protected override void OnAppearing()
+    private async Task DrawRouteAsync(double startLat, double startLng, double destLat, double destLng)
     {
-        base.OnAppearing();
-
-        if (_targetStall == null)
+        try
         {
-            LoadMap(10.7585, 106.7050, "Phố ẩm thực Vĩnh Khánh");
-            Title = "Bản đồ ẩm thực";
+            var existingLayer = mapView.Map.Layers.FirstOrDefault(l => l.Name == "RouteLayer");
+            if (existingLayer != null) mapView.Map.Layers.Remove(existingLayer);
+
+            string url = $"https://routing.openstreetmap.de/routed-car/route/v1/driving/{startLng},{startLat};{destLng},{destLat}?overview=full&geometries=geojson";
+
+            using var client = new HttpClient();
+            var response = await client.GetStringAsync(url);
+            using var document = JsonDocument.Parse(response);
+
+            var coordinates = document.RootElement.GetProperty("routes")[0]
+                                      .GetProperty("geometry")
+                                      .GetProperty("coordinates");
+
+            var linePoints = new List<Coordinate>();
+            foreach (var coord in coordinates.EnumerateArray())
+            {
+                var spherical = SphericalMercator.FromLonLat(coord[0].GetDouble(), coord[1].GetDouble());
+                linePoints.Add(new Coordinate(spherical.x, spherical.y));
+            }
+
+            var feature = new GeometryFeature(new LineString(linePoints.ToArray()));
+            feature.Styles.Add(new VectorStyle
+            {
+                Line = new Pen { Color = Mapsui.Styles.Color.FromString("#3498db"), Width = 6 }
+            });
+
+            mapView.Map.Layers.Add(new MemoryLayer { Name = "RouteLayer", Features = new[] { feature } });
+            mapView.RefreshGraphics();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LỖI VẼ ĐƯỜNG OSRM: {ex.Message}");
         }
     }
-    */
-    private void LoadMap(double lat, double lng, string name)
-    {
-        // 1. Ép kiểu tọa độ dùng dấu chấm (chuẩn quốc tế)
-        var culture = System.Globalization.CultureInfo.InvariantCulture;
-        string latStr = lat.ToString(culture);
-        string lngStr = lng.ToString(culture);
-
-        // 2. Mã hóa tên quán (tránh lỗi font tiếng Việt khi đưa lên web)
-        string encodedName = System.Uri.EscapeDataString(name);
-
-        // 3. ĐƯỜNG LINK CHUẨN CỦA GOOGLE MAPS (Hiện đúng Ghim + Tên quán)
-        // Cú pháp: q={lat},{lng}+({Tên})
-        string mapUrl = $"https://maps.google.com/maps?q={latStr},{lngStr}+({encodedName})&hl=vi&z=18&output=embed";
-
-        // 4. Bọc vào HTML để hiển thị toàn màn hình
-        string htmlContent = $@"
-    <html>
-    <head>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
-        <style>
-            body, html {{ margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }}
-            iframe {{ border: none; width: 100%; height: 100%; }}
-        </style>
-    </head>
-    <body>
-        <iframe src='{mapUrl}' allowfullscreen></iframe>
-    </body>
-    </html>";
-
-        mapWebView.Source = new HtmlWebViewSource { Html = htmlContent };
-    }
-
-    /*  private void LoadMap(double lat, double lng, string name)
-      {
-          string searchQuery = System.Uri.EscapeDataString($"{name}");
-          string mapUrl = $"https://www.google.com/maps/search/?api=1&query={searchQuery}&query_place_id={lat},{lng}&z=18&hl=vi";
-
-          mapWebView.Source = mapUrl;
-      }
-    */
 
     private async void OnCloseClicked(object sender, EventArgs e)
     {
