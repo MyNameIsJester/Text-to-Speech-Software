@@ -1,4 +1,6 @@
 <Solution>
-  <Project Path="../AudioGuideAPI/AudioGuideAPI/AudioGuideAPI.csproj" />
-  <Project Path="TravelTracker/TravelTracker.csproj" />
+  <Project Path="AudioGuideAPI/AudioGuideAPI.csproj" />
+  <Project Path="TravelTracker/TravelTracker.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

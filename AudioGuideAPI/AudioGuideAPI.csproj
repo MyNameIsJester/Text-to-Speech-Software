@@ -22,10 +22,14 @@
 
   <ItemGroup>
     <Folder Include="Data\" />
-    <Folder Include="NewFolder1\" />
-    <Folder Include="NewFolder2\" />
+    <Folder Include="Migrations\" />
     <Folder Include="NewFolder3\" />
     <Folder Include="NewFolder4\" />
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\audio\" />
+    <Folder Include="wwwroot\en\" />
+    <Folder Include="wwwroot\flags\" />
+    <Folder Include="wwwroot\vi\" />
   </ItemGroup>
 
 </Project>

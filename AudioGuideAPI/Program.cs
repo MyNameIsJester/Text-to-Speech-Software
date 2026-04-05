@@ -9,9 +9,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Đăng ký DbContext và dùng SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>              //Khi app cần làm việc với DB, thì cần dùng AppDbContext
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));     //Database dùng loại SQLite
-                                                                                            //Lấy chuỗi kết nối từ appsettings.json
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -24,8 +23,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(db);
+}
 
 app.Run();
