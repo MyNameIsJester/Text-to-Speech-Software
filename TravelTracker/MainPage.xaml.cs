@@ -1,20 +1,20 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using TravelTracker.Model;
+using TravelTracker.Services;
 using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.IO;
 
 namespace TravelTracker;
 
 public partial class MainPage : ContentPage
 {
-    // Tạo ds các quán ăn
-    public ObservableCollection<FoodStall> Stalls { get; set; }
-    public ObservableCollection<LanguageOption> Languages { get; set; }
+    private readonly ApiService _apiService;
 
-    private LanguageOption _selectedLanguage;
-    public LanguageOption SelectedLanguage
+    public ObservableCollection<FoodStall> Stalls { get; set; }
+    public ObservableCollection<Language> Languages { get; set; }
+
+    private Language _selectedLanguage;
+    public Language SelectedLanguage
     {
         get => _selectedLanguage;
         set
@@ -28,21 +28,14 @@ public partial class MainPage : ContentPage
                 introSentences = null;
                 currentIntroIndex = 0;
 
-                if (_selectedLanguage?.Stalls != null)
+                if (_selectedLanguage != null)
                 {
-                    Stalls.Clear();
-                    foreach (var stall in _selectedLanguage.Stalls)
-                    {
-                        Stalls.Add(stall);
-                    }
-
-                    _ = UpdateStallDistancesAsync();
+                    _ = LoadStallsFromApiAsync(_selectedLanguage.LanguageCode);
                 }
             }
         }
     }
 
-    // Quản lý trạng thái Audio cho phần giới thiệu chung
     CancellationTokenSource ctsIntro;
     string[] introSentences;
     int currentIntroIndex = 0;
@@ -52,12 +45,42 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
 
-        Languages = new ObservableCollection<LanguageOption>();
+        _apiService = new ApiService();
+
+        Languages = new ObservableCollection<Language>();
         Stalls = new ObservableCollection<FoodStall>();
 
-        _ = LoadLanguageDataAsync();
+        _ = LoadLanguagesFromApiAsync();
 
         BindingContext = this;
+    }
+
+    private async Task LoadStallsFromApiAsync(string langCode)
+    {
+        var stallsFromBE = await _apiService.GetFoodStallsAsync(langCode);
+
+        Stalls.Clear();
+        foreach (var stall in stallsFromBE)
+        {
+            Stalls.Add(stall);
+        }
+
+        _ = UpdateStallDistancesAsync();
+    }
+
+    private async Task LoadLanguagesFromApiAsync()
+    {
+        var langList = await _apiService.GetLanguagesAsync();
+
+        if (langList != null && langList.Count > 0)
+        {
+            foreach (var lang in langList)
+            {
+                Languages.Add(lang);
+            }
+
+            SelectedLanguage = Languages[0];
+        }
     }
     private async Task UpdateStallDistancesAsync()
     {
@@ -69,41 +92,11 @@ public partial class MainPage : ContentPage
         foreach (var stall in Stalls)
         {
             var stallLocation = new Location(stall.Latitude, stall.Longitude);
-
             double distance = Location.CalculateDistance(myLocation, stallLocation, DistanceUnits.Kilometers);
-
             stall.DistanceText = $"📍 Cách {Math.Round(distance, 1)} km";
         }
     }
 
-    private async Task LoadLanguageDataAsync()
-    {
-        try
-        {
-            using var stream = await FileSystem.OpenAppPackageFileAsync("languages.json");
-            using var reader = new StreamReader(stream);
-            var jsonContent = await reader.ReadToEndAsync();
-
-            var languageList = JsonSerializer.Deserialize<List<LanguageOption>>(jsonContent);
-
-            if (languageList != null)
-            {
-                foreach (var lang in languageList)
-                {
-                    Languages.Add(lang);
-                }
-
-                if (Languages.Count > 0)
-                {
-                    SelectedLanguage = Languages[0];
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Lỗi đọc JSON: {ex.Message}");
-        }
-    }
     private async void OnGoToMapClicked(object sender, EventArgs e)
     {
         var button = sender as ImageButton;
@@ -124,9 +117,9 @@ public partial class MainPage : ContentPage
         if (selectedStall != null)
         {
             var navigationParameter = new Dictionary<string, object>
-                {
-                    { "SelectedStall", selectedStall },
-                    { "SelectedLanguage", SelectedLanguage }
+            {
+                { "SelectedStall", selectedStall },
+                { "SelectedLanguage", SelectedLanguage }
             };
             await Shell.Current.GoToAsync("DetailPage", navigationParameter);
         }
@@ -151,7 +144,13 @@ public partial class MainPage : ContentPage
         if (introSentences == null && SelectedLanguage != null)
             introSentences = Regex.Split(SelectedLanguage.IntroText, @"(?<=[.!?])\s+");
 
-        if (ctsIntro != null) ctsIntro.Cancel();
+        if (ctsIntro != null)
+        {
+            ctsIntro.Cancel();
+            ctsIntro.Dispose();
+            ctsIntro = null;
+        }
+
         ctsIntro = new CancellationTokenSource();
         isReadingIntro = true;
 
@@ -200,7 +199,11 @@ public partial class MainPage : ContentPage
         if (ctsIntro != null)
         {
             ctsIntro.Cancel();
+            ctsIntro.Dispose();
+            ctsIntro = null;
+
             isReadingIntro = false;
+
             if (button != null)
             {
                 button.Text = "▶️ Nghe tiếp giới thiệu";
@@ -227,5 +230,12 @@ public partial class MainPage : ContentPage
     {
         base.OnDisappearing();
         if (isReadingIntro) StopIntro();
+
+        if (ctsIntro != null)
+        {
+            ctsIntro.Cancel();
+            ctsIntro.Dispose();
+            ctsIntro = null;
+        }
     }
 }

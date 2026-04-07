@@ -1,10 +1,10 @@
 ﻿namespace TravelTracker.Model;
 
-public class LanguageOption
+public class Language
 {
-    public string FlagIcon { get; set; }
+    public int Id { get; set; }
     public string LanguageCode { get; set; }
-    public string IntroText { get; set; }
     public string DisplayName { get; set; }
-    public List<FoodStall> Stalls { get; set; }
+    public string FlagIcon { get; set; }
+    public string IntroText { get; set; }
 }

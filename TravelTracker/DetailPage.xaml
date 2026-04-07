@@ -2,31 +2,39 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TravelTracker.DetailPage"
-             Title="Chi Tiết Hàng Quán Phố Ẩm Thực Vĩnh Khánh ">
-    
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15" >
+             Title="Chi Tiết Hàng Quán Phố Ẩm Thực Vĩnh Khánh"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#121212}">
 
-            <Image Source="{Binding ImageUrl}" 
-                   HeightRequest="250" 
-                   Aspect="AspectFill" />
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Border Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="0">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,5" Radius="10" Opacity="0.2" />
+                </Border.Shadow>
+                <Image Source="{Binding ImageUrl}" 
+                       HeightRequest="250" 
+                       Aspect="AspectFill" />
+            </Border>
 
             <Label Text="{Binding Name}" 
                    FontSize="28" 
                    FontAttributes="Bold"
-                   TextColor="#512BD4" />
-            
+                   TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" />
+
             <HorizontalStackLayout Spacing="5">
-                <Label Text="Món đặc sắc:" FontAttributes="Bold" TextColor="OrangeRed" />
-                <Label Text="{Binding Specialty}" FontAttributes="Italic" />
+                <Label Text="🍴 Món đặc sắc:" FontAttributes="Bold" TextColor="OrangeRed" FontSize="16" />
+                <Label Text="{Binding Specialty}" FontAttributes="Italic" FontSize="16" 
+                       TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
             </HorizontalStackLayout>
 
-            <Border Stroke="#E0E0E0" 
+            <Border Stroke="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" 
                     StrokeShape="RoundRectangle 10" 
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}"
                     Padding="15">
                 <Label Text="{Binding Description}" 
                        FontSize="16" 
-                       TextColor="DimGray"
+                       TextColor="{AppThemeBinding Light=DimGray, Dark=#CCCCCC}"
                        CharacterSpacing="0.2"
                        HorizontalTextAlignment="Justify"
                        LineBreakMode="WordWrap"
@@ -37,21 +45,24 @@
                                    HorizontalOptions="Center" 
                                    Margin="0,10,0,30" >
 
-                <Button Text="Nghe tiếp" 
+                <Button Text="▶ Nghe tiếp" 
                         Clicked="OnListenClicked" 
-                        BackgroundColor="Green" 
+                        BackgroundColor="{AppThemeBinding Light=#28A745, Dark=#1E7E34}" 
+                        TextColor="White"
                         WidthRequest="110" 
                         CornerRadius="15" />
 
-                <Button Text="Dừng" 
+                <Button Text="⏹ Dừng" 
                         Clicked="OnStopClicked" 
-                        BackgroundColor="Red" 
+                        BackgroundColor="{AppThemeBinding Light=#DC3545, Dark=#BD2130}" 
+                        TextColor="White"
                         WidthRequest="110" 
                         CornerRadius="15" />
 
-                <Button Text="Làm mới" 
+                <Button Text="🔄 Làm mới" 
                         Clicked="OnResetClicked" 
-                        BackgroundColor="Gray" 
+                        BackgroundColor="{AppThemeBinding Light=#6C757D, Dark=#5A6268}" 
+                        TextColor="White"
                         WidthRequest="110" 
                         CornerRadius="15" />
 

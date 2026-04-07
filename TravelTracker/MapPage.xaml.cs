@@ -1,35 +1,57 @@
-using System.Text.Json;
-using System.Net.Http;
-using TravelTracker.Model;
 using Mapsui;
-using Mapsui.Projections;
-using Mapsui.UI.Maui;
-using Mapsui.Tiling;
-using Microsoft.Maui.Graphics;
 using Mapsui.Layers;
-using Mapsui.Styles;
 using Mapsui.Nts;
+using Mapsui.Projections;
+using Mapsui.Styles;
+using Mapsui.Tiling;
+using Mapsui.UI.Maui;
+using Microsoft.Maui.Graphics;
 using NetTopologySuite.Geometries;
+using System.Net.Http;
+using System.Text.Json;
+using TravelTracker.Model;
+using TravelTracker.Services;
 
 namespace TravelTracker;
 
 public partial class MapPage : ContentPage, IQueryAttributable
 {
     private FoodStall _targetStall;
+    private readonly ApiService _apiService;
+    private readonly GeofenceService _geofenceService;
+    private IDispatcherTimer _locationTimer;
+    private List<FoodStall> _cachedStalls;
 
     public MapPage()
     {
         InitializeComponent();
 
-        mapView.Map?.Layers.Add(OpenStreetMap.CreateTileLayer());
+        _apiService = new ApiService();
+        _geofenceService = new GeofenceService();
 
-        mapView.PinClicked += (s, e) =>
+        _locationTimer = Application.Current.Dispatcher.CreateTimer();
+        _locationTimer.Interval = TimeSpan.FromSeconds(5);
+        _locationTimer.Tick += OnLocationTimerTicked;
+
+        var tileSource = new BruTile.Web.HttpTileSource(
+            new BruTile.Predefined.GlobalSphericalMercator(),
+            "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+            new[] { "a", "b", "c", "d" },
+            "CartoVoyager");
+        mapView.Map.Layers.Add(new Mapsui.Tiling.Layers.TileLayer(tileSource));
+
+        mapView.PinClicked += async (s, e) =>
         {
             e.Handled = true;
-            MainThread.BeginInvokeOnMainThread(async () =>
+            if (e.Pin.Tag is FoodStall clickedStall)
             {
-                await DisplayAlert("📍 Thông tin", e.Pin.Label, "Đóng");
-            });
+                var action = await DisplayAlert(clickedStall.Name, clickedStall.Address, "Xem chi tiết", "Đóng");
+                if (action)
+                {
+                    var navParam = new Dictionary<string, object> { { "SelectedStall", clickedStall } };
+                    await Shell.Current.GoToAsync("DetailPage", navParam);
+                }
+            }
         };
     }
 
@@ -46,47 +68,108 @@ public partial class MapPage : ContentPage, IQueryAttributable
     {
         base.OnAppearing();
 
+        DeviceDisplay.Current.KeepScreenOn = true;
+
+        var existingLayer = mapView.Map.Layers.FirstOrDefault(l => l.Name == "RouteLayer");
+        if (existingLayer != null)
+        {
+            mapView.Map.Layers.Remove(existingLayer);
+        }
+
         var myLocation = await LocationService.GetCurrentLocationAsync();
 
-        double destLat = _targetStall != null ? _targetStall.Latitude : 10.7607;
-        double destLng = _targetStall != null ? _targetStall.Longitude : 106.7033;
-        string destName = _targetStall != null ? _targetStall.Name : "Phố ẩm thực Vĩnh Khánh";
+        _cachedStalls = await _apiService.GetFoodStallsAsync("vi");
 
-        LoadMap(destLat, destLng, destName, myLocation);
+        LoadMap(_cachedStalls, myLocation);
 
-        if (myLocation != null)
+        if (_targetStall != null && myLocation != null)
         {
-            await DrawRouteAsync(myLocation.Latitude, myLocation.Longitude, destLat, destLng);
+            await DrawRouteAsync(myLocation.Latitude, myLocation.Longitude, _targetStall.Latitude, _targetStall.Longitude);
         }
+
+        _locationTimer.Start();
     }
 
-    private void LoadMap(double destLat, double destLng, string destName, Microsoft.Maui.Devices.Sensors.Location myLocation)
+    protected override void OnDisappearing()
     {
-        var destPosition = SphericalMercator.FromLonLat(destLng, destLat);
-        var centerPoint = new MPoint(destPosition.x, destPosition.y);
+        base.OnDisappearing();
+        _targetStall = null;
+        _locationTimer.Stop();
 
-        mapView.Map.Navigator.CenterOnAndZoomTo(centerPoint, 1);
-        mapView.Pins.Clear();
+        DeviceDisplay.Current.KeepScreenOn = false;
+    }
 
-        mapView.Pins.Add(new Pin(mapView)
+    private async void OnLocationTimerTicked(object sender, EventArgs e)
+    {
+        try
         {
-            Position = new Mapsui.UI.Maui.Position(destLat, destLng),
-            Label = destName,
-            Type = PinType.Pin,
-            Color = Microsoft.Maui.Graphics.Colors.Red,
-            Scale = 0.8f
-        });
+            var myLocation = await LocationService.GetCurrentLocationAsync();
 
-        if (myLocation != null)
+            if (myLocation != null && _cachedStalls != null)
+            {
+                UpdateUserPinOnMap(myLocation);
+
+                await _geofenceService.CheckAndTriggerAudioAsync(myLocation, _cachedStalls);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi radar: {ex.Message}");
+        }
+    }
+    private void UpdateUserPinOnMap(Microsoft.Maui.Devices.Sensors.Location newLoc)
+    {
+        var existingUserPin = mapView.Pins.FirstOrDefault(p => p.Label == "Bạn đang ở đây");
+
+        if (existingUserPin != null)
+        {
+            existingUserPin.Position = new Mapsui.UI.Maui.Position(newLoc.Latitude, newLoc.Longitude);
+        }
+        else
         {
             mapView.Pins.Add(new Pin(mapView)
             {
-                Position = new Mapsui.UI.Maui.Position(myLocation.Latitude, myLocation.Longitude),
+                Position = new Mapsui.UI.Maui.Position(newLoc.Latitude, newLoc.Longitude),
                 Label = "Bạn đang ở đây",
                 Type = PinType.Pin,
-                Color = Microsoft.Maui.Graphics.Colors.Blue,
+                Color = Colors.Blue,
                 Scale = 0.8f
             });
+        }
+        mapView.RefreshGraphics();
+    }
+
+    private void LoadMap(List<FoodStall> allStalls, Microsoft.Maui.Devices.Sensors.Location myLocation)
+    {
+        if (allStalls == null) return;
+
+        mapView.Pins.Clear();
+
+        foreach (var stall in allStalls)
+        {
+            mapView.Pins.Add(new Pin(mapView)
+            {
+                Position = new Mapsui.UI.Maui.Position(stall.Latitude, stall.Longitude),
+                Label = stall.Name,
+                Type = PinType.Pin,
+                Color = (_targetStall != null && stall.Name == _targetStall.Name) ? Colors.Orange : Colors.Red,
+                Scale = 0.7f,
+                Tag = stall
+            });
+        }
+
+        double centerLat = _targetStall != null ? _targetStall.Latitude : 10.7607;
+        double centerLng = _targetStall != null ? _targetStall.Longitude : 106.7033;
+
+        var destPosition = SphericalMercator.FromLonLat(centerLng, centerLat);
+        var centerPoint = new MPoint(destPosition.x, destPosition.y);
+
+        double zoomLevel = _targetStall != null ? 1 : 2;
+        mapView.Map.Navigator.CenterOnAndZoomTo(centerPoint, zoomLevel);
+
+        if (myLocation != null)
+        {
+            UpdateUserPinOnMap(myLocation);
         }
     }
 
@@ -94,18 +177,16 @@ public partial class MapPage : ContentPage, IQueryAttributable
     {
         try
         {
-            var existingLayer = mapView.Map.Layers.FirstOrDefault(l => l.Name == "RouteLayer");
-            if (existingLayer != null) mapView.Map.Layers.Remove(existingLayer);
-
             string url = $"https://routing.openstreetmap.de/routed-car/route/v1/driving/{startLng},{startLat};{destLng},{destLat}?overview=full&geometries=geojson";
 
             using var client = new HttpClient();
             var response = await client.GetStringAsync(url);
             using var document = JsonDocument.Parse(response);
 
-            var coordinates = document.RootElement.GetProperty("routes")[0]
-                                      .GetProperty("geometry")
-                                      .GetProperty("coordinates");
+            var routes = document.RootElement.GetProperty("routes");
+            if (routes.GetArrayLength() == 0) return;
+
+            var coordinates = routes[0].GetProperty("geometry").GetProperty("coordinates");
 
             var linePoints = new List<Coordinate>();
             foreach (var coord in coordinates.EnumerateArray())
@@ -117,7 +198,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
             var feature = new GeometryFeature(new LineString(linePoints.ToArray()));
             feature.Styles.Add(new VectorStyle
             {
-                Line = new Pen { Color = Mapsui.Styles.Color.FromString("#3498db"), Width = 6 }
+                Line = new Mapsui.Styles.Pen { Color = Mapsui.Styles.Color.FromString("#3498db"), Width = 6 }
             });
 
             mapView.Map.Layers.Add(new MemoryLayer { Name = "RouteLayer", Features = new[] { feature } });
@@ -125,12 +206,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LỖI VẼ ĐƯỜNG OSRM: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LỖI VẼ ĐƯỜNG: {ex.Message}");
         }
-    }
-
-    private async void OnCloseClicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("///MainPage");
     }
 }

@@ -6,7 +6,7 @@ namespace TravelTracker;
 public partial class DetailPage : ContentPage, IQueryAttributable
 {
     private FoodStall _currentStall;
-    private LanguageOption _currentLanguage;
+    private Language _currentLanguage;
     CancellationTokenSource cts;
     string[] sentences;
     int currentIndex = 0;
@@ -29,7 +29,7 @@ public partial class DetailPage : ContentPage, IQueryAttributable
             }
         }
 
-        if (query.ContainsKey("SelectedLanguage") && query["SelectedLanguage"] is LanguageOption lang)
+        if (query.ContainsKey("SelectedLanguage") && query["SelectedLanguage"] is Language lang)
         {
             _currentLanguage = lang;
         }
@@ -42,7 +42,13 @@ public partial class DetailPage : ContentPage, IQueryAttributable
     {
         if (isReading || sentences == null || sentences.Length == 0) return;
 
-        if (cts != null) cts.Cancel();
+        if (cts != null)
+        {
+            cts.Cancel();
+            cts.Dispose();
+            cts = null;
+        }
+
         cts = new CancellationTokenSource();
         isReading = true;
 
@@ -56,7 +62,6 @@ public partial class DetailPage : ContentPage, IQueryAttributable
             {
                 currentIndex = i;
 
-                // Đọc với tùy chọn ngôn ngữ đã cài đặt
                 await TextToSpeech.Default.SpeakAsync(sentences[i], speechOptions, cancelToken: cts.Token);
 
                 if (cts.Token.IsCancellationRequested)
@@ -75,15 +80,17 @@ public partial class DetailPage : ContentPage, IQueryAttributable
         }
     }
 
-    //Hàm xử lý button Stop
     private void OnStopClicked(object sender, EventArgs e)
     {
         if (cts != null)
         {
             cts.Cancel();
+            cts.Dispose();
+            cts = null;
             isReading = false;
         }
     }
+
     private void OnResetClicked(object sender, EventArgs e)
     {
         OnStopClicked(sender, e);
@@ -91,10 +98,15 @@ public partial class DetailPage : ContentPage, IQueryAttributable
         DisplayAlert("Thông báo", "Đã đặt lại vị trí đọc về ban đầu.", "OK");
     }
 
-    // Tự động tắt tiếng khi người dùng thoát trang
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        if (cts != null) cts.Cancel();
+
+        if (cts != null)
+        {
+            cts.Cancel();
+            cts.Dispose();
+            cts = null;
+        }
     }
 }
