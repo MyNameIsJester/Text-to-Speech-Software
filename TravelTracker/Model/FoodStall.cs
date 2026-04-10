@@ -41,5 +41,24 @@ namespace TravelTracker.Model
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        private bool _isFavorite;
+        public bool IsFavorite
+        {
+            get => _isFavorite;
+            set
+            {
+                if (_isFavorite != value)
+                {
+                    _isFavorite = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(FavoriteButtonText));
+                    OnPropertyChanged(nameof(FavoriteButtonColor));
+                }
+            }
+        }
+
+        public string FavoriteButtonText => IsFavorite ? "❤️" : "🤍";
+        public Color FavoriteButtonColor => IsFavorite ? Colors.Transparent : Colors.Transparent;
     }
 }

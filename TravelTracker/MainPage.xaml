@@ -1,5 +1,6 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:TravelTracker.Services"
              x:Class="TravelTracker.MainPage"
              Title="Thuyết Minh Khu Ẩm Thực Q.4"
              BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#121212}">
@@ -8,7 +9,7 @@
         <Grid ColumnDefinitions="*, Auto" Padding="10,0,20,0">
             <Label Grid.Column="0" 
                    Text="Thuyết Minh Q.4" 
-                   TextColor="White" 
+                   TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" 
                    FontAttributes="Bold" 
                    FontSize="18" 
                    VerticalOptions="Center" />
@@ -17,8 +18,8 @@
                     ItemsSource="{Binding Languages}" 
                     ItemDisplayBinding="{Binding DisplayName}"
                     SelectedItem="{Binding SelectedLanguage}"
-                    TextColor="White"
-                    TitleColor="White"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    TitleColor="{AppThemeBinding Light=Black, Dark=White}"
                     Title="🌍 Ngôn ngữ"
                     VerticalOptions="Center"
                     WidthRequest="140" />
@@ -30,11 +31,12 @@
         <VerticalStackLayout Grid.Row="0" Padding="25,30,25,20" Spacing="5" 
                              BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}">
             <Label Text="PHỐ VĨNH KHÁNH" 
-                   FontSize="14" 
+                   FontSize="14"    
                    TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" 
                    FontAttributes="Bold" 
                    CharacterSpacing="2" />
-            <Label Text="Ăn gì hôm nay?"
+
+            <Label Text="{Binding UIGreeting, Source={x:Static services:LanguageService.Instance}}"
                    FontSize="32" 
                    FontAttributes="Bold" 
                    TextColor="{AppThemeBinding Light=Black, Dark=White}" />
@@ -53,7 +55,7 @@
                             Stroke="Transparent"
                             StrokeShape="RoundRectangle 20">
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="GIỚI THIỆU TỔNG QUAN" 
+                            <Label Text="{Binding UIIntroHeading, Source={x:Static services:LanguageService.Instance}}" 
                                    FontSize="13" 
                                    FontAttributes="Bold" 
                                    TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" />
@@ -78,7 +80,7 @@
                             </VerticalStackLayout>
 
                             <Button x:Name="btnToggleIntro"
-                                    Text="🎧 Nghe giới thiệu tổng quan" 
+                                    Text="{Binding UIPlayIntroBtn, Source={x:Static services:LanguageService.Instance}}" 
                                     Clicked="OnToggleStreetIntroClicked"
                                     BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#7E57C2}" 
                                     TextColor="White"
@@ -89,7 +91,32 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Label Text="DANH SÁCH HÀNG QUÁN" 
+                    <Border Padding="0" 
+                            Margin="0,15,0,0" 
+                            Stroke="Transparent" 
+                            StrokeShape="RoundRectangle 15">
+
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.1" />
+                        </Border.Shadow>
+
+                        <SearchBar x:Name="searchBar" 
+                                   Placeholder="{Binding UISearchPlaceholder, Source={x:Static services:LanguageService.Instance}}" 
+                                   TextChanged="OnSearchBarTextChanged"
+                                   BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}"
+                                   TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                    </Border>
+
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,15,0,10">
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="🌟 Tất cả" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="#512BD4" TextColor="White" HeightRequest="40"/>
+                            <Button Text="🐌 Ốc" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                            <Button Text="🔥 Nướng" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                            <Button Text="🍲 Lẩu" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+
+                    <Label Text="{Binding UIListHeading, Source={x:Static services:LanguageService.Instance}}" 
                            FontSize="14" 
                            FontAttributes="Bold" 
                            TextColor="Gray" 
@@ -139,7 +166,7 @@
                                 <VerticalStackLayout Grid.Row="1" Padding="20" Spacing="8" 
                                                      BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}">
 
-                                    <Grid ColumnDefinitions="*, Auto">
+                                    <Grid ColumnDefinitions="*, Auto, Auto">
                                         <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
                                             <Label Text="{Binding Name}" 
                                                    FontSize="22" 
@@ -152,7 +179,16 @@
                                                    FontAttributes="Bold" />
                                         </VerticalStackLayout>
 
-                                        <ImageButton Grid.Column="1"
+                                        <Button Grid.Column="1"
+                                                Text="{Binding FavoriteButtonText}"
+                                                BackgroundColor="{Binding FavoriteButtonColor}"
+                                                FontSize="24"
+                                                Padding="0"
+                                                Margin="0,0,15,0"
+                                                Clicked="OnFavoriteClicked"
+                                                CommandParameter="{Binding .}" />
+
+                                        <ImageButton Grid.Column="2"
                                                      Source="ggmap.png"
                                                      BackgroundColor="Transparent"
                                                      HeightRequest="40"
@@ -164,7 +200,7 @@
                                     </Grid>
 
                                     <HorizontalStackLayout Spacing="5">
-                                        <Label Text="🍴 Đặc sản:" FontAttributes="Bold" FontSize="14" 
+                                        <Label Text="{Binding UISpecialty, Source={x:Static services:LanguageService.Instance}}" FontAttributes="Bold" FontSize="14" 
                                                TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" />
                                         <Label Text="{Binding Specialty}" FontSize="14" 
                                                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
@@ -176,7 +212,7 @@
                                            MaxLines="2" 
                                            LineBreakMode="TailTruncation" />
 
-                                    <Label Text="Xem chi tiết &amp; Nghe thuyết minh →" 
+                                    <Label Text="{Binding UIDetailBtn, Source={x:Static services:LanguageService.Instance}}" 
                                            TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" 
                                            FontSize="13" 
                                            FontAttributes="Bold" 

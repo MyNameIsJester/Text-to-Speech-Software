@@ -43,12 +43,23 @@ public partial class MapPage : ContentPage, IQueryAttributable
         mapView.PinClicked += async (s, e) =>
         {
             e.Handled = true;
-            if (e.Pin.Tag is FoodStall clickedStall)
+
+            if (e.Pin?.Tag is FoodStall clickedStall)
             {
-                var action = await DisplayAlert(clickedStall.Name, clickedStall.Address, "Xem chi tiết", "Đóng");
-                if (action)
+                string action = await DisplayActionSheet(
+                    $"{clickedStall.Name}\n{clickedStall.Specialty}",
+                    "Đóng bản đồ", 
+                    null,
+                    "🌟 Xem chi tiết quán 🌟"
+                );
+
+                if (action == "🌟 Xem chi tiết quán 🌟")
                 {
-                    var navParam = new Dictionary<string, object> { { "SelectedStall", clickedStall } };
+                    var navParam = new Dictionary<string, object>
+                    {
+                        { "SelectedStall", clickedStall }
+                    };
+
                     await Shell.Current.GoToAsync("DetailPage", navParam);
                 }
             }
@@ -76,9 +87,18 @@ public partial class MapPage : ContentPage, IQueryAttributable
             mapView.Map.Layers.Remove(existingLayer);
         }
 
-        var myLocation = await LocationService.GetCurrentLocationAsync();
+        string currentLang = Preferences.Get("CurrentLanguage", "vi");
+        _cachedStalls = await _apiService.GetFoodStallsAsync(currentLang);
 
-        _cachedStalls = await _apiService.GetFoodStallsAsync("vi");
+        Microsoft.Maui.Devices.Sensors.Location myLocation = null;
+        try
+        {
+            myLocation = await LocationService.GetCurrentLocationAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi lấy GPS: {ex.Message}");
+        }
 
         LoadMap(_cachedStalls, myLocation);
 
@@ -108,7 +128,6 @@ public partial class MapPage : ContentPage, IQueryAttributable
             if (myLocation != null && _cachedStalls != null)
             {
                 UpdateUserPinOnMap(myLocation);
-
                 await _geofenceService.CheckAndTriggerAudioAsync(myLocation, _cachedStalls);
             }
         }
@@ -117,6 +136,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
             System.Diagnostics.Debug.WriteLine($"Lỗi radar: {ex.Message}");
         }
     }
+
     private void UpdateUserPinOnMap(Microsoft.Maui.Devices.Sensors.Location newLoc)
     {
         var existingUserPin = mapView.Pins.FirstOrDefault(p => p.Label == "Bạn đang ở đây");
@@ -147,15 +167,18 @@ public partial class MapPage : ContentPage, IQueryAttributable
 
         foreach (var stall in allStalls)
         {
-            mapView.Pins.Add(new Pin(mapView)
+            var pin = new Pin(mapView)
             {
                 Position = new Mapsui.UI.Maui.Position(stall.Latitude, stall.Longitude),
                 Label = stall.Name,
+                Address = stall.Specialty,
                 Type = PinType.Pin,
                 Color = (_targetStall != null && stall.Name == _targetStall.Name) ? Colors.Orange : Colors.Red,
                 Scale = 0.7f,
                 Tag = stall
-            });
+            };
+
+            mapView.Pins.Add(pin);
         }
 
         double centerLat = _targetStall != null ? _targetStall.Latitude : 10.7607;
@@ -172,6 +195,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
             UpdateUserPinOnMap(myLocation);
         }
     }
+
 
     private async Task DrawRouteAsync(double startLat, double startLng, double destLat, double destLng)
     {

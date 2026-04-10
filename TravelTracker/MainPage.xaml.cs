@@ -13,6 +13,8 @@ public partial class MainPage : ContentPage
     public ObservableCollection<FoodStall> Stalls { get; set; }
     public ObservableCollection<Language> Languages { get; set; }
 
+    private List<FoodStall> _allStallsBackup = new List<FoodStall>();
+
     private Language _selectedLanguage;
     public Language SelectedLanguage
     {
@@ -30,6 +32,10 @@ public partial class MainPage : ContentPage
 
                 if (_selectedLanguage != null)
                 {
+                    Preferences.Set("CurrentLanguage", _selectedLanguage.LanguageCode);
+
+                    LanguageService.Instance.SetLanguage(_selectedLanguage.LanguageCode);
+
                     _ = LoadStallsFromApiAsync(_selectedLanguage.LanguageCode);
                 }
             }
@@ -40,6 +46,7 @@ public partial class MainPage : ContentPage
     string[] introSentences;
     int currentIntroIndex = 0;
     bool isReadingIntro = false;
+    private string _currentCategory = "Tất cả";
 
     public MainPage()
     {
@@ -60,12 +67,19 @@ public partial class MainPage : ContentPage
         var stallsFromBE = await _apiService.GetFoodStallsAsync(langCode);
 
         Stalls.Clear();
+        _allStallsBackup.Clear();
+
         foreach (var stall in stallsFromBE)
         {
+            stall.IsFavorite = Preferences.Get($"fav_{stall.Id}", false);
+
             Stalls.Add(stall);
+            _allStallsBackup.Add(stall);
         }
 
         _ = UpdateStallDistancesAsync();
+
+        FilterList(searchBar.Text?.ToLower() ?? "", _currentCategory);
     }
 
     private async Task LoadLanguagesFromApiAsync()
@@ -82,6 +96,7 @@ public partial class MainPage : ContentPage
             SelectedLanguage = Languages[0];
         }
     }
+
     private async Task UpdateStallDistancesAsync()
     {
         var myLocation = await LocationService.GetCurrentLocationAsync();
@@ -94,6 +109,59 @@ public partial class MainPage : ContentPage
             var stallLocation = new Location(stall.Latitude, stall.Longitude);
             double distance = Location.CalculateDistance(myLocation, stallLocation, DistanceUnits.Kilometers);
             stall.DistanceText = $"📍 Cách {Math.Round(distance, 1)} km";
+        }
+    }
+
+    private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+    {
+        var keyword = e.NewTextValue?.ToLower() ?? string.Empty;
+        FilterList(keyword, _currentCategory);
+    }
+
+    private void OnCategoryClicked(object sender, EventArgs e)
+    {
+        var button = sender as Button;
+        if (button == null) return;
+
+        _currentCategory = button.Text.Replace("🌟 ", "").Replace("🐌 ", "").Replace("🔥 ", "").Replace("🍲 ", "");
+
+        FilterList(searchBar.Text?.ToLower() ?? "", _currentCategory);
+    }
+
+    private void FilterList(string keyword, string category)
+    {
+        var filtered = _allStallsBackup.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            filtered = filtered.Where(s => s.Name.ToLower().Contains(keyword) || s.Specialty.ToLower().Contains(keyword));
+        }
+
+        if (category != "Tất cả" && !string.IsNullOrWhiteSpace(category))
+        {
+            filtered = filtered.Where(s => s.Specialty.Contains(category, StringComparison.OrdinalIgnoreCase));
+        }
+
+        Stalls.Clear();
+        foreach (var stall in filtered)
+        {
+            Stalls.Add(stall);
+        }
+    }
+
+    private void OnFavoriteClicked(object sender, EventArgs e)
+    {
+        var button = sender as Button;
+        if (button?.CommandParameter is FoodStall clickedStall)
+        {
+            clickedStall.IsFavorite = !clickedStall.IsFavorite;
+
+            Preferences.Set($"fav_{clickedStall.Id}", clickedStall.IsFavorite);
+
+            if (clickedStall.IsFavorite)
+            {
+                DisplayAlert("Đã lưu", $"Đã thêm {clickedStall.Name} vào danh sách yêu thích!", "OK");
+            }
         }
     }
 
@@ -154,7 +222,7 @@ public partial class MainPage : ContentPage
         ctsIntro = new CancellationTokenSource();
         isReadingIntro = true;
 
-        button.Text = "🛑 Dừng nghe giới thiệu";
+        button.Text = LanguageService.Instance.UIStopIntroBtn;
         button.BackgroundColor = Colors.Red;
 
         try
@@ -206,7 +274,7 @@ public partial class MainPage : ContentPage
 
             if (button != null)
             {
-                button.Text = "▶️ Nghe tiếp giới thiệu";
+                button.Text = "▶️ " + LanguageService.Instance.UIPlayIntroBtn.Replace("🎧 ", "");
                 button.BackgroundColor = Color.FromArgb("#512BD4");
             }
             else if (btnToggleIntro != null)
@@ -217,7 +285,7 @@ public partial class MainPage : ContentPage
     private void ResetButtonUI(Button button)
     {
         if (button == null) return;
-        button.Text = "🎧 Nghe giới thiệu tổng quan";
+        button.Text = LanguageService.Instance.UIPlayIntroBtn;
         button.BackgroundColor = Color.FromArgb("#512BD4");
         if (currentIntroIndex == 0)
         {
