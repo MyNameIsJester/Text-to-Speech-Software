@@ -1,0 +1,245 @@
+﻿@model AudioGuideAdmin.ViewModels.Tours.TourEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Tour";
+    var foodStallOptions = ViewBag.FoodStallOptions as IEnumerable<AudioGuideAdmin.Controllers.ToursController.FoodStallOptionViewModel>
+                           ?? Enumerable.Empty<AudioGuideAdmin.Controllers.ToursController.FoodStallOptionViewModel>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Edit Tour</h2>
+        <p class="text-muted mb-0">Update multilingual tour information and reorder stops.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><strong>Tour Base</strong></div>
+        <div class="card-body">
+            <div class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><strong>@Model.Vietnamese.DisplayName (@Model.Vietnamese.LanguageCode)</strong></div>
+        <div class="card-body">
+            <input type="hidden" asp-for="Vietnamese.TourTranslationId" />
+            <input type="hidden" asp-for="Vietnamese.LanguageId" />
+            <input type="hidden" asp-for="Vietnamese.LanguageCode" />
+            <input type="hidden" asp-for="Vietnamese.DisplayName" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Vietnamese.Name" class="form-label"></label>
+                    <input asp-for="Vietnamese.Name" class="form-control" />
+                    <span asp-validation-for="Vietnamese.Name" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Vietnamese.Description" class="form-label"></label>
+                    <textarea asp-for="Vietnamese.Description" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header"><strong>@Model.English.DisplayName (@Model.English.LanguageCode)</strong></div>
+        <div class="card-body">
+            <input type="hidden" asp-for="English.TourTranslationId" />
+            <input type="hidden" asp-for="English.LanguageId" />
+            <input type="hidden" asp-for="English.LanguageCode" />
+            <input type="hidden" asp-for="English.DisplayName" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="English.Name" class="form-label"></label>
+                    <input asp-for="English.Name" class="form-control" />
+                    <span asp-validation-for="English.Name" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="English.Description" class="form-label"></label>
+                    <textarea asp-for="English.Description" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Tour Stops</strong>
+            <button type="button" id="addStopBtn" class="btn btn-sm btn-success">Add Stop</button>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Search and select food stalls for each stop in the tour.</p>
+            <div id="tourStopsContainer"></div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        (function () {
+            const options = [
+                @foreach (var option in foodStallOptions)
+                {
+                        @: { id: @option.Id, label: "@Html.Raw(option.Label.Replace("\"", "\\\""))", search: "@Html.Raw(option.SearchText.ToLower().Replace("\"", "\\\""))" },
+                }
+            ];
+
+            const initialItems = [
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                        var item = Model.Items[i];
+                        @: { foodStallId: "@item.FoodStallId", foodStallLabel: "@Html.Raw((item.FoodStallLabel ?? "").Replace("\"", "\\\""))", orderIndex: "@item.OrderIndex" },
+                }
+            ];
+
+            const container = document.getElementById('tourStopsContainer');
+            const addStopBtn = document.getElementById('addStopBtn');
+
+            function createDropdownItems(dropdown, input, hiddenId, hiddenLabel) {
+                return function (keyword = '') {
+                    const lower = keyword.trim().toLowerCase();
+                    const matched = options.filter(o =>
+                        !lower || o.label.toLowerCase().includes(lower) || o.search.includes(lower)
+                    );
+
+                    dropdown.innerHTML = '';
+
+                    matched.forEach(o => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action';
+                        btn.textContent = o.label;
+                        btn.addEventListener('click', function () {
+                            input.value = o.label;
+                            hiddenId.value = o.id;
+                            hiddenLabel.value = o.label;
+                            dropdown.classList.add('d-none');
+                        });
+                        dropdown.appendChild(btn);
+                    });
+
+                    dropdown.classList.toggle('d-none', matched.length === 0);
+                };
+            }
+
+            function renderStop(index, foodStallId = '', foodStallLabel = '', orderIndex = 1) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'border rounded p-3 mb-3 tour-stop';
+
+                wrapper.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="fw-semibold">Stop <span class="stop-number">${index + 1}</span></div>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-stop-btn">Remove</button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8 position-relative">
+                            <label class="form-label">Food Stall</label>
+                            <input type="hidden" name="Items[${index}].FoodStallId" class="foodstall-id" value="${foodStallId}" />
+                            <input type="hidden" name="Items[${index}].FoodStallLabel" class="foodstall-label-hidden" value="${foodStallLabel}" />
+                            <input type="text"
+                                   class="form-control foodstall-search"
+                                   placeholder="Type to search and select a food stall..."
+                                   value="${foodStallLabel}"
+                                   autocomplete="off" />
+                            <div class="list-group position-absolute w-100 shadow-sm d-none foodstall-dropdown"
+                                 style="z-index: 1000; max-height: 240px; overflow-y: auto;"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Order Index</label>
+                            <input name="Items[${index}].OrderIndex" class="form-control order-index" value="${orderIndex}" />
+                        </div>
+                    </div>
+                `;
+
+                const input = wrapper.querySelector('.foodstall-search');
+                const hiddenId = wrapper.querySelector('.foodstall-id');
+                const hiddenLabel = wrapper.querySelector('.foodstall-label-hidden');
+                const dropdown = wrapper.querySelector('.foodstall-dropdown');
+                const renderDropdown = createDropdownItems(dropdown, input, hiddenId, hiddenLabel);
+
+                input.addEventListener('focus', function () {
+                    renderDropdown(input.value);
+                });
+
+                input.addEventListener('input', function () {
+                    hiddenId.value = '';
+                    hiddenLabel.value = input.value;
+                    renderDropdown(input.value);
+                });
+
+                input.addEventListener('blur', function () {
+                    hiddenLabel.value = input.value;
+                    setTimeout(() => dropdown.classList.add('d-none'), 150);
+                });
+
+                wrapper.querySelector('.remove-stop-btn').addEventListener('click', function () {
+                    const totalStops = container.querySelectorAll('.tour-stop').length;
+                    if (totalStops <= 1) {
+                        alert('A tour must have at least one stop.');
+                        return;
+                    }
+
+                    wrapper.remove();
+                    reindexStops();
+                });
+
+                return wrapper;
+            }
+
+            function reindexStops() {
+                const stops = container.querySelectorAll('.tour-stop');
+
+                stops.forEach((stop, index) => {
+                    stop.querySelector('.stop-number').textContent = index + 1;
+                    stop.querySelector('.foodstall-id').setAttribute('name', `Items[${index}].FoodStallId`);
+                    stop.querySelector('.foodstall-label-hidden').setAttribute('name', `Items[${index}].FoodStallLabel`);
+                    stop.querySelector('.order-index').setAttribute('name', `Items[${index}].OrderIndex`);
+
+                    const orderInput = stop.querySelector('.order-index');
+                    if (!orderInput.value || isNaN(orderInput.value)) {
+                        orderInput.value = index + 1;
+                    }
+                });
+            }
+
+            addStopBtn.addEventListener('click', function () {
+                const nextIndex = container.querySelectorAll('.tour-stop').length;
+                container.appendChild(renderStop(nextIndex, '', '', nextIndex + 1));
+            });
+
+            if (initialItems.length > 0) {
+                initialItems.forEach((item, index) => {
+                    container.appendChild(renderStop(index, item.foodStallId, item.foodStallLabel, item.orderIndex));
+                });
+            } else {
+                container.appendChild(renderStop(0, '', '', 1));
+                container.appendChild(renderStop(1, '', '', 2));
+            }
+
+            reindexStops();
+        })();
+    </script>
+}

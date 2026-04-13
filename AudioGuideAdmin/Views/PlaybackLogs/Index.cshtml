@@ -1,0 +1,239 @@
+﻿@model IEnumerable<AudioGuideAPI.Models.PlaybackLog>
+
+@{
+    ViewData["Title"] = "Playback Logs";
+    var selectedLanguage = ViewBag.LanguageCode as string ?? "";
+    var selectedTriggerType = ViewBag.TriggerType as string ?? "";
+    var selectedFoodStallLabel = ViewBag.SelectedFoodStallLabel as string ?? "";
+    var foodStallOptions = ViewBag.FoodStallOptions as IEnumerable<AudioGuideAdmin.Controllers.PlaybackLogsController.PlaybackFoodStallOptionViewModel>
+                           ?? Enumerable.Empty<AudioGuideAdmin.Controllers.PlaybackLogsController.PlaybackFoodStallOptionViewModel>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Playback Logs</h2>
+        <p class="text-muted mb-0">Monitor playback history from GPS and QR triggers.</p>
+    </div>
+    <a asp-controller="FoodStalls" asp-action="Index" class="btn btn-outline-secondary">Back to Food Stalls</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Total Logs</div>
+                <div class="fs-4 fw-semibold">@ViewBag.TotalLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">GPS Logs</div>
+                <div class="fs-4 fw-semibold text-primary">@ViewBag.GpsLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">QR Logs</div>
+                <div class="fs-4 fw-semibold text-warning">@ViewBag.QrLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">VI Logs</div>
+                <div class="fs-4 fw-semibold">@ViewBag.ViLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">EN Logs</div>
+                <div class="fs-4 fw-semibold">@ViewBag.EnLogs</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="languageCode" class="form-label">Language</label>
+                <select id="languageCode" name="languageCode" class="form-select">
+                    <option value="">All</option>
+                    <option value="vi" selected="@(selectedLanguage == "vi")">vi</option>
+                    <option value="en" selected="@(selectedLanguage == "en")">en</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="triggerType" class="form-label">Trigger Type</label>
+                <select id="triggerType" name="triggerType" class="form-select">
+                    <option value="">All</option>
+                    <option value="GPS" selected="@(selectedTriggerType == "GPS")">GPS</option>
+                    <option value="QR" selected="@(selectedTriggerType == "QR")">QR</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 position-relative">
+                <label for="foodStallSearch" class="form-label">Food Stall</label>
+                <input type="hidden" id="foodStallId" name="foodStallId" value="@ViewBag.FoodStallId" />
+                <input type="text"
+                       id="foodStallSearch"
+                       class="form-control"
+                       placeholder="Type to search and select a food stall..."
+                       value="@selectedFoodStallLabel"
+                       autocomplete="off" />
+
+                <div id="foodStallDropdown" class="list-group position-absolute w-100 shadow-sm d-none"
+                     style="z-index: 1000; max-height: 240px; overflow-y: auto;">
+                    @foreach (var option in foodStallOptions)
+                    {
+                        <button type="button"
+                                class="list-group-item list-group-item-action foodstall-option"
+                                data-id="@option.Id"
+                                data-label="@option.Label"
+                                data-search="@option.SearchText.ToLower()">
+                            @option.Label
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;">Id</th>
+                        <th style="width: 90px;">Stall Id</th>
+                        <th>Address</th>
+                        <th style="width: 100px;">Language</th>
+                        <th style="width: 130px;">Trigger</th>
+                        <th style="width: 200px;">Played At</th>
+                        <th style="width: 120px;">Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No playback logs found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.FoodStallId</td>
+                                <td>@(item.FoodStall?.Address ?? "-")</td>
+                                <td>@item.LanguageCode</td>
+                                <td>
+                                    @if (item.TriggerType == "GPS")
+                                    {
+                                        <span class="badge bg-primary">GPS</span>
+                                    }
+                                    else if (item.TriggerType == "QR")
+                                    {
+                                        <span class="badge bg-warning text-dark">QR</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.TriggerType</span>
+                                    }
+                                </td>
+                                <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td>@item.DurationSeconds s</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const input = document.getElementById('foodStallSearch');
+            const hiddenInput = document.getElementById('foodStallId');
+            const dropdown = document.getElementById('foodStallDropdown');
+            const options = document.querySelectorAll('.foodstall-option');
+
+            function showDropdown() {
+                dropdown.classList.remove('d-none');
+            }
+
+            function hideDropdown() {
+                setTimeout(() => dropdown.classList.add('d-none'), 150);
+            }
+
+            function filterOptions() {
+                const keyword = input.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                options.forEach(option => {
+                    const label = option.dataset.label.toLowerCase();
+                    const search = option.dataset.search || "";
+
+                    const matched = keyword === "" || label.includes(keyword) || search.includes(keyword);
+                    option.style.display = matched ? '' : 'none';
+
+                    if (matched) visibleCount++;
+                });
+
+                if (visibleCount > 0) {
+                    showDropdown();
+                } else {
+                    dropdown.classList.add('d-none');
+                }
+            }
+
+            input.addEventListener('focus', function () {
+                showDropdown();
+                filterOptions();
+            });
+
+            input.addEventListener('input', function () {
+                hiddenInput.value = '';
+                filterOptions();
+            });
+
+            input.addEventListener('blur', function () {
+                hideDropdown();
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', function () {
+                    input.value = this.dataset.label;
+                    hiddenInput.value = this.dataset.id;
+                    dropdown.classList.add('d-none');
+                });
+            });
+        })();
+    </script>
+}

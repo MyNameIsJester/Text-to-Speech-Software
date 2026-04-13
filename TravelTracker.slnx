@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="AudioGuideAdmin/AudioGuideAdmin.csproj" Id="fadd3d6f-f170-4b82-8e7f-2c91aabaffd3" />
   <Project Path="AudioGuideAPI/AudioGuideAPI.csproj" />
   <Project Path="TravelTracker/TravelTracker.csproj">
     <Deploy Solution="Debug|*" />

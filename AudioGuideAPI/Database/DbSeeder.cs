@@ -53,8 +53,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Ốc Nướng Mỡ Hành",
                     Description = "Đây là một điểm dừng nổi bật trên phố ẩm thực Vĩnh Khánh. Quán được nhiều thực khách yêu thích nhờ các món ốc nướng thơm mùi mỡ hành, đậu phộng và nước chấm đậm đà. Không gian buổi tối thường nhộn nhịp, phù hợp với những ai muốn trải nghiệm ẩm thực đường phố Sài Gòn.",
+                    TtsScript = "Bạn đang đến quán Ốc Nướng Mỡ Hành, một điểm dừng nổi bật trên phố ẩm thực Vĩnh Khánh. Quán được nhiều thực khách yêu thích nhờ các món ốc nướng thơm mùi mỡ hành, đậu phộng và nước chấm đậm đà. Không gian buổi tối ở đây thường rất nhộn nhịp và phù hợp để trải nghiệm ẩm thực đường phố Sài Gòn.",
                     Specialty = "Ốc nướng mỡ hành, sò điệp nướng, nghêu hấp sả",
-                    AudioUrl = "/audio/vi/oc-nuong-mo-hanh.mp3"
+                    AudioUrl = null
                 });
 
                 stall1.Translations.Add(new FoodStallTranslation
@@ -62,8 +63,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Grilled Seafood Stall",
                     Description = "This is one of the notable stops on Vinh Khanh food street. The stall is popular for its grilled shellfish topped with scallion oil, peanuts, and rich dipping sauce. In the evening, the area becomes lively and gives visitors a clear taste of Saigon street food culture.",
+                    TtsScript = "You are arriving at the Grilled Seafood Stall, one of the notable stops on Vinh Khanh food street. The stall is popular for grilled shellfish topped with scallion oil, peanuts, and rich dipping sauce. In the evening, the area becomes lively and gives visitors a clear taste of Saigon street food culture.",
                     Specialty = "Grilled snails with scallion oil, grilled scallops, steamed clams with lemongrass",
-                    AudioUrl = "/audio/en/oc-nuong-mo-hanh.mp3"
+                    AudioUrl = null
                 });
 
                 var stall2 = new FoodStall
@@ -84,8 +86,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Càng Cúm Rang Me",
                     Description = "Quán này nổi bật với hương vị chua ngọt đặc trưng của các món sốt me. Càng cúm rang me là món được nhiều người gọi thử khi ghé khu Vĩnh Khánh lần đầu. Món ăn có vị đậm, thơm và rất phù hợp để thưởng thức cùng bạn bè vào buổi tối.",
+                    TtsScript = "Bạn đang đến quán Càng Cúm Rang Me. Quán nổi bật với hương vị chua ngọt đặc trưng của các món sốt me. Càng cúm rang me là món được nhiều người gọi thử khi ghé khu Vĩnh Khánh lần đầu. Món ăn có vị đậm, thơm và rất phù hợp để thưởng thức cùng bạn bè vào buổi tối.",
                     Specialty = "Càng cúm rang me, tôm nướng, cua sốt me",
-                    AudioUrl = "/audio/vi/cang-cum-rang-me.mp3"
+                    AudioUrl = null
                 });
 
                 stall2.Translations.Add(new FoodStallTranslation
@@ -93,8 +96,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Tamarind Crab Claw Stall",
                     Description = "This stall is known for seafood dishes cooked in tamarind sauce. Tamarind crab claws are often chosen by first-time visitors to Vinh Khanh Street. The flavor is rich, slightly sweet and sour, and works well for a casual evening meal with friends.",
+                    TtsScript = "You are arriving at the Tamarind Crab Claw Stall. This stall is known for seafood dishes cooked in tamarind sauce. Tamarind crab claws are often chosen by first-time visitors to Vinh Khanh Street. The flavor is rich, slightly sweet and sour, and works well for a casual evening meal with friends.",
                     Specialty = "Tamarind crab claws, grilled prawns, crab in tamarind sauce",
-                    AudioUrl = "/audio/en/cang-cum-rang-me.mp3"
+                    AudioUrl = null
                 });
 
                 var stall3 = new FoodStall
@@ -115,8 +119,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Hàu Nướng Phô Mai",
                     Description = "Đây là một quán quen thuộc với nhiều bạn trẻ khi ghé phố ẩm thực Vĩnh Khánh. Các món hàu nướng có vị béo, thơm và dễ ăn, đặc biệt phù hợp với không khí buổi tối. Nếu muốn thử một món hải sản phổ biến và dễ thưởng thức, đây là lựa chọn đáng cân nhắc.",
+                    TtsScript = "Bạn đang đến quán Hàu Nướng Phô Mai, một điểm dừng quen thuộc với nhiều bạn trẻ khi ghé phố ẩm thực Vĩnh Khánh. Các món hàu nướng ở đây có vị béo, thơm và dễ ăn, đặc biệt phù hợp với không khí buổi tối. Nếu muốn thử một món hải sản phổ biến và dễ thưởng thức, đây là lựa chọn đáng cân nhắc.",
                     Specialty = "Hàu nướng phô mai, hàu nướng trứng cút, sò lông nướng",
-                    AudioUrl = "/audio/vi/hau-nuong-pho-mai.mp3"
+                    AudioUrl = null
                 });
 
                 stall3.Translations.Add(new FoodStallTranslation
@@ -124,8 +129,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Cheese-Grilled Oyster Stall",
                     Description = "This is a familiar stop for many young visitors on Vinh Khanh food street. The grilled oyster dishes are rich, creamy, and easy to enjoy, especially at night. If you want to try a popular and approachable seafood dish, this stall is a good choice.",
+                    TtsScript = "You are arriving at the Cheese-Grilled Oyster Stall, a familiar stop for many young visitors on Vinh Khanh food street. The grilled oyster dishes are rich, creamy, and easy to enjoy, especially at night. If you want to try a popular and approachable seafood dish, this stall is a good choice.",
                     Specialty = "Cheese-grilled oysters, quail egg oysters, grilled blood cockles",
-                    AudioUrl = "/audio/en/hau-nuong-pho-mai.mp3"
+                    AudioUrl = null
                 });
 
                 var stall4 = new FoodStall
@@ -146,8 +152,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Bạch Tuộc Nướng Sa Tế",
                     Description = "Quán thu hút thực khách nhờ mùi thơm đặc trưng của hải sản nướng trên bếp than. Bạch tuộc nướng sa tế có vị cay nhẹ, thơm và đậm đà, thường được gọi nhiều vào giờ cao điểm buổi tối. Đây là lựa chọn phù hợp cho những ai thích món nướng có hương vị mạnh.",
+                    TtsScript = "Bạn đang đến quán Bạch Tuộc Nướng Sa Tế. Quán thu hút thực khách nhờ mùi thơm đặc trưng của hải sản nướng trên bếp than. Bạch tuộc nướng sa tế có vị cay nhẹ, thơm và đậm đà, thường được gọi nhiều vào giờ cao điểm buổi tối. Đây là lựa chọn phù hợp cho những ai thích món nướng có hương vị mạnh.",
                     Specialty = "Bạch tuộc nướng sa tế, mực nướng, tôm nướng muối ớt",
-                    AudioUrl = "/audio/vi/bach-tuoc-nuong-sa-te.mp3"
+                    AudioUrl = null
                 });
 
                 stall4.Translations.Add(new FoodStallTranslation
@@ -155,8 +162,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Spicy Grilled Octopus Stall",
                     Description = "This stall attracts diners with the smoky aroma of seafood grilled over charcoal. The spicy grilled octopus has a light heat, a fragrant smell, and a bold flavor that makes it popular in the evening. It is a good option for visitors who enjoy stronger grilled dishes.",
+                    TtsScript = "You are arriving at the Spicy Grilled Octopus Stall. This stall attracts diners with the smoky aroma of seafood grilled over charcoal. The spicy grilled octopus has a light heat, a fragrant smell, and a bold flavor that makes it popular in the evening. It is a good option for visitors who enjoy stronger grilled dishes.",
                     Specialty = "Spicy grilled octopus, grilled squid, chili salt prawns",
-                    AudioUrl = "/audio/en/bach-tuoc-nuong-sa-te.mp3"
+                    AudioUrl = null
                 });
 
                 var stall5 = new FoodStall
@@ -177,8 +185,9 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Sò Điệp Nướng",
                     Description = "Quán nổi bật với các món sò điệp nướng được trình bày bắt mắt và có hương vị dễ ăn. Mỡ hành, phô mai và các loại sốt giúp món ăn trở nên thơm béo và hấp dẫn hơn. Đây là điểm dừng phù hợp nếu bạn muốn thử hải sản nướng theo phong cách quen thuộc của khu Vĩnh Khánh.",
+                    TtsScript = "Bạn đang đến quán Sò Điệp Nướng. Quán nổi bật với các món sò điệp nướng được trình bày bắt mắt và có hương vị dễ ăn. Mỡ hành, phô mai và các loại sốt giúp món ăn trở nên thơm béo và hấp dẫn hơn. Đây là điểm dừng phù hợp nếu bạn muốn thử hải sản nướng theo phong cách quen thuộc của khu Vĩnh Khánh.",
                     Specialty = "Sò điệp nướng mỡ hành, sò điệp phô mai, nghêu nướng",
-                    AudioUrl = "/audio/vi/so-diep-nuong.mp3"
+                    AudioUrl = null
                 });
 
                 stall5.Translations.Add(new FoodStallTranslation
@@ -186,11 +195,108 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Grilled Scallop Stall",
                     Description = "This stall is known for grilled scallop dishes that are both visually appealing and easy to enjoy. Toppings such as scallion oil, cheese, and savory sauces make the dishes richer and more flavorful. It is a suitable stop if you want to explore the familiar grilled seafood style of Vinh Khanh Street.",
+                    TtsScript = "You are arriving at the Grilled Scallop Stall. This stall is known for grilled scallop dishes that are both visually appealing and easy to enjoy. Toppings such as scallion oil, cheese, and savory sauces make the dishes richer and more flavorful. It is a suitable stop if you want to explore the familiar grilled seafood style of Vinh Khanh Street.",
                     Specialty = "Grilled scallops with scallion oil, cheese scallops, grilled clams",
-                    AudioUrl = "/audio/en/so-diep-nuong.mp3"
+                    AudioUrl = null
                 });
 
                 context.FoodStalls.AddRange(stall1, stall2, stall3, stall4, stall5);
+                await context.SaveChangesAsync();
+            }
+
+            if (!context.PlaybackLogs.Any())
+            {
+                context.PlaybackLogs.Add(new PlaybackLog
+                {
+                    FoodStallId = 1,
+                    LanguageCode = "vi",
+                    TriggerType = "GPS",
+                    PlayedAt = DateTime.Now.AddMinutes(-10),
+                    DurationSeconds = 45
+                });
+
+                context.PlaybackLogs.Add(new PlaybackLog
+                {
+                    FoodStallId = 2,
+                    LanguageCode = "en",
+                    TriggerType = "QR",
+                    PlayedAt = DateTime.Now.AddMinutes(-5),
+                    DurationSeconds = 60
+                });
+
+                await context.SaveChangesAsync();
+            }
+
+            if (!context.QrMappings.Any())
+            {
+                context.QrMappings.Add(new QrMapping
+                {
+                    FoodStallId = 1,
+                    CodeValue = "STALL-001",
+                    IsActive = true
+                });
+
+                context.QrMappings.Add(new QrMapping
+                {
+                    FoodStallId = 2,
+                    CodeValue = "STALL-002",
+                    IsActive = true
+                });
+
+                await context.SaveChangesAsync();
+            }
+
+            if (!context.Tours.Any())
+            {
+                var vi = context.Languages.First(x => x.LanguageCode == "vi");
+                var en = context.Languages.First(x => x.LanguageCode == "en");
+
+                var tour = new Tour
+                {
+                    IsActive = true
+                };
+
+                context.Tours.Add(tour);
+                await context.SaveChangesAsync();
+
+                context.TourTranslations.AddRange(
+                    new TourTranslation
+                    {
+                        TourId = tour.Id,
+                        LanguageId = vi.Id,
+                        Name = "Tour Hải Sản Vĩnh Khánh",
+                        Description = "Một hành trình mẫu đi qua các quán hải sản nổi bật trên phố ẩm thực Vĩnh Khánh."
+                    },
+                    new TourTranslation
+                    {
+                        TourId = tour.Id,
+                        LanguageId = en.Id,
+                        Name = "Vinh Khanh Seafood Tour",
+                        Description = "A sample food tour through highlighted seafood stalls on Vinh Khanh Street."
+                    }
+                );
+
+                context.TourItems.AddRange(
+                    new TourItem
+                    {
+                        TourId = tour.Id,
+                        FoodStallId = 1,
+                        OrderIndex = 1
+                    },
+                    new TourItem
+                    {
+                        TourId = tour.Id,
+                        FoodStallId = 2,
+                        OrderIndex = 2
+                    },
+                    new TourItem
+                    {
+                        TourId = tour.Id,
+                        FoodStallId = 3,
+                        OrderIndex = 3
+                    }
+                );
+
                 await context.SaveChangesAsync();
             }
         }

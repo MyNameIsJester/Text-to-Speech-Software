@@ -1,0 +1,136 @@
+﻿@model AudioGuideAPI.Models.QrMapping
+
+@{
+    ViewData["Title"] = "Edit QR Mapping";
+    var selectedFoodStallLabel = ViewBag.SelectedFoodStallLabel as string ?? "";
+    var foodStallOptions = ViewBag.FoodStallOptions as IEnumerable<AudioGuideAdmin.Controllers.QrMappingsController.FoodStallOptionViewModel>
+                           ?? Enumerable.Empty<AudioGuideAdmin.Controllers.QrMappingsController.FoodStallOptionViewModel>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Edit QR Mapping</h2>
+        <p class="text-muted mb-0">Update QR code mapping information.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6 position-relative">
+                    <label for="foodStallSearch" class="form-label">Food Stall</label>
+                    <input type="hidden" asp-for="FoodStallId" id="foodStallId" />
+                    <input type="text"
+                           id="foodStallSearch"
+                           class="form-control"
+                           placeholder="Type to search and select a food stall..."
+                           value="@selectedFoodStallLabel"
+                           autocomplete="off" />
+
+                    <div id="foodStallDropdown" class="list-group position-absolute w-100 shadow-sm d-none"
+                         style="z-index: 1000; max-height: 240px; overflow-y: auto;">
+                        @foreach (var option in foodStallOptions)
+                        {
+                            <button type="button"
+                                    class="list-group-item list-group-item-action foodstall-option"
+                                    data-id="@option.Id"
+                                    data-label="@option.Label"
+                                    data-search="@option.SearchText.ToLower()">
+                                @option.Label
+                            </button>
+                        }
+                    </div>
+
+                    <span asp-validation-for="FoodStallId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="CodeValue" class="form-label"></label>
+                    <input asp-for="CodeValue" class="form-control" />
+                    <span asp-validation-for="CodeValue" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check mt-2">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        (function () {
+            const input = document.getElementById('foodStallSearch');
+            const hiddenInput = document.getElementById('foodStallId');
+            const dropdown = document.getElementById('foodStallDropdown');
+            const options = document.querySelectorAll('.foodstall-option');
+
+            function showDropdown() {
+                dropdown.classList.remove('d-none');
+            }
+
+            function hideDropdown() {
+                setTimeout(() => dropdown.classList.add('d-none'), 150);
+            }
+
+            function filterOptions() {
+                const keyword = input.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                options.forEach(option => {
+                    const label = option.dataset.label.toLowerCase();
+                    const search = option.dataset.search || "";
+                    const matched = keyword === "" || label.includes(keyword) || search.includes(keyword);
+
+                    option.style.display = matched ? '' : 'none';
+                    if (matched) visibleCount++;
+                });
+
+                if (visibleCount > 0) {
+                    showDropdown();
+                } else {
+                    dropdown.classList.add('d-none');
+                }
+            }
+
+            input.addEventListener('focus', function () {
+                showDropdown();
+                filterOptions();
+            });
+
+            input.addEventListener('input', function () {
+                hiddenInput.value = '';
+                filterOptions();
+            });
+
+            input.addEventListener('blur', function () {
+                hideDropdown();
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', function () {
+                    input.value = this.dataset.label;
+                    hiddenInput.value = this.dataset.id;
+                    dropdown.classList.add('d-none');
+                });
+            });
+        })();
+    </script>
+}

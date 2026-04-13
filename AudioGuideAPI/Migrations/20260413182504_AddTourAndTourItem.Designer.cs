@@ -3,6 +3,7 @@ using System;
 using AudioGuideAPI.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AudioGuideAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413182504_AddTourAndTourItem")]
+    partial class AddTourAndTourItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -202,8 +205,17 @@ namespace AudioGuideAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -233,37 +245,6 @@ namespace AudioGuideAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("TourItems");
-                });
-
-            modelBuilder.Entity("AudioGuideAPI.Models.TourTranslation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("LanguageId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("TourId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LanguageId");
-
-                    b.HasIndex("TourId", "LanguageId")
-                        .IsUnique();
-
-                    b.ToTable("TourTranslations");
                 });
 
             modelBuilder.Entity("AudioGuideAPI.Models.FoodStallTranslation", b =>
@@ -326,25 +307,6 @@ namespace AudioGuideAPI.Migrations
                     b.Navigation("Tour");
                 });
 
-            modelBuilder.Entity("AudioGuideAPI.Models.TourTranslation", b =>
-                {
-                    b.HasOne("AudioGuideAPI.Models.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AudioGuideAPI.Models.Tour", "Tour")
-                        .WithMany("Translations")
-                        .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Language");
-
-                    b.Navigation("Tour");
-                });
-
             modelBuilder.Entity("AudioGuideAPI.Models.FoodStall", b =>
                 {
                     b.Navigation("Translations");
@@ -358,8 +320,6 @@ namespace AudioGuideAPI.Migrations
             modelBuilder.Entity("AudioGuideAPI.Models.Tour", b =>
                 {
                     b.Navigation("TourItems");
-
-                    b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618
         }

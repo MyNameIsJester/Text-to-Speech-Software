@@ -1,0 +1,42 @@
+﻿@model AudioGuideAPI.Models.QrMapping
+
+@{
+    ViewData["Title"] = "Delete QR Mapping";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-danger">Delete QR Mapping</h2>
+        <p class="text-muted mb-0">This action will remove the QR mapping.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="alert alert-warning">
+    <strong>Warning:</strong> Are you sure you want to delete this QR mapping?
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <p><strong>Id:</strong> @Model.Id</p>
+        <p><strong>Food Stall Id:</strong> @Model.FoodStallId</p>
+        <p><strong>Code Value:</strong> @Model.CodeValue</p>
+        <p>
+            <strong>Status:</strong>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">Active</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Inactive</span>
+            }
+        </p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="d-flex gap-2">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
