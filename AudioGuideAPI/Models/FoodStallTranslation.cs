@@ -19,8 +19,6 @@ namespace AudioGuideAPI.Models
         [MaxLength(2000)]
         public string? Description { get; set; }
 
-        [MaxLength(2000)]
-        public string? TtsScript { get; set; }
 
         [MaxLength(500)]
         public string? Specialty { get; set; }

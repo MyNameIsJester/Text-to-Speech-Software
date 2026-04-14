@@ -198,7 +198,6 @@ namespace AudioGuideAdmin.Controllers
                     DisplayName = viLanguage.DisplayName,
                     Name = viTranslation?.Name ?? "",
                     Description = viTranslation?.Description,
-                    TtsScript = viTranslation?.TtsScript,
                     Specialty = viTranslation?.Specialty,
                     AudioUrl = viTranslation?.AudioUrl
                 },
@@ -211,7 +210,6 @@ namespace AudioGuideAdmin.Controllers
                     DisplayName = enLanguage.DisplayName,
                     Name = enTranslation?.Name ?? "",
                     Description = enTranslation?.Description,
-                    TtsScript = enTranslation?.TtsScript,
                     Specialty = enTranslation?.Specialty,
                     AudioUrl = enTranslation?.AudioUrl
                 }
@@ -260,7 +258,6 @@ namespace AudioGuideAdmin.Controllers
 
             translation.Name = input.Name?.Trim() ?? "";
             translation.Description = input.Description?.Trim();
-            translation.TtsScript = input.TtsScript?.Trim();
             translation.Specialty = input.Specialty?.Trim();
             translation.AudioUrl = string.IsNullOrWhiteSpace(input.AudioUrl)
                 ? null

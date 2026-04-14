@@ -53,7 +53,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Ốc Nướng Mỡ Hành",
                     Description = "Đây là một điểm dừng nổi bật trên phố ẩm thực Vĩnh Khánh. Quán được nhiều thực khách yêu thích nhờ các món ốc nướng thơm mùi mỡ hành, đậu phộng và nước chấm đậm đà. Không gian buổi tối thường nhộn nhịp, phù hợp với những ai muốn trải nghiệm ẩm thực đường phố Sài Gòn.",
-                    TtsScript = "Bạn đang đến quán Ốc Nướng Mỡ Hành, một điểm dừng nổi bật trên phố ẩm thực Vĩnh Khánh. Quán được nhiều thực khách yêu thích nhờ các món ốc nướng thơm mùi mỡ hành, đậu phộng và nước chấm đậm đà. Không gian buổi tối ở đây thường rất nhộn nhịp và phù hợp để trải nghiệm ẩm thực đường phố Sài Gòn.",
                     Specialty = "Ốc nướng mỡ hành, sò điệp nướng, nghêu hấp sả",
                     AudioUrl = null
                 });
@@ -63,7 +62,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Grilled Seafood Stall",
                     Description = "This is one of the notable stops on Vinh Khanh food street. The stall is popular for its grilled shellfish topped with scallion oil, peanuts, and rich dipping sauce. In the evening, the area becomes lively and gives visitors a clear taste of Saigon street food culture.",
-                    TtsScript = "You are arriving at the Grilled Seafood Stall, one of the notable stops on Vinh Khanh food street. The stall is popular for grilled shellfish topped with scallion oil, peanuts, and rich dipping sauce. In the evening, the area becomes lively and gives visitors a clear taste of Saigon street food culture.",
                     Specialty = "Grilled snails with scallion oil, grilled scallops, steamed clams with lemongrass",
                     AudioUrl = null
                 });
@@ -86,7 +84,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Càng Cúm Rang Me",
                     Description = "Quán này nổi bật với hương vị chua ngọt đặc trưng của các món sốt me. Càng cúm rang me là món được nhiều người gọi thử khi ghé khu Vĩnh Khánh lần đầu. Món ăn có vị đậm, thơm và rất phù hợp để thưởng thức cùng bạn bè vào buổi tối.",
-                    TtsScript = "Bạn đang đến quán Càng Cúm Rang Me. Quán nổi bật với hương vị chua ngọt đặc trưng của các món sốt me. Càng cúm rang me là món được nhiều người gọi thử khi ghé khu Vĩnh Khánh lần đầu. Món ăn có vị đậm, thơm và rất phù hợp để thưởng thức cùng bạn bè vào buổi tối.",
                     Specialty = "Càng cúm rang me, tôm nướng, cua sốt me",
                     AudioUrl = null
                 });
@@ -96,7 +93,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Tamarind Crab Claw Stall",
                     Description = "This stall is known for seafood dishes cooked in tamarind sauce. Tamarind crab claws are often chosen by first-time visitors to Vinh Khanh Street. The flavor is rich, slightly sweet and sour, and works well for a casual evening meal with friends.",
-                    TtsScript = "You are arriving at the Tamarind Crab Claw Stall. This stall is known for seafood dishes cooked in tamarind sauce. Tamarind crab claws are often chosen by first-time visitors to Vinh Khanh Street. The flavor is rich, slightly sweet and sour, and works well for a casual evening meal with friends.",
                     Specialty = "Tamarind crab claws, grilled prawns, crab in tamarind sauce",
                     AudioUrl = null
                 });
@@ -119,7 +115,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Hàu Nướng Phô Mai",
                     Description = "Đây là một quán quen thuộc với nhiều bạn trẻ khi ghé phố ẩm thực Vĩnh Khánh. Các món hàu nướng có vị béo, thơm và dễ ăn, đặc biệt phù hợp với không khí buổi tối. Nếu muốn thử một món hải sản phổ biến và dễ thưởng thức, đây là lựa chọn đáng cân nhắc.",
-                    TtsScript = "Bạn đang đến quán Hàu Nướng Phô Mai, một điểm dừng quen thuộc với nhiều bạn trẻ khi ghé phố ẩm thực Vĩnh Khánh. Các món hàu nướng ở đây có vị béo, thơm và dễ ăn, đặc biệt phù hợp với không khí buổi tối. Nếu muốn thử một món hải sản phổ biến và dễ thưởng thức, đây là lựa chọn đáng cân nhắc.",
                     Specialty = "Hàu nướng phô mai, hàu nướng trứng cút, sò lông nướng",
                     AudioUrl = null
                 });
@@ -129,7 +124,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Cheese-Grilled Oyster Stall",
                     Description = "This is a familiar stop for many young visitors on Vinh Khanh food street. The grilled oyster dishes are rich, creamy, and easy to enjoy, especially at night. If you want to try a popular and approachable seafood dish, this stall is a good choice.",
-                    TtsScript = "You are arriving at the Cheese-Grilled Oyster Stall, a familiar stop for many young visitors on Vinh Khanh food street. The grilled oyster dishes are rich, creamy, and easy to enjoy, especially at night. If you want to try a popular and approachable seafood dish, this stall is a good choice.",
                     Specialty = "Cheese-grilled oysters, quail egg oysters, grilled blood cockles",
                     AudioUrl = null
                 });
@@ -152,7 +146,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Bạch Tuộc Nướng Sa Tế",
                     Description = "Quán thu hút thực khách nhờ mùi thơm đặc trưng của hải sản nướng trên bếp than. Bạch tuộc nướng sa tế có vị cay nhẹ, thơm và đậm đà, thường được gọi nhiều vào giờ cao điểm buổi tối. Đây là lựa chọn phù hợp cho những ai thích món nướng có hương vị mạnh.",
-                    TtsScript = "Bạn đang đến quán Bạch Tuộc Nướng Sa Tế. Quán thu hút thực khách nhờ mùi thơm đặc trưng của hải sản nướng trên bếp than. Bạch tuộc nướng sa tế có vị cay nhẹ, thơm và đậm đà, thường được gọi nhiều vào giờ cao điểm buổi tối. Đây là lựa chọn phù hợp cho những ai thích món nướng có hương vị mạnh.",
                     Specialty = "Bạch tuộc nướng sa tế, mực nướng, tôm nướng muối ớt",
                     AudioUrl = null
                 });
@@ -162,7 +155,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Spicy Grilled Octopus Stall",
                     Description = "This stall attracts diners with the smoky aroma of seafood grilled over charcoal. The spicy grilled octopus has a light heat, a fragrant smell, and a bold flavor that makes it popular in the evening. It is a good option for visitors who enjoy stronger grilled dishes.",
-                    TtsScript = "You are arriving at the Spicy Grilled Octopus Stall. This stall attracts diners with the smoky aroma of seafood grilled over charcoal. The spicy grilled octopus has a light heat, a fragrant smell, and a bold flavor that makes it popular in the evening. It is a good option for visitors who enjoy stronger grilled dishes.",
                     Specialty = "Spicy grilled octopus, grilled squid, chili salt prawns",
                     AudioUrl = null
                 });
@@ -185,7 +177,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = vi.Id,
                     Name = "Quán Sò Điệp Nướng",
                     Description = "Quán nổi bật với các món sò điệp nướng được trình bày bắt mắt và có hương vị dễ ăn. Mỡ hành, phô mai và các loại sốt giúp món ăn trở nên thơm béo và hấp dẫn hơn. Đây là điểm dừng phù hợp nếu bạn muốn thử hải sản nướng theo phong cách quen thuộc của khu Vĩnh Khánh.",
-                    TtsScript = "Bạn đang đến quán Sò Điệp Nướng. Quán nổi bật với các món sò điệp nướng được trình bày bắt mắt và có hương vị dễ ăn. Mỡ hành, phô mai và các loại sốt giúp món ăn trở nên thơm béo và hấp dẫn hơn. Đây là điểm dừng phù hợp nếu bạn muốn thử hải sản nướng theo phong cách quen thuộc của khu Vĩnh Khánh.",
                     Specialty = "Sò điệp nướng mỡ hành, sò điệp phô mai, nghêu nướng",
                     AudioUrl = null
                 });
@@ -195,7 +186,6 @@ namespace AudioGuideAPI.Database
                     LanguageId = en.Id,
                     Name = "Grilled Scallop Stall",
                     Description = "This stall is known for grilled scallop dishes that are both visually appealing and easy to enjoy. Toppings such as scallion oil, cheese, and savory sauces make the dishes richer and more flavorful. It is a suitable stop if you want to explore the familiar grilled seafood style of Vinh Khanh Street.",
-                    TtsScript = "You are arriving at the Grilled Scallop Stall. This stall is known for grilled scallop dishes that are both visually appealing and easy to enjoy. Toppings such as scallion oil, cheese, and savory sauces make the dishes richer and more flavorful. It is a suitable stop if you want to explore the familiar grilled seafood style of Vinh Khanh Street.",
                     Specialty = "Grilled scallops with scallion oil, cheese scallops, grilled clams",
                     AudioUrl = null
                 });

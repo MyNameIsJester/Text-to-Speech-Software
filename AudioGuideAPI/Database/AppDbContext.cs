@@ -74,9 +74,6 @@ namespace AudioGuideAPI.Database
                 entity.Property(x => x.Description)
                        .HasMaxLength(2000);
 
-                entity.Property(x => x.TtsScript)
-                      .HasMaxLength(2000);
-
                 entity.Property(x => x.Specialty)
                       .HasMaxLength(500);
 

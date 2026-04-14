@@ -57,7 +57,7 @@ namespace AudioGuideAPI.Controllers
                 language = translation.Language.LanguageCode,
                 name = translation.Name,
                 description = translation.Description,
-                ttsScript = translation.TtsScript,
+                ttsScript = translation.Description,
                 specialty = translation.Specialty,
                 audioUrl = translation.AudioUrl,
                 latitude = foodStall.Latitude,
