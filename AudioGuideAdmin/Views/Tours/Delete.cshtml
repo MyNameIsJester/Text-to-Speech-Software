@@ -1,0 +1,66 @@
+﻿@model AudioGuideAPI.Models.Tour
+
+@{
+    ViewData["Title"] = "Delete Tour";
+    var vi = Model.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi");
+    var en = Model.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-danger">Delete Tour</h2>
+        <p class="text-muted mb-0">This action will remove the tour, its translations, and its tour stops.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="alert alert-warning">
+    <strong>Warning:</strong> Are you sure you want to delete this tour?
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="mb-3">
+            <strong>Name (VI):</strong>
+            <div>@(vi?.Name ?? "-")</div>
+        </div>
+
+        <div class="mb-3">
+            <strong>Name (EN):</strong>
+            <div>@(en?.Name ?? "-")</div>
+        </div>
+
+        <div class="mb-3">
+            <strong>Description (VI):</strong>
+            <div>@(vi?.Description ?? "-")</div>
+        </div>
+
+        <div class="mb-3">
+            <strong>Description (EN):</strong>
+            <div>@(en?.Description ?? "-")</div>
+        </div>
+
+        <div class="mb-3">
+            <strong>Stops Count:</strong>
+            <div>@Model.TourItems.Count</div>
+        </div>
+
+        <div>
+            <strong>Status:</strong>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">Active</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Inactive</span>
+            }
+        </div>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="d-flex gap-2">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

@@ -1,0 +1,202 @@
+﻿@model AudioGuideAdmin.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Dashboard</h2>
+        <p class="text-muted mb-0">System overview for Audio Guide Phố Ẩm Thực Vĩnh Khánh.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Food Stalls</div>
+                <div class="fs-4 fw-semibold">@Model.TotalFoodStalls</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Active Stalls</div>
+                <div class="fs-4 fw-semibold text-success">@Model.ActiveFoodStalls</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Playback Logs</div>
+                <div class="fs-4 fw-semibold">@Model.TotalPlaybackLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">QR Mappings</div>
+                <div class="fs-4 fw-semibold">@Model.TotalQrMappings</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Tours</div>
+                <div class="fs-4 fw-semibold">@Model.TotalTours</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">GPS Logs</div>
+                <div class="fs-4 fw-semibold text-primary">@Model.GpsLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">QR Logs</div>
+                <div class="fs-4 fw-semibold text-warning">@Model.QrLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">VI Logs</div>
+                <div class="fs-4 fw-semibold">@Model.ViLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">EN Logs</div>
+                <div class="fs-4 fw-semibold">@Model.EnLogs</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Recent Playback Logs</strong>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 70px;">Id</th>
+                                <th style="width: 90px;">Stall Id</th>
+                                <th>Address</th>
+                                <th style="width: 90px;">Lang</th>
+                                <th style="width: 100px;">Trigger</th>
+                                <th style="width: 180px;">Played At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.RecentPlaybackLogs.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        No playback logs found.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in Model.RecentPlaybackLogs)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td>@item.FoodStallId</td>
+                                        <td>@item.FoodStallAddress</td>
+                                        <td>@item.LanguageCode</td>
+                                        <td>
+                                            @if (item.TriggerType == "GPS")
+                                            {
+                                                <span class="badge bg-primary">GPS</span>
+                                            }
+                                            else if (item.TriggerType == "QR")
+                                            {
+                                                <span class="badge bg-warning text-dark">QR</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@item.TriggerType</span>
+                                            }
+                                        </td>
+                                        <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Top Food Stalls by Playback</strong>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 90px;">Stall Id</th>
+                                <th>Address</th>
+                                <th style="width: 110px;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.TopFoodStalls.Any())
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        No playback data found.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in Model.TopFoodStalls)
+                                {
+                                    <tr>
+                                        <td>@item.FoodStallId</td>
+                                        <td>@item.FoodStallAddress</td>
+                                        <td>@item.PlaybackCount</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

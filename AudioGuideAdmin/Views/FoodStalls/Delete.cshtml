@@ -1,0 +1,86 @@
+﻿@model AudioGuideAPI.Models.FoodStall
+
+@{
+    ViewData["Title"] = "Delete Food Stall";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-danger">Delete Food Stall</h2>
+        <p class="text-muted mb-0">This action will remove the food stall and its translations.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="alert alert-warning">
+    <strong>Warning:</strong> Are you sure you want to delete this food stall?
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <strong>Food Stall Information</strong>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <strong>Id</strong>
+                <div>@Model.Id</div>
+            </div>
+
+            <div class="col-md-9">
+                <strong>Address</strong>
+                <div>@(Model.Address ?? "-")</div>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Latitude</strong>
+                <div>@Model.Latitude</div>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Longitude</strong>
+                <div>@Model.Longitude</div>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Radius</strong>
+                <div>@Model.Radius</div>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Priority</strong>
+                <div>@Model.Priority</div>
+            </div>
+
+            <div class="col-md-6">
+                <strong>Price Range</strong>
+                <div>@(Model.PriceRange ?? "-")</div>
+            </div>
+
+            <div class="col-md-6">
+                <strong>Status</strong>
+                <div>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12">
+                <strong>Map Link</strong>
+                <div>@(Model.MapLink ?? "-")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="d-flex gap-2">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

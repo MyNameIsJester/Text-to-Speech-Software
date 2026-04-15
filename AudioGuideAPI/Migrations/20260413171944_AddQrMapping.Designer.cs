@@ -3,6 +3,7 @@ using System;
 using AudioGuideAPI.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AudioGuideAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413171944_AddQrMapping")]
+    partial class AddQrMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -86,6 +89,10 @@ namespace AudioGuideAPI.Migrations
 
                     b.Property<string>("Specialty")
                         .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TtsScript")
+                        .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -192,76 +199,6 @@ namespace AudioGuideAPI.Migrations
                     b.ToTable("QrMappings");
                 });
 
-            modelBuilder.Entity("AudioGuideAPI.Models.Tour", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Tours");
-                });
-
-            modelBuilder.Entity("AudioGuideAPI.Models.TourItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("FoodStallId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TourId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FoodStallId");
-
-                    b.HasIndex("TourId", "FoodStallId")
-                        .IsUnique();
-
-                    b.ToTable("TourItems");
-                });
-
-            modelBuilder.Entity("AudioGuideAPI.Models.TourTranslation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("LanguageId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("TourId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LanguageId");
-
-                    b.HasIndex("TourId", "LanguageId")
-                        .IsUnique();
-
-                    b.ToTable("TourTranslations");
-                });
-
             modelBuilder.Entity("AudioGuideAPI.Models.FoodStallTranslation", b =>
                 {
                     b.HasOne("AudioGuideAPI.Models.FoodStall", "FoodStall")
@@ -303,44 +240,6 @@ namespace AudioGuideAPI.Migrations
                     b.Navigation("FoodStall");
                 });
 
-            modelBuilder.Entity("AudioGuideAPI.Models.TourItem", b =>
-                {
-                    b.HasOne("AudioGuideAPI.Models.FoodStall", "FoodStall")
-                        .WithMany()
-                        .HasForeignKey("FoodStallId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AudioGuideAPI.Models.Tour", "Tour")
-                        .WithMany("TourItems")
-                        .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FoodStall");
-
-                    b.Navigation("Tour");
-                });
-
-            modelBuilder.Entity("AudioGuideAPI.Models.TourTranslation", b =>
-                {
-                    b.HasOne("AudioGuideAPI.Models.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AudioGuideAPI.Models.Tour", "Tour")
-                        .WithMany("Translations")
-                        .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Language");
-
-                    b.Navigation("Tour");
-                });
-
             modelBuilder.Entity("AudioGuideAPI.Models.FoodStall", b =>
                 {
                     b.Navigation("Translations");
@@ -349,13 +248,6 @@ namespace AudioGuideAPI.Migrations
             modelBuilder.Entity("AudioGuideAPI.Models.Language", b =>
                 {
                     b.Navigation("FoodStallTranslations");
-                });
-
-            modelBuilder.Entity("AudioGuideAPI.Models.Tour", b =>
-                {
-                    b.Navigation("TourItems");
-
-                    b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618
         }
