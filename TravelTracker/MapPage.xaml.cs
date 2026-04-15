@@ -17,6 +17,7 @@ namespace TravelTracker;
 public partial class MapPage : ContentPage, IQueryAttributable
 {
     private FoodStall _targetStall;
+    private Tour _selectedTour;
     private readonly ApiService _apiService;
     private readonly GeofenceService _geofenceService;
     private IDispatcherTimer _locationTimer;
@@ -48,7 +49,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
             {
                 string action = await DisplayActionSheet(
                     $"{clickedStall.Name}\n{clickedStall.Specialty}",
-                    "Đóng bản đồ", 
+                    "Đóng bản đồ",
                     null,
                     "🌟 Xem chi tiết quán 🌟"
                 );
@@ -71,7 +72,14 @@ public partial class MapPage : ContentPage, IQueryAttributable
         if (query.ContainsKey("TargetStall") && query["TargetStall"] is FoodStall stall)
         {
             _targetStall = stall;
+            _selectedTour = null;
             Title = _targetStall.Name;
+        }
+        else if (query.ContainsKey("SelectedTour") && query["SelectedTour"] is Tour tour)
+        {
+            _selectedTour = tour;
+            _targetStall = null;
+            Title = _selectedTour.Name;
         }
     }
 
@@ -81,7 +89,7 @@ public partial class MapPage : ContentPage, IQueryAttributable
 
         DeviceDisplay.Current.KeepScreenOn = true;
 
-        var existingLayer = mapView.Map.Layers.FirstOrDefault(l => l.Name == "RouteLayer");
+        var existingLayer = mapView.Map.Layers.FirstOrDefault(l => l.Name == "RouteLayer" || l.Name == "TourRouteLayer");
         if (existingLayer != null)
         {
             mapView.Map.Layers.Remove(existingLayer);
@@ -102,7 +110,11 @@ public partial class MapPage : ContentPage, IQueryAttributable
 
         LoadMap(_cachedStalls, myLocation);
 
-        if (_targetStall != null && myLocation != null)
+        if (_selectedTour != null)
+        {
+            await DrawTourRouteAsync(_selectedTour);
+        }
+        else if (_targetStall != null && myLocation != null)
         {
             await DrawRouteAsync(myLocation.Latitude, myLocation.Longitude, _targetStall.Latitude, _targetStall.Longitude);
         }
@@ -114,9 +126,11 @@ public partial class MapPage : ContentPage, IQueryAttributable
     {
         base.OnDisappearing();
         _targetStall = null;
+        _selectedTour = null;
         _locationTimer.Stop();
 
         DeviceDisplay.Current.KeepScreenOn = false;
+        _geofenceService.CancelCurrentAudio();
     }
 
     private async void OnLocationTimerTicked(object sender, EventArgs e)
@@ -128,7 +142,10 @@ public partial class MapPage : ContentPage, IQueryAttributable
             if (myLocation != null && _cachedStalls != null)
             {
                 UpdateUserPinOnMap(myLocation);
-                await _geofenceService.CheckAndTriggerAudioAsync(myLocation, _cachedStalls);
+
+                string currentLang = Preferences.Get("CurrentLanguage", "vi");
+
+                await _geofenceService.CheckAndTriggerAudioAsync(myLocation, _cachedStalls, currentLang, _apiService);
             }
         }
         catch (Exception ex)
@@ -167,13 +184,16 @@ public partial class MapPage : ContentPage, IQueryAttributable
 
         foreach (var stall in allStalls)
         {
+            bool isTarget = (_targetStall != null && stall.Name == _targetStall.Name) ||
+                            (_selectedTour != null && _selectedTour.TourItems.Any(ti => ti.FoodStallId == stall.Id));
+
             var pin = new Pin(mapView)
             {
                 Position = new Mapsui.UI.Maui.Position(stall.Latitude, stall.Longitude),
                 Label = stall.Name,
                 Address = stall.Specialty,
                 Type = PinType.Pin,
-                Color = (_targetStall != null && stall.Name == _targetStall.Name) ? Colors.Orange : Colors.Red,
+                Color = isTarget ? Colors.Orange : Colors.Red,
                 Scale = 0.7f,
                 Tag = stall
             };
@@ -231,6 +251,53 @@ public partial class MapPage : ContentPage, IQueryAttributable
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"LỖI VẼ ĐƯỜNG: {ex.Message}");
+        }
+    }
+
+    private async Task DrawTourRouteAsync(Tour tour)
+    {
+        try
+        {
+            if (tour?.TourItems == null || !tour.TourItems.Any()) return;
+
+            var points = new List<Microsoft.Maui.Devices.Sensors.Location>();
+            foreach (var item in tour.TourItems.OrderBy(ti => ti.OrderIndex))
+            {
+                if (item.FoodStall != null)
+                {
+                    points.Add(new Microsoft.Maui.Devices.Sensors.Location(item.FoodStall.Latitude, item.FoodStall.Longitude));
+                }
+            }
+
+            if (points.Count < 2) return;
+
+            var routeLocations = await _apiService.GetRouteAsync(points);
+            if (routeLocations == null || !routeLocations.Any()) return;
+
+            var linePoints = new List<Coordinate>();
+            foreach (var loc in routeLocations)
+            {
+                var spherical = SphericalMercator.FromLonLat(loc.Longitude, loc.Latitude);
+                linePoints.Add(new Coordinate(spherical.x, spherical.y));
+            }
+
+            var feature = new GeometryFeature(new LineString(linePoints.ToArray()));
+            feature.Styles.Add(new VectorStyle
+            {
+                Line = new Mapsui.Styles.Pen { Color = Mapsui.Styles.Color.FromString("#FF5722"), Width = 6 }
+            });
+
+            mapView.Map.Layers.Add(new MemoryLayer { Name = "TourRouteLayer", Features = new[] { feature } });
+
+            var firstStop = points.First();
+            var centerPosition = SphericalMercator.FromLonLat(firstStop.Longitude, firstStop.Latitude);
+            mapView.Map.Navigator.CenterOnAndZoomTo(new MPoint(centerPosition.x, centerPosition.y), 1.5);
+
+            mapView.RefreshGraphics();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LỖI VẼ TOUR: {ex.Message}");
         }
     }
 }

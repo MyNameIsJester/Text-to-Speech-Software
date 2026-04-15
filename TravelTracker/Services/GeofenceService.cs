@@ -6,50 +6,63 @@ namespace TravelTracker.Services;
 public class GeofenceService
 {
     private HashSet<int> _playedStallIds = new HashSet<int>();
-    private bool _isSpeaking = false;
+    private CancellationTokenSource _ttsCancellationTokenSource;
 
-    public async Task CheckAndTriggerAudioAsync(Location userLocation, List<FoodStall> stalls)
+    public async Task CheckAndTriggerAudioAsync(Location userLocation, List<FoodStall> stalls, string currentLang, ApiService apiService)
     {
-        if (_isSpeaking || userLocation == null || stalls == null) return;
+        if (userLocation == null || stalls == null) return;
 
-        foreach (var stall in stalls)
+        var targetStall = stalls
+            .Where(s => !_playedStallIds.Contains(s.Id))
+            .Select(s => new { Stall = s, Distance = Location.CalculateDistance(userLocation, new Location(s.Latitude, s.Longitude), DistanceUnits.Kilometers) * 1000 })
+            .Where(x => x.Distance <= x.Stall.Radius)
+            .OrderByDescending(x => x.Stall.Priority)
+            .Select(x => x.Stall)
+            .FirstOrDefault();
+
+        if (targetStall != null)
         {
-            var stallLocation = new Location(stall.Latitude, stall.Longitude);
+            _playedStallIds.Add(targetStall.Id);
 
-            double distanceInMeters = Location.CalculateDistance(userLocation, stallLocation, DistanceUnits.Kilometers) * 1000;
+            CancelCurrentAudio();
 
-            if (distanceInMeters <= stall.Radius && !_playedStallIds.Contains(stall.Id))
-            {
-                _playedStallIds.Add(stall.Id);
-
-                await TriggerTTSAsync(stall);
-
-                break;
-            }
+            await TriggerTTSAsync(targetStall, currentLang, apiService);
         }
     }
 
-    private async Task TriggerTTSAsync(FoodStall stall)
+    private async Task TriggerTTSAsync(FoodStall stall, string langCode, ApiService apiService)
     {
-        _isSpeaking = true;
+        _ttsCancellationTokenSource = new CancellationTokenSource();
+
         try
         {
-            string textToRead = $"Bạn đang ở gần {stall.Name}. {stall.Specialty}. {stall.Description}";
+            string textToRead = stall.Description;
+            if (string.IsNullOrWhiteSpace(textToRead)) textToRead = $"Bạn đang ở gần {stall.Name}.";
 
-            await TextToSpeech.Default.SpeakAsync(textToRead);
+            int words = textToRead.Split(' ').Length;
+            int duration = (words / 3) + 2;
+
+            _ = apiService.SendPlaybackLogAsync(stall.Id, langCode, "GPS", duration);
+
+            await TextToSpeech.Default.SpeakAsync(textToRead, cancelToken: _ttsCancellationTokenSource.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AUDIO INTERRUPTED] Đã cắt ngang audio cũ để phát audio mới.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Lỗi TTS: {ex.Message}");
-        }
-        finally
-        {
-            _isSpeaking = false;
+            System.Diagnostics.Debug.WriteLine($"Lỗi TTS: {ex.Message}");
         }
     }
 
-    public void ResetHistory()
+    public void CancelCurrentAudio()
     {
-        _playedStallIds.Clear();
+        if (_ttsCancellationTokenSource != null && !_ttsCancellationTokenSource.IsCancellationRequested)
+        {
+            _ttsCancellationTokenSource.Cancel();
+        }
     }
+
+    public void ResetHistory() => _playedStallIds.Clear();
 }
