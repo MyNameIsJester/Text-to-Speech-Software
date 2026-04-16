@@ -293,6 +293,15 @@ public partial class MainPage : ContentPage
             lblProgressPercent.Text = "0%";
         }
     }
+    private void OnShowQrClicked(object sender, EventArgs e)
+    {
+        QrOverlay.IsVisible = true;
+    }
+
+    private void OnCloseQrClicked(object sender, EventArgs e)
+    {
+        QrOverlay.IsVisible = false;
+    }
 
     protected override void OnDisappearing()
     {
