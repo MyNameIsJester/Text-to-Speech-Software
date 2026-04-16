@@ -4,24 +4,95 @@
     ViewData["Title"] = "Edit Translations";
 }
 
+<style>
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    .translation-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+        .translation-card .card-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 1.25rem;
+        }
+
+    .lang-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+    }
+
+    .lang-chip-vi {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .lang-chip-en {
+        background: #f3f4f6;
+        color: #495057;
+    }
+
+    .section-note {
+        color: #6c757d;
+        font-size: 0.92rem;
+    }
+
+    .meta-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+    }
+
+    .field-note {
+        font-size: 0.82rem;
+        color: #6c757d;
+        margin-top: 0.35rem;
+    }
+
+    .text-area-lg {
+        min-height: 140px;
+    }
+
+    .sticky-actions {
+        position: sticky;
+        bottom: 0;
+        background: rgba(248, 249, 250, 0.95);
+        backdrop-filter: blur(4px);
+        padding-top: 1rem;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">Edit Translations</h2>
-        <p class="text-muted mb-0">Manage display content and TTS content for this food stall.</p>
+        <p class="page-subtitle">Manage multilingual content for this food stall.</p>
     </div>
+
     <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
 </div>
 
-<div class="card shadow-sm mb-4">
+<div class="card meta-card mb-4">
     <div class="card-body">
         <div class="row g-3">
             <div class="col-md-3">
-                <strong>Food Stall ID</strong>
-                <div>@Model.FoodStallId</div>
+                <div class="text-muted small">Food Stall ID</div>
+                <div class="fw-semibold">@Model.FoodStallId</div>
             </div>
+
             <div class="col-md-9">
-                <strong>Address</strong>
-                <div>@Model.StallAddress</div>
+                <div class="text-muted small">Address</div>
+                <div class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.StallAddress) ? "No address" : Model.StallAddress)</div>
             </div>
         </div>
     </div>
@@ -29,82 +100,112 @@
 
 <form asp-action="EditTranslations" method="post">
     <input type="hidden" asp-for="FoodStallId" />
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <strong>@Model.Vietnamese.DisplayName (@Model.Vietnamese.LanguageCode)</strong>
+    <div class="card translation-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <div class="lang-chip lang-chip-vi">VI • @Model.Vietnamese.DisplayName</div>
+            </div>
+            <div class="section-note">Vietnamese content shown in app and used for TTS reading.</div>
         </div>
+
         <div class="card-body">
             <input type="hidden" asp-for="Vietnamese.TranslationId" />
             <input type="hidden" asp-for="Vietnamese.LanguageId" />
             <input type="hidden" asp-for="Vietnamese.LanguageCode" />
             <input type="hidden" asp-for="Vietnamese.DisplayName" />
 
-            <div class="row g-3">
-                <div class="col-12">
-                    <label asp-for="Vietnamese.Name" class="form-label"></label>
-                    <input asp-for="Vietnamese.Name" class="form-control" />
-                </div>
-
-                <div class="col-12">
-                    <label asp-for="Vietnamese.Description" class="form-label"></label>
-                    <textarea asp-for="Vietnamese.Description" class="form-control" rows="4"></textarea>
-                    <div class="form-text">Content shown to users on the app/admin UI.</div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label asp-for="Vietnamese.Name" class="form-label fw-semibold"></label>
+                    <input asp-for="Vietnamese.Name" class="form-control" placeholder="Enter Vietnamese stall name" />
+                    <span asp-validation-for="Vietnamese.Name" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="Vietnamese.Specialty" class="form-label"></label>
-                    <input asp-for="Vietnamese.Specialty" class="form-control" />
+                    <label asp-for="Vietnamese.Specialty" class="form-label fw-semibold"></label>
+                    <input asp-for="Vietnamese.Specialty" class="form-control" placeholder="Example: Grilled snails, scallops..." />
+                    <span asp-validation-for="Vietnamese.Specialty" class="text-danger"></span>
                 </div>
 
-                <div class="col-md-6">
-                    <label asp-for="Vietnamese.AudioUrl" class="form-label"></label>
-                    <input asp-for="Vietnamese.AudioUrl" class="form-control" />
-                    <div class="form-text">Optional. Leave empty if using TTS only.</div>
+                <div class="col-12">
+                    <label asp-for="Vietnamese.Description" class="form-label fw-semibold"></label>
+                    <textarea asp-for="Vietnamese.Description"
+                              class="form-control text-area-lg"
+                              placeholder="Write the Vietnamese description shown in app and used for Text-to-Speech."></textarea>
+                    <div class="field-note">
+                        This description is used both for display in the app and for TTS playback.
+                    </div>
+                    <span asp-validation-for="Vietnamese.Description" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Vietnamese.AudioUrl" class="form-label fw-semibold"></label>
+                    <input asp-for="Vietnamese.AudioUrl" class="form-control" placeholder="Optional audio file URL" />
+                    <div class="field-note">
+                        Optional. Leave empty if the app will read the description with TTS.
+                    </div>
+                    <span asp-validation-for="Vietnamese.AudioUrl" class="text-danger"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <strong>@Model.English.DisplayName (@Model.English.LanguageCode)</strong>
+    <div class="card translation-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <div class="lang-chip lang-chip-en">EN • @Model.English.DisplayName</div>
+            </div>
+            <div class="section-note">English content shown in app and used for TTS reading.</div>
         </div>
+
         <div class="card-body">
             <input type="hidden" asp-for="English.TranslationId" />
             <input type="hidden" asp-for="English.LanguageId" />
             <input type="hidden" asp-for="English.LanguageCode" />
             <input type="hidden" asp-for="English.DisplayName" />
 
-            <div class="row g-3">
-                <div class="col-12">
-                    <label asp-for="English.Name" class="form-label"></label>
-                    <input asp-for="English.Name" class="form-control" />
-                </div>
-
-                <div class="col-12">
-                    <label asp-for="English.Description" class="form-label"></label>
-                    <textarea asp-for="English.Description" class="form-control" rows="4"></textarea>
-                    <div class="form-text">Content shown to users on the app/admin UI.</div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label asp-for="English.Name" class="form-label fw-semibold"></label>
+                    <input asp-for="English.Name" class="form-control" placeholder="Enter English stall name" />
+                    <span asp-validation-for="English.Name" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="English.Specialty" class="form-label"></label>
-                    <input asp-for="English.Specialty" class="form-control" />
+                    <label asp-for="English.Specialty" class="form-label fw-semibold"></label>
+                    <input asp-for="English.Specialty" class="form-control" placeholder="Example: Grilled seafood, scallops..." />
+                    <span asp-validation-for="English.Specialty" class="text-danger"></span>
                 </div>
 
-                <div class="col-md-6">
-                    <label asp-for="English.AudioUrl" class="form-label"></label>
-                    <input asp-for="English.AudioUrl" class="form-control" />
-                    <div class="form-text">Optional. Leave empty if using TTS only.</div>
+                <div class="col-12">
+                    <label asp-for="English.Description" class="form-label fw-semibold"></label>
+                    <textarea asp-for="English.Description"
+                              class="form-control text-area-lg"
+                              placeholder="Write the English description shown in app and used for Text-to-Speech."></textarea>
+                    <div class="field-note">
+                        This description is used both for display in the app and for TTS playback.
+                    </div>
+                    <span asp-validation-for="English.Description" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="English.AudioUrl" class="form-label fw-semibold"></label>
+                    <input asp-for="English.AudioUrl" class="form-control" placeholder="Optional audio file URL" />
+                    <div class="field-note">
+                        Optional. Leave empty if the app will read the description with TTS.
+                    </div>
+                    <span asp-validation-for="English.AudioUrl" class="text-danger"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Save Translations</button>
-        <a asp-action="Edit" asp-route-id="@Model.FoodStallId" class="btn btn-warning">Edit Base</a>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <div class="sticky-actions">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">Save Translations</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
     </div>
 </form>

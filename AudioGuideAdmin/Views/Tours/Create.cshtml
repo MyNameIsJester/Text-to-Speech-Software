@@ -6,10 +6,220 @@
                            ?? Enumerable.Empty<AudioGuideAdmin.Controllers.ToursController.FoodStallOptionViewModel>();
 }
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+
+<style>
+    .tour-page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    .tour-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    .tour-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+
+    .lang-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+    }
+
+    .lang-chip-vi {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .lang-chip-en {
+        background: #f3f4f6;
+        color: #495057;
+    }
+
+    .tour-map-panel {
+        position: sticky;
+        top: 1.5rem;
+    }
+
+    .tour-map-box {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .tour-map-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .tour-map-title {
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .tour-map-subtitle {
+        color: #6c757d;
+        font-size: 0.92rem;
+        margin-bottom: 0;
+    }
+
+    #tourMap {
+        height: 520px;
+        width: 100%;
+    }
+
+    .tour-map-note {
+        padding: 0.9rem 1.25rem;
+        border-top: 1px solid #e9ecef;
+        background: #fafbfc;
+        color: #6c757d;
+        font-size: 0.88rem;
+    }
+
+    .tour-stop {
+        border: 1px solid #e9ecef;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #fff;
+    }
+
+    .tour-stop-number {
+        font-weight: 700;
+    }
+
+    .stop-help-text {
+        font-size: 0.82rem;
+        color: #6c757d;
+        margin-top: 0.35rem;
+    }
+
+    .sticky-actions {
+        position: sticky;
+        bottom: 0;
+        background: rgba(248, 249, 250, 0.95);
+        backdrop-filter: blur(4px);
+        padding-top: 1rem;
+    }
+
+    .map-empty-overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: rgba(255,255,255,0.78);
+        padding: 1rem;
+        z-index: 500;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .map-wrapper {
+        position: relative;
+    }
+
+    .tour-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #212529;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 2px solid #fff;
+        box-shadow: 0 0.125rem 0.4rem rgba(0,0,0,0.25);
+    }
+
+    .route-list {
+        padding: 1rem 1.25rem 1.1rem;
+        border-top: 1px solid #e9ecef;
+        background: #fff;
+    }
+
+    .route-list-title {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .route-list-empty {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .route-list-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .route-list-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .route-list-badge {
+        min-width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: #212529;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .route-list-name {
+        font-weight: 600;
+        color: #212529;
+        line-height: 1.35;
+    }
+
+    .route-list-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    @@media (max-width: 991.98px) {
+        .tour-map-panel {
+            position: static;
+        }
+
+        #tourMap {
+            height: 420px;
+        }
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">Create Tour</h2>
-        <p class="text-muted mb-0">Create a multilingual tour and assign food stalls by order.</p>
+        <p class="tour-page-subtitle">Create multilingual tour information, stops, and preview the route in real time.</p>
     </div>
     <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
 </div>
@@ -17,76 +227,120 @@
 <form asp-action="Create" method="post">
     <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header"><strong>Tour Base</strong></div>
-        <div class="card-body">
-            <div class="form-check">
-                <input asp-for="IsActive" class="form-check-input" />
-                <label asp-for="IsActive" class="form-check-label"></label>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-header"><strong>@Model.Vietnamese.DisplayName (@Model.Vietnamese.LanguageCode)</strong></div>
-        <div class="card-body">
-            <input type="hidden" asp-for="Vietnamese.TourTranslationId" />
-            <input type="hidden" asp-for="Vietnamese.LanguageId" />
-            <input type="hidden" asp-for="Vietnamese.LanguageCode" />
-            <input type="hidden" asp-for="Vietnamese.DisplayName" />
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="Vietnamese.Name" class="form-label"></label>
-                    <input asp-for="Vietnamese.Name" class="form-control" />
-                    <span asp-validation-for="Vietnamese.Name" class="text-danger"></span>
+    <div class="row g-4">
+        <div class="col-xl-7">
+            <div class="card tour-card mb-4">
+                <div class="card-header">
+                    Tour Base
                 </div>
-
-                <div class="col-12">
-                    <label asp-for="Vietnamese.Description" class="form-label"></label>
-                    <textarea asp-for="Vietnamese.Description" class="form-control" rows="3"></textarea>
+                <div class="card-body">
+                    <div class="form-check">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header"><strong>@Model.English.DisplayName (@Model.English.LanguageCode)</strong></div>
-        <div class="card-body">
-            <input type="hidden" asp-for="English.TourTranslationId" />
-            <input type="hidden" asp-for="English.LanguageId" />
-            <input type="hidden" asp-for="English.LanguageCode" />
-            <input type="hidden" asp-for="English.DisplayName" />
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="English.Name" class="form-label"></label>
-                    <input asp-for="English.Name" class="form-control" />
-                    <span asp-validation-for="English.Name" class="text-danger"></span>
+            <div class="card tour-card mb-4">
+                <div class="card-header">
+                    <div class="lang-chip lang-chip-vi">VI • @Model.Vietnamese.DisplayName</div>
                 </div>
+                <div class="card-body">
+                    <input type="hidden" asp-for="Vietnamese.TourTranslationId" />
+                    <input type="hidden" asp-for="Vietnamese.LanguageId" />
+                    <input type="hidden" asp-for="Vietnamese.LanguageCode" />
+                    <input type="hidden" asp-for="Vietnamese.DisplayName" />
 
-                <div class="col-12">
-                    <label asp-for="English.Description" class="form-label"></label>
-                    <textarea asp-for="English.Description" class="form-control" rows="3"></textarea>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Vietnamese.Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Vietnamese.Name" class="form-control" />
+                            <span asp-validation-for="Vietnamese.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Vietnamese.Description" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Vietnamese.Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Vietnamese.Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card tour-card mb-4">
+                <div class="card-header">
+                    <div class="lang-chip lang-chip-en">EN • @Model.English.DisplayName</div>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" asp-for="English.TourTranslationId" />
+                    <input type="hidden" asp-for="English.LanguageId" />
+                    <input type="hidden" asp-for="English.LanguageCode" />
+                    <input type="hidden" asp-for="English.DisplayName" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="English.Name" class="form-label fw-semibold"></label>
+                            <input asp-for="English.Name" class="form-control" />
+                            <span asp-validation-for="English.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="English.Description" class="form-label fw-semibold"></label>
+                            <textarea asp-for="English.Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="English.Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card tour-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Tour Stops</span>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="autoReorderBtn" class="btn btn-sm btn-outline-primary">Auto Reorder</button>
+                        <button type="button" id="addStopBtn" class="btn btn-sm btn-success">Add Stop</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Search and select food stalls for each stop. The map preview updates automatically.</p>
+                    <div id="tourStopsContainer"></div>
+                </div>
+            </div>
+
+            <div class="sticky-actions">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Create Tour</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <strong>Tour Stops</strong>
-            <button type="button" id="addStopBtn" class="btn btn-sm btn-success">Add Stop</button>
-        </div>
-        <div class="card-body">
-            <p class="text-muted">Search and select food stalls for each stop in the tour.</p>
-            <div id="tourStopsContainer"></div>
-        </div>
-    </div>
+        <div class="col-xl-5">
+            <div class="tour-map-panel">
+                <div class="tour-map-box">
+                    <div class="tour-map-header">
+                        <div class="tour-map-title">Tour Map Preview</div>
+                        <p class="tour-map-subtitle">Preview stop order and route line based on current selection.</p>
+                    </div>
 
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success">Create</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                    <div class="map-wrapper">
+                        <div id="tourMap"></div>
+                        <div id="mapEmptyOverlay" class="map-empty-overlay">
+                            Select food stalls to preview the route.
+                        </div>
+                    </div>
+
+                    <div class="tour-map-note">
+                        Stops are drawn using each food stall’s latitude and longitude, ordered by <strong>Order Index</strong>.
+                    </div>
+
+                    <div class="route-list">
+                        <div class="route-list-title">Route Preview</div>
+                        <div id="routeListPreview" class="route-list-empty">No valid stops selected yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </form>
 
@@ -96,27 +350,85 @@
     }
 
     <script>
-        (function () {
-            const options = [
-                @foreach (var option in foodStallOptions)
-                {
-                        @: { id: @option.Id, label: "@Html.Raw(option.Label.Replace("\"", "\\\""))", search: "@Html.Raw(option.SearchText.ToLower().Replace("\"", "\\\""))" },
-                }
-            ];
+        window.__tourFoodStalls = [
+            @foreach (var option in foodStallOptions)
+            {
+                @: { id: @option.Id, label: "@Html.Raw(option.Label.Replace("\"", "\\\""))", search: "@Html.Raw(option.SearchText.ToLower().Replace("\"", "\\\""))", latitude: @option.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture), longitude: @option.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+            }
+        ];
 
-            const initialItems = [
-                @for (int i = 0; i < Model.Items.Count; i++)
-                {
-                        var item = Model.Items[i];
-                        @: { foodStallId: "@item.FoodStallId", foodStallLabel: "@Html.Raw((item.FoodStallLabel ?? "").Replace("\"", "\\\""))", orderIndex: "@item.OrderIndex" },
-                }
-            ];
+        window.__tourInitialItems = [
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                var item = Model.Items[i];
+                @: { foodStallId: @item.FoodStallId, foodStallLabel: "@Html.Raw((item.FoodStallLabel ?? "").Replace("\"", "\\\""))", orderIndex: @item.OrderIndex },
+            }
+        ];
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+        (function () {
+            const options = window.__tourFoodStalls || [];
+            const initialItems = window.__tourInitialItems || [];
 
             const container = document.getElementById('tourStopsContainer');
             const addStopBtn = document.getElementById('addStopBtn');
+            const autoReorderBtn = document.getElementById('autoReorderBtn');
+            const emptyOverlay = document.getElementById('mapEmptyOverlay');
+            const routeListPreview = document.getElementById('routeListPreview');
 
-            function createDropdownItems(dropdown, input, hiddenId, hiddenLabel) {
-                return function (keyword = '') {
+            const map = L.map('tourMap');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            let markersLayer = L.layerGroup().addTo(map);
+            let routeLine = null;
+
+            function renderStop(index, foodStallId = '', foodStallLabel = '', orderIndex = 1) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'tour-stop';
+
+                wrapper.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="tour-stop-number">Stop <span class="stop-number">${index + 1}</span></div>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-stop-btn">Remove</button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8 position-relative">
+                            <label class="form-label fw-semibold">Food Stall</label>
+                            <input type="hidden" name="Items[${index}].FoodStallId" class="foodstall-id" value="${foodStallId}" />
+                            <input type="hidden" name="Items[${index}].FoodStallLabel" class="foodstall-label-hidden" value="${foodStallLabel}" />
+                            <input type="text"
+                                   class="form-control foodstall-search"
+                                   placeholder="Type to search and select a food stall..."
+                                   value="${foodStallLabel}"
+                                   autocomplete="off" />
+                            <div class="stop-help-text">Please select from existing food stalls.</div>
+                            <div class="list-group position-absolute w-100 shadow-sm d-none foodstall-dropdown"
+                                 style="z-index: 1000; max-height: 240px; overflow-y: auto;"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Order Index</label>
+                            <input name="Items[${index}].OrderIndex" class="form-control order-index" value="${orderIndex}" />
+                        </div>
+                    </div>
+                `;
+
+                const input = wrapper.querySelector('.foodstall-search');
+                const hiddenId = wrapper.querySelector('.foodstall-id');
+                const hiddenLabel = wrapper.querySelector('.foodstall-label-hidden');
+                const dropdown = wrapper.querySelector('.foodstall-dropdown');
+                const orderInput = wrapper.querySelector('.order-index');
+
+                function renderDropdown(keyword = '') {
                     const lower = keyword.trim().toLowerCase();
                     const matched = options.filter(o =>
                         !lower || o.label.toLowerCase().includes(lower) || o.search.includes(lower)
@@ -134,50 +446,35 @@
                             hiddenId.value = o.id;
                             hiddenLabel.value = o.label;
                             dropdown.classList.add('d-none');
+                            updateMapPreview();
                         });
                         dropdown.appendChild(btn);
                     });
 
                     dropdown.classList.toggle('d-none', matched.length === 0);
-                };
-            }
+                }
 
-            function renderStop(index, foodStallId = '', foodStallLabel = '', orderIndex = 1) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'border rounded p-3 mb-3 tour-stop';
+                function resetIfInvalidSelection() {
+                    const selectedId = parseInt(hiddenId.value || '0', 10);
 
-                wrapper.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="fw-semibold">Stop <span class="stop-number">${index + 1}</span></div>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-stop-btn">Remove</button>
-                    </div>
+                    if (!selectedId) {
+                        input.value = '';
+                        hiddenLabel.value = '';
+                        hiddenId.value = '';
+                        return;
+                    }
 
-                    <div class="row g-3">
-                        <div class="col-md-8 position-relative">
-                            <label class="form-label">Food Stall</label>
-                            <input type="hidden" name="Items[${index}].FoodStallId" class="foodstall-id" value="${foodStallId}" />
-                            <input type="hidden" name="Items[${index}].FoodStallLabel" class="foodstall-label-hidden" value="${foodStallLabel}" />
-                            <input type="text"
-                                   class="form-control foodstall-search"
-                                   placeholder="Type to search and select a food stall..."
-                                   value="${foodStallLabel}"
-                                   autocomplete="off" />
-                            <div class="list-group position-absolute w-100 shadow-sm d-none foodstall-dropdown"
-                                 style="z-index: 1000; max-height: 240px; overflow-y: auto;"></div>
-                        </div>
+                    const selectedOption = options.find(o => o.id === selectedId);
+                    if (!selectedOption) {
+                        input.value = '';
+                        hiddenLabel.value = '';
+                        hiddenId.value = '';
+                        return;
+                    }
 
-                        <div class="col-md-4">
-                            <label class="form-label">Order Index</label>
-                            <input name="Items[${index}].OrderIndex" class="form-control order-index" value="${orderIndex}" />
-                        </div>
-                    </div>
-                `;
-
-                const input = wrapper.querySelector('.foodstall-search');
-                const hiddenId = wrapper.querySelector('.foodstall-id');
-                const hiddenLabel = wrapper.querySelector('.foodstall-label-hidden');
-                const dropdown = wrapper.querySelector('.foodstall-dropdown');
-                const renderDropdown = createDropdownItems(dropdown, input, hiddenId, hiddenLabel);
+                    input.value = selectedOption.label;
+                    hiddenLabel.value = selectedOption.label;
+                }
 
                 input.addEventListener('focus', function () {
                     renderDropdown(input.value);
@@ -185,14 +482,21 @@
 
                 input.addEventListener('input', function () {
                     hiddenId.value = '';
-                    hiddenLabel.value = input.value;
+                    hiddenLabel.value = '';
                     renderDropdown(input.value);
+                    updateMapPreview();
                 });
 
                 input.addEventListener('blur', function () {
-                    hiddenLabel.value = input.value;
-                    setTimeout(() => dropdown.classList.add('d-none'), 150);
+                    setTimeout(() => {
+                        dropdown.classList.add('d-none');
+                        resetIfInvalidSelection();
+                        updateMapPreview();
+                    }, 150);
                 });
+
+                orderInput.addEventListener('input', updateMapPreview);
+                orderInput.addEventListener('change', updateMapPreview);
 
                 wrapper.querySelector('.remove-stop-btn').addEventListener('click', function () {
                     const totalStops = container.querySelectorAll('.tour-stop').length;
@@ -203,6 +507,7 @@
 
                     wrapper.remove();
                     reindexStops();
+                    updateMapPreview();
                 });
 
                 return wrapper;
@@ -224,9 +529,174 @@
                 });
             }
 
+            function getSelectedStops() {
+                return Array.from(container.querySelectorAll('.tour-stop'))
+                    .map(stop => {
+                        const foodStallId = parseInt(stop.querySelector('.foodstall-id').value || '0', 10);
+                        const orderIndex = parseInt(stop.querySelector('.order-index').value || '0', 10);
+
+                        if (!foodStallId || !orderIndex) return null;
+
+                        const stall = options.find(x => x.id === foodStallId);
+                        if (!stall || stall.latitude == null || stall.longitude == null) return null;
+
+                        return {
+                            foodStallId,
+                            orderIndex,
+                            label: stall.label,
+                            latitude: stall.latitude,
+                            longitude: stall.longitude
+                        };
+                    })
+                    .filter(x => x !== null)
+                    .sort((a, b) => a.orderIndex - b.orderIndex);
+            }
+
+            function clearMapLayers() {
+                markersLayer.clearLayers();
+
+                if (routeLine) {
+                    map.removeLayer(routeLine);
+                    routeLine = null;
+                }
+            }
+
+            async function drawRoadRoute(stops) {
+                const coordinates = stops
+                    .map(stop => `${stop.longitude},${stop.latitude}`)
+                    .join(';');
+
+                const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+
+                try {
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(`Routing HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.code !== 'Ok' || !data.routes || !data.routes.length) {
+                        throw new Error('No route returned');
+                    }
+
+                    const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+
+                    if (routeLine) {
+                        map.removeLayer(routeLine);
+                        routeLine = null;
+                    }
+
+                    routeLine = L.polyline(routeCoords, {
+                        weight: 5,
+                        opacity: 0.9
+                    }).addTo(map);
+
+                    const bounds = L.latLngBounds(routeCoords);
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                } catch (error) {
+                    const fallbackLatLngs = stops.map(stop => [stop.latitude, stop.longitude]);
+
+                    if (routeLine) {
+                        map.removeLayer(routeLine);
+                        routeLine = null;
+                    }
+
+                    if (fallbackLatLngs.length >= 2) {
+                        routeLine = L.polyline(fallbackLatLngs, {
+                            weight: 4,
+                            opacity: 0.85
+                        }).addTo(map);
+                    }
+
+                    if (fallbackLatLngs.length) {
+                        const bounds = L.latLngBounds(fallbackLatLngs);
+                        map.fitBounds(bounds, { padding: [30, 30] });
+                    }
+
+                    console.warn('Road routing failed, fallback to straight polyline.', error);
+                }
+            }
+
+            function updateRouteList(stops) {
+                if (!stops.length) {
+                    routeListPreview.className = 'route-list-empty';
+                    routeListPreview.innerHTML = 'No valid stops selected yet.';
+                    return;
+                }
+
+                routeListPreview.className = '';
+
+                routeListPreview.innerHTML = stops.map((stop, index) => `
+                    <div class="route-list-item">
+                        <div class="route-list-badge">${index + 1}</div>
+                        <div>
+                            <div class="route-list-name">${stop.label}</div>
+                            <div class="route-list-meta">Order Index: ${stop.orderIndex}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async function updateMapPreview() {
+                clearMapLayers();
+
+                const stops = getSelectedStops();
+                updateRouteList(stops);
+
+                if (!stops.length) {
+                    emptyOverlay.style.display = 'flex';
+                    map.setView([10.7602, 106.7035], 16);
+                    return;
+                }
+
+                emptyOverlay.style.display = 'none';
+
+                const latLngs = stops.map(stop => [stop.latitude, stop.longitude]);
+
+                stops.forEach((stop, index) => {
+                    const numberedIcon = L.divIcon({
+                        className: '',
+                        html: `<div class="tour-marker">${index + 1}</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                        popupAnchor: [0, -15]
+                    });
+
+                    const marker = L.marker([stop.latitude, stop.longitude], { icon: numberedIcon }).bindPopup(`
+                        <strong>Stop ${index + 1}</strong><br/>
+                        ${stop.label}<br/>
+                        Order: ${stop.orderIndex}
+                    `);
+
+                    marker.addTo(markersLayer);
+                });
+
+                const bounds = L.latLngBounds(latLngs);
+                map.fitBounds(bounds, { padding: [30, 30] });
+
+                if (stops.length >= 2) {
+                    await drawRoadRoute(stops);
+                }
+            }
+
             addStopBtn.addEventListener('click', function () {
                 const nextIndex = container.querySelectorAll('.tour-stop').length;
                 container.appendChild(renderStop(nextIndex, '', '', nextIndex + 1));
+                reindexStops();
+                updateMapPreview();
+            });
+
+            autoReorderBtn.addEventListener('click', function () {
+                const stops = container.querySelectorAll('.tour-stop');
+
+                stops.forEach((stop, index) => {
+                    stop.querySelector('.order-index').value = index + 1;
+                });
+
+                reindexStops();
+                updateMapPreview();
             });
 
             if (initialItems.length > 0) {
@@ -239,6 +709,8 @@
             }
 
             reindexStops();
+            map.setView([10.7602, 106.7035], 16);
+            setTimeout(updateMapPreview, 100);
         })();
     </script>
 }

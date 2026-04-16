@@ -6,49 +6,298 @@
     <title>@ViewData["Title"] - AudioGuideAdmin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+            :root {
+                --admin-bg: #f5f7fb;
+                --sidebar-bg: #ffffff;
+                --topbar-bg: rgba(255, 255, 255, 0.88);
+                --panel-border: #e9ecef;
+                --text-main: #212529;
+                --text-muted: #6c757d;
+                --nav-hover: #f3f5f7;
+                --nav-active-bg: #1f2937;
+                --nav-active-text: #ffffff;
+                --soft-shadow: 0 0.125rem 0.75rem rgba(15, 23, 42, 0.06);
+                --soft-shadow-sm: 0 0.125rem 0.45rem rgba(15, 23, 42, 0.05);
+            }
+
+            html, body {
+                height: 100%;
+            }
+
+            body {
+                background: var(--admin-bg);
+                color: var(--text-main);
+            }
+
+            .admin-shell {
+                min-height: 100vh;
+                display: flex;
+            }
+
+            .admin-sidebar {
+                width: 260px;
+                background: var(--sidebar-bg);
+                border-right: 1px solid var(--panel-border);
+                padding: 1.4rem 1rem 1rem;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                box-shadow: var(--soft-shadow-sm);
+                z-index: 20;
+            }
+
+            .admin-brand-wrap {
+                margin-bottom: 1.5rem;
+            }
+
+            .admin-brand {
+                display: block;
+                text-decoration: none;
+                color: var(--text-main);
+                border-radius: 1rem;
+                padding: 0.8rem 0.9rem;
+                transition: background-color 0.15s ease;
+            }
+
+                .admin-brand:hover {
+                    color: var(--text-main);
+                    background: #f8f9fa;
+                }
+
+            .admin-brand-title {
+                font-size: 1.35rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                line-height: 1.1;
+                margin-bottom: 0.2rem;
+            }
+
+            .admin-brand-subtitle {
+                font-size: 0.88rem;
+                color: var(--text-muted);
+                margin: 0;
+            }
+
+            .admin-section-title {
+                font-size: 0.72rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                color: #7b8794;
+                margin: 0 0 0.75rem 0.35rem;
+                letter-spacing: 0.08em;
+            }
+
+            .admin-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+                .admin-nav a {
+                    text-decoration: none;
+                    color: var(--text-main);
+                    padding: 0.78rem 0.95rem;
+                    border-radius: 0.95rem;
+                    font-weight: 600;
+                    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+                }
+
+                    .admin-nav a:hover {
+                        background-color: var(--nav-hover);
+                        color: #111827;
+                        transform: translateX(1px);
+                    }
+
+                    .admin-nav a.active {
+                        background-color: var(--nav-active-bg);
+                        color: var(--nav-active-text);
+                        box-shadow: 0 0.125rem 0.45rem rgba(31, 41, 55, 0.22);
+                    }
+
+            .admin-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .admin-topbar {
+                position: sticky;
+                top: 0;
+                z-index: 15;
+                background: var(--topbar-bg);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid var(--panel-border);
+                padding: 0.95rem 1.5rem;
+            }
+
+            .admin-user-panel {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.8rem;
+                background: #ffffff;
+                border: 1px solid var(--panel-border);
+                border-radius: 999px;
+                padding: 0.45rem 0.55rem 0.45rem 0.95rem;
+                box-shadow: var(--soft-shadow-sm);
+            }
+
+            .admin-user-email {
+                font-size: 0.92rem;
+                color: #495057;
+                white-space: nowrap;
+            }
+
+            .role-chip {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 28px;
+                padding: 0.25rem 0.7rem;
+                border-radius: 999px;
+                font-size: 0.75rem;
+                font-weight: 800;
+                letter-spacing: 0.02em;
+            }
+
+            .role-chip-admin {
+                background: #111827;
+                color: #ffffff;
+            }
+
+            .role-chip-owner {
+                background: #eef2f7;
+                color: #475569;
+            }
+
+            .logout-btn {
+                border-radius: 999px;
+                padding: 0.35rem 0.85rem;
+                font-weight: 600;
+            }
+
+            .admin-page {
+                padding: 1.75rem;
+            }
+
+            .admin-footer {
+                margin-top: auto;
+                padding: 1rem 1.75rem;
+                border-top: 1px solid var(--panel-border);
+                background: rgba(255, 255, 255, 0.82);
+                color: var(--text-muted);
+                font-size: 0.92rem;
+            }
+
+            @@media (max-width: 991.98px) {
+                .admin-shell {
+                    flex-direction: column;
+                }
+
+                .admin-sidebar {
+                    width: 100%;
+                    border-right: none;
+                    border-bottom: 1px solid var(--panel-border);
+                    box-shadow: none;
+                }
+
+                .admin-topbar {
+                    padding: 0.85rem 1rem;
+                }
+
+                .admin-page {
+                    padding: 1rem;
+                }
+
+                .admin-footer {
+                    padding: 1rem;
+                }
+
+                .admin-user-panel {
+                    width: 100%;
+                    justify-content: space-between;
+                    border-radius: 1rem;
+                    padding-left: 0.85rem;
+                }
+
+                .admin-user-email {
+                    max-width: 40vw;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-4">
-            <div class="container">
-                <a class="navbar-brand fw-semibold" asp-controller="Dashboard" asp-action="Index">
-                    AudioGuideAdmin
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        string navClass(string controller) => currentController == controller ? "active" : "";
+    }
+
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="admin-brand-wrap">
+                <a class="admin-brand" asp-controller="Dashboard" asp-action="Index">
+                    <div class="admin-brand-title">AudioGuideAdmin</div>
+                    <p class="admin-brand-subtitle">Management Console</p>
                 </a>
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav ms-3">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="FoodStalls" asp-action="Index">Food Stalls</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="PlaybackLogs" asp-action="Index">Playback Logs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="QrMappings" asp-action="Index">QR Mappings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Tours" asp-action="Index">Tours</a>
-                        </li>
-                    </ul>
-                </div>
             </div>
-        </nav>
-    </header>
 
-    <main class="container pb-4">
-        @RenderBody()
-    </main>
+            <div class="admin-section-title">Management</div>
 
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container py-3">
-            © 2026 - AudioGuideAdmin
+            <nav class="admin-nav">
+                <a asp-controller="Dashboard" asp-action="Index" class="@navClass("Dashboard")">Dashboard</a>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Users" asp-action="Index" class="@navClass("Users")">Users</a>
+                }
+
+                <a asp-controller="FoodStalls" asp-action="Index" class="@navClass("FoodStalls")">Food Stalls</a>
+                <a asp-controller="PlaybackLogs" asp-action="Index" class="@navClass("PlaybackLogs")">Playback Logs</a>
+                <a asp-controller="Tours" asp-action="Index" class="@navClass("Tours")">Tours</a>
+            </nav>
+        </aside>
+
+        <div class="admin-content">
+            <div class="admin-topbar d-flex justify-content-end align-items-center">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="admin-user-panel">
+                        <span class="admin-user-email">
+                            @User.Identity.Name
+                        </span>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span class="role-chip role-chip-admin">Admin</span>
+                        }
+                        else if (User.IsInRole("FoodStallOwner"))
+                        {
+                            <span class="role-chip role-chip-owner">Owner</span>
+                        }
+
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger logout-btn">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <main class="admin-page">
+                @RenderBody()
+            </main>
+
+            <footer class="admin-footer">
+                © 2026 - AudioGuideAdmin
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

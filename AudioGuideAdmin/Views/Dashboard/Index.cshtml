@@ -4,153 +4,392 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1">Dashboard</h2>
-        <p class="text-muted mb-0">System overview for Audio Guide Phố Ẩm Thực Vĩnh Khánh.</p>
+<style>
+    .dashboard-hero {
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: #212529;
+        margin-bottom: 0.35rem;
+    }
+
+    .dashboard-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 1rem;
+    }
+
+    .dashboard-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-section-title {
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7b8794;
+        margin-bottom: 0.85rem;
+    }
+
+    .metric-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        height: 100%;
+        min-height: 112px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .metric-card .card-body {
+        padding: 1rem 1.1rem 0.95rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .metric-label {
+        font-size: 0.82rem;
+        color: #6c757d;
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #212529;
+        letter-spacing: -0.03em;
+    }
+
+    .metric-accent-primary .metric-value { color: #0d6efd; }
+    .metric-accent-success .metric-value { color: #198754; }
+
+    .summary-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        background: #fff;
+        min-height: 96px;
+    }
+
+    .summary-card .card-body {
+        padding: 1rem 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .summary-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #6c757d;
+        margin-bottom: 0.2rem;
+    }
+
+    .summary-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #212529;
+        letter-spacing: -0.03em;
+    }
+
+    .summary-chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .summary-chip-vi {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .summary-chip-en {
+        background: #eef2f7;
+        color: #495057;
+    }
+
+    .panel-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        overflow: hidden;
+        height: 100%;
+        background: #fff;
+    }
+
+    .panel-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 700;
+        padding: 0.95rem 1.1rem;
+    }
+
+    .mini-note {
+        font-size: 0.82rem;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .recent-log-table th {
+        white-space: nowrap;
+        font-size: 0.88rem;
+    }
+
+    .recent-log-table td {
+        vertical-align: middle;
+        font-size: 0.94rem;
+    }
+
+    .recent-log-stall {
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .recent-log-address {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .playback-lang-badge {
+        min-width: 40px;
+        text-align: center;
+        border-radius: 999px;
+    }
+
+    .top-stall-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        padding: 0.95rem 1rem;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .top-stall-item:last-child {
+        border-bottom: none;
+    }
+
+    .top-stall-rank {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #111827;
+        color: #fff;
+        font-size: 0.88rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        box-shadow: 0 0.125rem 0.35rem rgba(17, 24, 39, 0.18);
+    }
+
+    .top-stall-name {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.2rem;
+        line-height: 1.35;
+    }
+
+    .top-stall-meta {
+        font-size: 0.84rem;
+        color: #6c757d;
+        line-height: 1.35;
+    }
+
+    .top-stall-count {
+        min-width: 58px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .top-stall-count-value {
+        font-weight: 800;
+        font-size: 1rem;
+        color: #212529;
+        line-height: 1.1;
+    }
+
+    .top-stall-count-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .empty-panel {
+        text-align: center;
+        color: #6c757d;
+        padding: 2rem 1rem;
+    }
+
+    @@media (max-width: 1199.98px) {
+        .dashboard-title {
+            font-size: 2rem;
+        }
+
+        .metric-card {
+            min-height: 106px;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .dashboard-title {
+            font-size: 1.8rem;
+        }
+
+        .metric-card .card-body,
+        .summary-card .card-body {
+            padding: 0.95rem 1rem;
+        }
+    }
+</style>
+
+<div class="dashboard-hero">
+    <div class="dashboard-title">Dashboard</div>
+    <p class="dashboard-subtitle">System overview for Audio Guide Phố Ẩm Thực Vĩnh Khánh.</p>
+</div>
+
+<div class="dashboard-section">
+    <div class="dashboard-section-title">Core Metrics</div>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card">
+                <div class="card-body">
+                    <div class="metric-label">Total Food Stalls</div>
+                    <div class="metric-value">@Model.TotalFoodStalls</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-success">
+                <div class="card-body">
+                    <div class="metric-label">Active Food Stalls</div>
+                    <div class="metric-value">@Model.ActiveFoodStalls</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card">
+                <div class="card-body">
+                    <div class="metric-label">Total Playback Logs</div>
+                    <div class="metric-value">@Model.TotalPlaybackLogs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card">
+                <div class="card-body">
+                    <div class="metric-label">Total Tours</div>
+                    <div class="metric-value">@Model.TotalTours</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-2">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">Food Stalls</div>
-                <div class="fs-4 fw-semibold">@Model.TotalFoodStalls</div>
+<div class="dashboard-section">
+    <div class="dashboard-section-title">Playback Summary</div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div>
+                        <div class="summary-label">Vietnamese Playback</div>
+                        <div class="summary-value">@Model.ViLogs</div>
+                    </div>
+                    <div class="summary-chip summary-chip-vi">VI</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-2">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">Active Stalls</div>
-                <div class="fs-4 fw-semibold text-success">@Model.ActiveFoodStalls</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-2">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">Playback Logs</div>
-                <div class="fs-4 fw-semibold">@Model.TotalPlaybackLogs</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-2">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">QR Mappings</div>
-                <div class="fs-4 fw-semibold">@Model.TotalQrMappings</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-2">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">Tours</div>
-                <div class="fs-4 fw-semibold">@Model.TotalTours</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">GPS Logs</div>
-                <div class="fs-4 fw-semibold text-primary">@Model.GpsLogs</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">QR Logs</div>
-                <div class="fs-4 fw-semibold text-warning">@Model.QrLogs</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">VI Logs</div>
-                <div class="fs-4 fw-semibold">@Model.ViLogs</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="text-muted small">EN Logs</div>
-                <div class="fs-4 fw-semibold">@Model.EnLogs</div>
+        <div class="col-md-6">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div>
+                        <div class="summary-label">English Playback</div>
+                        <div class="summary-value">@Model.EnLogs</div>
+                    </div>
+                    <div class="summary-chip summary-chip-en">EN</div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <strong>Recent Playback Logs</strong>
+    <div class="col-xl-7">
+        <div class="card panel-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Recent Playback Logs</span>
+                <span class="mini-note">Latest 5 records</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-bordered align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 recent-log-table">
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 70px;">Id</th>
-                                <th style="width: 90px;">Stall Id</th>
-                                <th>Address</th>
+                                <th style="min-width: 260px;">Food Stall</th>
                                 <th style="width: 90px;">Lang</th>
-                                <th style="width: 100px;">Trigger</th>
                                 <th style="width: 180px;">Played At</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @if (!Model.RecentPlaybackLogs.Any())
+                        @if (!Model.RecentPlaybackLogs.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    No playback logs found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.RecentPlaybackLogs)
                             {
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        No playback logs found.
+                                    <td class="fw-semibold">@item.Id</td>
+                                    <td>
+                                        <div class="recent-log-stall">@item.FoodStallName</div>
+                                        <div class="recent-log-address">Stall ID: @item.FoodStallId</div>
+                                        <div class="recent-log-address">@item.FoodStallAddress</div>
                                     </td>
+                                    <td>
+                                        @if (item.LanguageCode == "vi")
+                                        {
+                                            <span class="badge bg-primary playback-lang-badge">VI</span>
+                                        }
+                                        else if (item.LanguageCode == "en")
+                                        {
+                                            <span class="badge bg-secondary playback-lang-badge">EN</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark playback-lang-badge">@item.LanguageCode</span>
+                                        }
+                                    </td>
+                                    <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
                                 </tr>
                             }
-                            else
-                            {
-                                @foreach (var item in Model.RecentPlaybackLogs)
-                                {
-                                    <tr>
-                                        <td>@item.Id</td>
-                                        <td>@item.FoodStallId</td>
-                                        <td>@item.FoodStallAddress</td>
-                                        <td>@item.LanguageCode</td>
-                                        <td>
-                                            @if (item.TriggerType == "GPS")
-                                            {
-                                                <span class="badge bg-primary">GPS</span>
-                                            }
-                                            else if (item.TriggerType == "QR")
-                                            {
-                                                <span class="badge bg-warning text-dark">QR</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">@item.TriggerType</span>
-                                            }
-                                        </td>
-                                        <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                                    </tr>
-                                }
-                            }
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -158,44 +397,40 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <strong>Top Food Stalls by Playback</strong>
+    <div class="col-xl-5">
+        <div class="card panel-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Top Food Stalls by Playback</span>
+                <span class="mini-note">Top 5</span>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-bordered align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 90px;">Stall Id</th>
-                                <th>Address</th>
-                                <th style="width: 110px;">Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.TopFoodStalls.Any())
-                            {
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">
-                                        No playback data found.
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                @foreach (var item in Model.TopFoodStalls)
-                                {
-                                    <tr>
-                                        <td>@item.FoodStallId</td>
-                                        <td>@item.FoodStallAddress</td>
-                                        <td>@item.PlaybackCount</td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                @if (!Model.TopFoodStalls.Any())
+                {
+                    <div class="empty-panel">
+                        No playback data found.
+                    </div>
+                }
+                else
+                {
+                    @for (int i = 0; i < Model.TopFoodStalls.Count; i++)
+                    {
+                        var item = Model.TopFoodStalls[i];
+                        <div class="top-stall-item">
+                            <div class="top-stall-rank">@(i + 1)</div>
+
+                            <div class="flex-grow-1">
+                                <div class="top-stall-name">@item.FoodStallName</div>
+                                <div class="top-stall-meta">Stall ID: @item.FoodStallId</div>
+                                <div class="top-stall-meta">@item.FoodStallAddress</div>
+                            </div>
+
+                            <div class="top-stall-count">
+                                <div class="top-stall-count-value">@item.PlaybackCount</div>
+                                <div class="top-stall-count-label">plays</div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
     </div>
