@@ -203,7 +203,12 @@
                     <BoxView Grid.Row="0" Color="#DE6B35" />
 
                     <Grid Grid.Row="1" WidthRequest="220" HeightRequest="220" BackgroundColor="Black" VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label Text="Đây là Mã QR" TextColor="White" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Image Source="app_download_qr.png" 
+                               Aspect="AspectFit" 
+                               WidthRequest="200" 
+                               HeightRequest="200" 
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center" />
                     </Grid>
 
                     <Label Grid.Row="2" Text="Quét để tải App" FontSize="20" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" VerticalOptions="Center" />
