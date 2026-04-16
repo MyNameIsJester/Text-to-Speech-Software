@@ -21,6 +21,7 @@
     {
         public int Id { get; set; }
         public int FoodStallId { get; set; }
+        public string FoodStallName { get; set; } = "";
         public string FoodStallAddress { get; set; } = "";
         public string LanguageCode { get; set; } = "";
         public string TriggerType { get; set; } = "";
@@ -31,6 +32,7 @@
     public class TopFoodStallViewModel
     {
         public int FoodStallId { get; set; }
+        public string FoodStallName { get; set; } = "";
         public string FoodStallAddress { get; set; } = "";
         public int PlaybackCount { get; set; }
     }

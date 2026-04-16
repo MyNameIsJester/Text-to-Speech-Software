@@ -1,9 +1,11 @@
 ﻿using AudioGuideAPI.Database;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AudioGuideAdmin.Controllers
 {
+    [Authorize(Roles = "Admin,FoodStallOwner")]
     public class PlaybackLogsController : Controller
     {
         private readonly AppDbContext _context;
@@ -20,6 +22,8 @@ namespace AudioGuideAdmin.Controllers
         {
             var query = _context.PlaybackLogs
                 .Include(x => x.FoodStall)
+                    .ThenInclude(fs => fs.Translations)
+                        .ThenInclude(t => t.Language)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(languageCode))
