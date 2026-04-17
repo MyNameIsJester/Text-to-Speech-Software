@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /AudioGuideAPI/audio_guide.db
 /.gitignore
+/AudioGuideAPI/audio_guide.db
