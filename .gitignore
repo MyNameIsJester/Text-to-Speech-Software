@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /AudioGuideAPI/audio_guide.db
+/AudioGuideAdmin/admin_auth.db

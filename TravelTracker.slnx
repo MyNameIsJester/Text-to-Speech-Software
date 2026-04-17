@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/NOTES/">
+    <File Path="PRD.md" />
+  </Folder>
+  <Folder Name="/NOTES/images/">
+    <File Path="../../../Downloads/3.7.1.png" />
+  </Folder>
   <Project Path="AudioGuideAdmin/AudioGuideAdmin.csproj" />
   <Project Path="AudioGuideAPI/AudioGuideAPI.csproj" />
   <Project Path="TravelTracker/TravelTracker.csproj">
