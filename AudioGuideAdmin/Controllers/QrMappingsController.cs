@@ -1,10 +1,12 @@
 ﻿using AudioGuideAPI.Database;
 using AudioGuideAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AudioGuideAdmin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class QrMappingsController : Controller
     {
         private readonly AppDbContext _context;

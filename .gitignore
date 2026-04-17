@@ -362,5 +362,3 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /AudioGuideAPI/audio_guide.db
-/.gitignore
-/AudioGuideAPI/audio_guide.db

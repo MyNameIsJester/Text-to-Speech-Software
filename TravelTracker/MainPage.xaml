@@ -8,7 +8,6 @@
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="*, Auto, Auto" Padding="10,0,20,0">
-
             <Label Grid.Column="0" 
                    Text="Thuyết Minh Q.4" 
                    TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" 
@@ -39,91 +38,65 @@
     </Shell.TitleView>
 
     <Grid>
+        <Grid RowDefinitions="Auto, Auto, *">
 
-        <Grid RowDefinitions="Auto, *">
-            <VerticalStackLayout Grid.Row="0" Padding="25,30,25,20" Spacing="5" 
+            <VerticalStackLayout Grid.Row="0" Padding="25,30,25,10" Spacing="5" 
                                  BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}">
                 <Label Text="PHỐ VĨNH KHÁNH" 
                        FontSize="14"    
                        TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" 
                        FontAttributes="Bold" 
                        CharacterSpacing="2" />
-
                 <Label Text="{Binding UIGreeting, Source={x:Static services:LanguageService.Instance}}"
                        FontSize="32" 
                        FontAttributes="Bold" 
                        TextColor="{AppThemeBinding Light=Black, Dark=White}" />
             </VerticalStackLayout>
 
-            <CollectionView Grid.Row="1" 
+            <VerticalStackLayout Grid.Row="1" Padding="20,0,20,10" Spacing="15"
+                                 BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}">
+
+                <Border Padding="0" Stroke="Transparent" StrokeShape="RoundRectangle 15">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.1" />
+                    </Border.Shadow>
+                    <SearchBar x:Name="searchBar" 
+                               Placeholder="{Binding UISearchPlaceholder, Source={x:Static services:LanguageService.Instance}}" 
+                               TextChanged="OnSearchBarTextChanged"
+                               BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                </Border>
+
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,0,0,10">
+                    <HorizontalStackLayout Spacing="10">
+                        <Button x:Name="btnCatAll" Text="🌟 Tất cả" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="#512BD4" TextColor="White" HeightRequest="40"/>
+                        <Button x:Name="btnCatOc" Text="🐌 Ốc" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                        <Button x:Name="btnCatNuong" Text="🔥 Nướng" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                        <Button x:Name="btnCatLau" Text="🍲 Lẩu" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
+
+            <CollectionView Grid.Row="2" 
                             ItemsSource="{Binding Stalls}"
                             SelectionMode="Single"
                             SelectionChanged="OnStallSelected">
 
                 <CollectionView.Header>
-                    <VerticalStackLayout Padding="20,10,20,20" Spacing="15">
-                        <Border Padding="20" 
-                                Background="{AppThemeBinding Light=#F0EDFF, Dark=#2A2540}" 
-                                Stroke="Transparent"
-                                StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout Padding="20,5,20,20" Spacing="15">
+                        <Border Padding="20" Background="{AppThemeBinding Light=#F0EDFF, Dark=#2A2540}" Stroke="Transparent" StrokeShape="RoundRectangle 20">
                             <VerticalStackLayout Spacing="12">
-                                <Label Text="{Binding UIIntroHeading, Source={x:Static services:LanguageService.Instance}}" 
-                                       FontSize="13" 
-                                       FontAttributes="Bold" 
-                                       TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" />
-
-                                <Label Text="{Binding SelectedLanguage.IntroText}" 
-                                       FontSize="15" 
-                                       TextColor="{AppThemeBinding Light=#444444, Dark=#DDDDDD}"
-                                       LineHeight="1.4"
-                                       HorizontalTextAlignment="Justify" />
-
+                                <Label Text="{Binding UIIntroHeading, Source={x:Static services:LanguageService.Instance}}" FontSize="13" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" />
+                                <Label Text="{Binding SelectedLanguage.IntroText}" FontSize="15" TextColor="{AppThemeBinding Light=#444444, Dark=#DDDDDD}" LineHeight="1.4" HorizontalTextAlignment="Justify" />
                                 <VerticalStackLayout Spacing="5">
-                                    <ProgressBar x:Name="introProgressBar"
-                                                 Progress="0"
-                                                 ProgressColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}"
-                                                 HeightRequest="4" />
-
-                                    <Label x:Name="lblProgressPercent" 
-                                           Text="0%" 
-                                           FontSize="11" 
-                                           TextColor="Gray" 
-                                           HorizontalOptions="End" />
+                                    <ProgressBar x:Name="introProgressBar" Progress="0" ProgressColor="{AppThemeBinding Light=#512BD4, Dark=#B49BFF}" HeightRequest="4" />
+                                    <Label x:Name="lblProgressPercent" Text="0%" FontSize="11" TextColor="Gray" HorizontalOptions="End" />
                                 </VerticalStackLayout>
-
-                                <Button x:Name="btnToggleIntro"
-                                        Text="{Binding UIPlayIntroBtn, Source={x:Static services:LanguageService.Instance}}" 
-                                        Clicked="OnToggleStreetIntroClicked"
-                                        BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#7E57C2}" 
-                                        TextColor="White"
-                                        CornerRadius="20"
-                                        HeightRequest="45"
-                                        Padding="20,0"
-                                        HorizontalOptions="Start" />
+                                <Button x:Name="btnToggleIntro" Text="{Binding UIPlayIntroBtn, Source={x:Static services:LanguageService.Instance}}" Clicked="OnToggleStreetIntroClicked" BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#7E57C2}" TextColor="White" CornerRadius="20" HeightRequest="45" Padding="20,0" HorizontalOptions="Start" />
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Padding="0" Margin="0,15,0,0" Stroke="Transparent" StrokeShape="RoundRectangle 15">
-                            <Border.Shadow>
-                                <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.1" />
-                            </Border.Shadow>
-                            <SearchBar x:Name="searchBar" 
-                                       Placeholder="{Binding UISearchPlaceholder, Source={x:Static services:LanguageService.Instance}}" 
-                                       TextChanged="OnSearchBarTextChanged"
-                                       BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}"
-                                       TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                        </Border>
-
-                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,15,0,10">
-                            <HorizontalStackLayout Spacing="10">
-                                <Button Text="🌟 Tất cả" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="#512BD4" TextColor="White" HeightRequest="40"/>
-                                <Button Text="🐌 Ốc" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
-                                <Button Text="🔥 Nướng" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
-                                <Button Text="🍲 Lẩu" Clicked="OnCategoryClicked" CornerRadius="20" BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" TextColor="{AppThemeBinding Light=Black, Dark=White}" HeightRequest="40"/>
-                            </HorizontalStackLayout>
-                        </ScrollView>
-
-                        <Label Text="{Binding UIListHeading, Source={x:Static services:LanguageService.Instance}}" FontSize="14" FontAttributes="Bold" TextColor="Gray" Margin="5,10,0,0"/>
+                        <Label Text="{Binding UIListHeading, Source={x:Static services:LanguageService.Instance}}" FontSize="14" FontAttributes="Bold" TextColor="Gray" Margin="5,5,0,0"/>
                     </VerticalStackLayout>
                 </CollectionView.Header>
 
@@ -199,9 +172,7 @@
                 </Border.GestureRecognizers>
 
                 <Grid RowDefinitions="80, *, 80">
-
                     <BoxView Grid.Row="0" Color="#DE6B35" />
-
                     <Grid Grid.Row="1" WidthRequest="220" HeightRequest="220" BackgroundColor="Black" VerticalOptions="Center" HorizontalOptions="Center">
                         <Image Source="app_download_qr.png" 
                                Aspect="AspectFit" 
@@ -210,9 +181,7 @@
                                HorizontalOptions="Center" 
                                VerticalOptions="Center" />
                     </Grid>
-
                     <Label Grid.Row="2" Text="Quét để tải App" FontSize="20" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" VerticalOptions="Center" />
-
                 </Grid>
             </Border>
         </Grid>

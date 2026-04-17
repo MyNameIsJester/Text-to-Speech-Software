@@ -9,6 +9,7 @@ namespace TravelTracker.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
+
     private readonly string _baseUrl = "http://10.0.2.2:5218/api";
 
     public ApiService()
@@ -33,6 +34,7 @@ public class ApiService
                 {
                     if (!string.IsNullOrEmpty(lang.FlagIcon))
                     {
+                        // Đã trả về 5218
                         lang.FlagIcon = lang.FlagIcon.Replace("https://localhost:7246", "http://10.0.2.2:5218")
                                                      .Replace("localhost", "10.0.2.2");
                     }
@@ -42,7 +44,7 @@ public class ApiService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LỖI GỌI BE NGÔN NGỮ: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LỖI GỌI BE NGÔN NGỮ: {ex.Message}");
         }
         return new List<Language>();
     }
@@ -73,10 +75,28 @@ public class ApiService
                     }
 
                     if (!string.IsNullOrEmpty(stall.ImageUrl))
-                        stall.ImageUrl = stall.ImageUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                    {
+                        if (stall.ImageUrl.StartsWith("/"))
+                        {
+                            stall.ImageUrl = $"http://10.0.2.2:5218{stall.ImageUrl}";
+                        }
+                        else
+                        {
+                            stall.ImageUrl = stall.ImageUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                        }
+                    }
 
                     if (!string.IsNullOrEmpty(stall.AudioUrl))
-                        stall.AudioUrl = stall.AudioUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                    {
+                        if (stall.AudioUrl.StartsWith("/"))
+                        {
+                            stall.AudioUrl = $"http://10.0.2.2:5218{stall.AudioUrl}";
+                        }
+                        else
+                        {
+                            stall.AudioUrl = stall.AudioUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                        }
+                    }
                 }
 
                 return stalls;
@@ -84,7 +104,7 @@ public class ApiService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LỖI GỌI BE QUÁN ĂN: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LỖI GỌI BE QUÁN ĂN: {ex.Message}");
         }
         return new List<FoodStall>();
     }
@@ -174,6 +194,7 @@ public class ApiService
         }
         return new List<Tour>();
     }
+
     public async Task<List<Microsoft.Maui.Devices.Sensors.Location>> GetRouteAsync(List<Microsoft.Maui.Devices.Sensors.Location> points)
     {
         try

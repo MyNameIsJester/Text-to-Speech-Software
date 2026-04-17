@@ -1,11 +1,13 @@
 ﻿using AudioGuideAdmin.ViewModels.FoodStalls;
 using AudioGuideAPI.Database;
 using AudioGuideAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AudioGuideAdmin.Controllers
 {
+    [Authorize(Roles = "Admin,FoodStallOwner")]
     public class FoodStallsController : Controller
     {
         private readonly AppDbContext _context;
@@ -54,6 +56,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // GET: /FoodStalls/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var model = new FoodStall
@@ -67,6 +70,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // POST: /FoodStalls/Create
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FoodStall model)
@@ -94,6 +98,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // GET: /FoodStalls/Edit/1
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var foodStall = await _context.FoodStalls.FindAsync(id);
@@ -105,6 +110,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // POST: /FoodStalls/Edit/1
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, FoodStall model)
@@ -136,6 +142,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // GET: /FoodStalls/Delete/1
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var foodStall = await _context.FoodStalls
@@ -150,6 +157,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // POST: /FoodStalls/Delete/1
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -166,6 +174,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // GET: /FoodStalls/EditTranslations/1
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditTranslations(int id)
         {
             var foodStall = await _context.FoodStalls
@@ -219,6 +228,7 @@ namespace AudioGuideAdmin.Controllers
         }
 
         // POST: /FoodStalls/EditTranslations/1
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditTranslations(int id, FoodStallTranslationsEditViewModel model)

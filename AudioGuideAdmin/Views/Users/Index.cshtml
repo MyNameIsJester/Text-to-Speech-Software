@@ -1,0 +1,112 @@
+﻿@model IEnumerable<AudioGuideAdmin.ViewModels.Users.UserListItemViewModel>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<style>
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    .content-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+    }
+
+    .user-table th {
+        white-space: nowrap;
+        font-size: 0.92rem;
+    }
+
+    .user-table td {
+        vertical-align: middle;
+        padding-top: 0.95rem;
+        padding-bottom: 0.95rem;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.15rem;
+    }
+
+    .user-email {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .empty-state-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.35rem;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Users</h2>
+        <p class="page-subtitle">Manage admin and food stall owner accounts.</p>
+    </div>
+
+    <a asp-action="Create" class="btn btn-success">Create User</a>
+</div>
+
+<div class="card content-card">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-title">No users found</div>
+                <div>Create a new account to manage the system.</div>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 user-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="min-width: 260px;">User</th>
+                            <th style="width: 180px;">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="user-name">@(string.IsNullOrWhiteSpace(item.FullName) ? "-" : item.FullName)</div>
+                                    <div class="user-email">@item.Email</div>
+                                </td>
+                                <td>
+                                    @if (item.RoleName == "Admin")
+                                    {
+                                        <span class="badge bg-dark">Admin</span>
+                                    }
+                                    else if (item.RoleName == "FoodStallOwner")
+                                    {
+                                        <span class="badge bg-secondary">Owner</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">@item.RoleName</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
