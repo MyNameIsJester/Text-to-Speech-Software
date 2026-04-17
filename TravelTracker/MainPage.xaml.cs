@@ -59,6 +59,15 @@ public partial class MainPage : ContentPage
 
         BindingContext = this;
     }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            _ = Task.Run(async () => await TextToSpeech.Default.GetLocalesAsync());
+        }
+        catch {}
+    }
 
     private async Task LoadStallsFromApiAsync(string langCode)
     {
@@ -296,6 +305,12 @@ public partial class MainPage : ContentPage
             }
         }
         catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LỖI TTS MAIN: {ex.Message}");
+            StopIntro(button);
+            await DisplayAlert("Đang chuẩn bị", "Hệ thống âm thanh đang khởi động. Bạn vui lòng bấm lại nhé!", "OK");
+        }
         finally { isReadingIntro = false; }
     }
 
@@ -330,6 +345,7 @@ public partial class MainPage : ContentPage
             lblProgressPercent.Text = "0%";
         }
     }
+
     private void OnShowQrClicked(object sender, EventArgs e)
     {
         QrOverlay.IsVisible = true;

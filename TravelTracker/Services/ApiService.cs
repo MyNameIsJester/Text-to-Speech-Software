@@ -9,6 +9,7 @@ namespace TravelTracker.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
+
     private readonly string _baseUrl = "http://10.0.2.2:5218/api";
 
     public ApiService()
@@ -33,6 +34,7 @@ public class ApiService
                 {
                     if (!string.IsNullOrEmpty(lang.FlagIcon))
                     {
+                        // Đã trả về 5218
                         lang.FlagIcon = lang.FlagIcon.Replace("https://localhost:7246", "http://10.0.2.2:5218")
                                                      .Replace("localhost", "10.0.2.2");
                     }
@@ -42,7 +44,7 @@ public class ApiService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LỖI GỌI BE NGÔN NGỮ: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LỖI GỌI BE NGÔN NGỮ: {ex.Message}");
         }
         return new List<Language>();
     }
@@ -102,7 +104,7 @@ public class ApiService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LỖI GỌI BE QUÁN ĂN: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LỖI GỌI BE QUÁN ĂN: {ex.Message}");
         }
         return new List<FoodStall>();
     }
@@ -192,6 +194,7 @@ public class ApiService
         }
         return new List<Tour>();
     }
+
     public async Task<List<Microsoft.Maui.Devices.Sensors.Location>> GetRouteAsync(List<Microsoft.Maui.Devices.Sensors.Location> points)
     {
         try

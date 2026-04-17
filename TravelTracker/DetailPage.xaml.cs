@@ -16,6 +16,16 @@ public partial class DetailPage : ContentPage, IQueryAttributable
     {
         InitializeComponent();
     }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            _ = Task.Run(async () => await TextToSpeech.Default.GetLocalesAsync());
+        }
+        catch {}
+    }
+
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.ContainsKey("SelectedStall") && query["SelectedStall"] is FoodStall stall)
@@ -74,6 +84,12 @@ public partial class DetailPage : ContentPage, IQueryAttributable
             }
         }
         catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LỖI TTS DETAIL: {ex.Message}");
+            isReading = false;
+            await DisplayAlert("Đang chuẩn bị", "Hệ thống âm thanh đang khởi động. Bạn vui lòng bấm lại nút Nghe nhé!", "OK");
+        }
         finally
         {
             isReading = false;
