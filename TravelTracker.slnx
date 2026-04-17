@@ -1,9 +1,9 @@
 <Solution>
-  <Folder Name="/NOTES/">
-    <File Path="PRD.md" />
+  <Folder Name="/docs/">
+    <File Path="docs/PRD.md" />
   </Folder>
-  <Folder Name="/NOTES/images/">
-    <File Path="../../../Downloads/3.7.1.png" />
+  <Folder Name="/docs/images/">
+    <File Path="../../../Downloads/a.png" />
   </Folder>
   <Project Path="AudioGuideAdmin/AudioGuideAdmin.csproj" />
   <Project Path="AudioGuideAPI/AudioGuideAPI.csproj" />
