@@ -1,0 +1,491 @@
+﻿@model AudioGuideAPI.Models.Tour
+
+@{
+    ViewData["Title"] = "Tour Details";
+    var isAdmin = User.IsInRole("Admin");
+
+    var vi = Model.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi");
+    var en = Model.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en");
+
+    var orderedStops = Model.TourItems
+        .OrderBy(x => x.OrderIndex)
+        .ToList();
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+
+<style>
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    .info-card,
+    .map-card,
+    .stop-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .info-card .card-header,
+    .map-card .card-header,
+    .stop-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+
+    .lang-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.25rem 0.55rem;
+        display: inline-block;
+        margin-bottom: 0.45rem;
+    }
+
+    .lang-vi {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .lang-en {
+        background: #f3f4f6;
+        color: #495057;
+    }
+
+    .tour-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #212529;
+        margin-bottom: 0.35rem;
+        line-height: 1.35;
+    }
+
+    .tour-desc {
+        color: #6c757d;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    .meta-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .meta-chip-dark {
+        background: #212529;
+        color: #fff;
+    }
+
+    .meta-chip-light {
+        background: #eef2f7;
+        color: #475569;
+    }
+
+    .tour-map-panel {
+        position: sticky;
+        top: 1.5rem;
+    }
+
+    #tourMap {
+        height: 520px;
+        width: 100%;
+    }
+
+    .tour-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #212529;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 2px solid #fff;
+        box-shadow: 0 0.125rem 0.4rem rgba(0,0,0,0.25);
+    }
+
+    .route-list {
+        padding: 1rem 1.25rem 1.1rem;
+        border-top: 1px solid #e9ecef;
+        background: #fff;
+    }
+
+    .route-list-title {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .route-list-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid #f1f3f5;
+        cursor: pointer;
+    }
+
+    .route-list-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .route-list-item:hover {
+        background: #fafbfc;
+    }
+
+    .route-list-badge {
+        min-width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: #212529;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .route-list-name {
+        font-weight: 600;
+        color: #212529;
+        line-height: 1.35;
+    }
+
+    .route-list-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .stop-item {
+        display: flex;
+        gap: 0.9rem;
+        align-items: flex-start;
+        padding: 0.9rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .stop-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .stop-number {
+        min-width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 999px;
+        background: #212529;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .stop-title {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 0.15rem;
+    }
+
+    .stop-meta {
+        color: #6c757d;
+        font-size: 0.88rem;
+        line-height: 1.4;
+    }
+
+    @@media (max-width: 991.98px) {
+        .tour-map-panel {
+            position: static;
+        }
+
+        #tourMap {
+            height: 420px;
+        }
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Tour Details</h2>
+        <p class="page-subtitle">Preview multilingual tour information, stop order, and route map.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        @if (isAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit Tour</a>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="card info-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Tour Summary</span>
+                <div class="d-flex gap-2">
+                    <span class="meta-chip meta-chip-dark">@orderedStops.Count Stops</span>
+
+                    @if (Model.IsActive)
+                    {
+                        <span class="meta-chip meta-chip-light">Active</span>
+                    }
+                    else
+                    {
+                        <span class="meta-chip meta-chip-light">Inactive</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="lang-badge lang-vi">VI</div>
+                        <div class="tour-name">@(vi?.Name ?? "-")</div>
+                        <p class="tour-desc">@(string.IsNullOrWhiteSpace(vi?.Description) ? "No Vietnamese description" : vi!.Description)</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="lang-badge lang-en">EN</div>
+                        <div class="tour-name">@(en?.Name ?? "-")</div>
+                        <p class="tour-desc">@(string.IsNullOrWhiteSpace(en?.Description) ? "No English description" : en!.Description)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card stop-card">
+            <div class="card-header">
+                Stop List
+            </div>
+            <div class="card-body">
+                @if (!orderedStops.Any())
+                {
+                    <div class="text-muted">No stops available for this tour.</div>
+                }
+                else
+                {
+                    @for (int i = 0; i < orderedStops.Count; i++)
+                    {
+                        var stop = orderedStops[i];
+                        var foodStall = stop.FoodStall;
+                        var viName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
+                        var enName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
+
+                        <div class="stop-item">
+                            <div class="stop-number">@(i + 1)</div>
+                            <div>
+                                <div class="stop-title">@(!string.IsNullOrWhiteSpace(viName) ? viName : !string.IsNullOrWhiteSpace(enName) ? enName : $"Food Stall {foodStall.Id}")</div>
+                                <div class="stop-meta">Order Index: @stop.OrderIndex</div>
+                                <div class="stop-meta">Address: @(string.IsNullOrWhiteSpace(foodStall.Address) ? "No address" : foodStall.Address)</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="tour-map-panel">
+            <div class="card map-card">
+                <div class="card-header">
+                    Route Map Preview
+                </div>
+                <div class="card-body p-0">
+                    <div id="tourMap"></div>
+                </div>
+
+                <div class="route-list">
+                    <div class="route-list-title">Route Preview</div>
+
+                    @if (!orderedStops.Any())
+                    {
+                        <div class="text-muted">No valid stops available.</div>
+                    }
+                    else
+                    {
+                        @for (int i = 0; i < orderedStops.Count; i++)
+                        {
+                            var stop = orderedStops[i];
+                            var foodStall = stop.FoodStall;
+                            var viName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
+                            var enName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
+                            var displayName = !string.IsNullOrWhiteSpace(viName)
+                                ? viName
+                                : !string.IsNullOrWhiteSpace(enName)
+                                    ? enName
+                                    : $"Food Stall {foodStall.Id}";
+
+                            <div class="route-list-item"
+                                 onclick="focusStop(@foodStall.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture), @foodStall.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture))">
+                                <div class="route-list-badge">@(i + 1)</div>
+                                <div>
+                                    <div class="route-list-name">@displayName</div>
+                                    <div class="route-list-meta">Order Index: @stop.OrderIndex</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+        const stops = [
+            @for (int i = 0; i < orderedStops.Count; i++)
+            {
+                var stop = orderedStops[i];
+                var foodStall = stop.FoodStall;
+                var viName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
+                var enName = foodStall.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
+                var displayName = !string.IsNullOrWhiteSpace(viName)
+                    ? viName
+                    : !string.IsNullOrWhiteSpace(enName)
+                        ? enName
+                        : $"Food Stall {foodStall.Id}";
+
+                @: {
+                @:     index: @(i + 1),
+                @:     orderIndex: @stop.OrderIndex,
+                @:     name: "@Html.Raw(displayName.Replace("\"", "\\\""))",
+                @:     latitude: @foodStall.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                @:     longitude: @foodStall.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                @: },
+            }
+        ];
+
+        const map = L.map('tourMap');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const markersLayer = L.layerGroup().addTo(map);
+        let routeLine = null;
+
+        function focusStop(lat, lng) {
+            map.flyTo([lat, lng], 18, { duration: 0.8 });
+        }
+
+        function clearRouteLine() {
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+        }
+
+        function drawFallbackPolyline(latLngs) {
+            clearRouteLine();
+
+            if (latLngs.length >= 2) {
+                routeLine = L.polyline(latLngs, {
+                    weight: 4,
+                    opacity: 0.85
+                }).addTo(map);
+            }
+        }
+
+        async function drawRoadRoute(stops) {
+            const coordinates = stops
+                .map(stop => `${stop.longitude},${stop.latitude}`)
+                .join(';');
+
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Routing HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.code !== 'Ok' || !data.routes || !data.routes.length) {
+                    throw new Error('No route returned');
+                }
+
+                const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+
+                clearRouteLine();
+                routeLine = L.polyline(routeCoords, {
+                    weight: 5,
+                    opacity: 0.9
+                }).addTo(map);
+
+                const bounds = L.latLngBounds(routeCoords);
+                map.fitBounds(bounds, { padding: [30, 30] });
+            } catch (error) {
+                const fallbackLatLngs = stops.map(stop => [stop.latitude, stop.longitude]);
+                drawFallbackPolyline(fallbackLatLngs);
+
+                if (fallbackLatLngs.length) {
+                    const bounds = L.latLngBounds(fallbackLatLngs);
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                }
+
+                console.warn('Road routing failed, fallback to straight polyline.', error);
+            }
+        }
+
+        if (stops.length === 0) {
+            map.setView([10.7602, 106.7035], 16);
+        } else {
+            const latLngs = stops.map(stop => [stop.latitude, stop.longitude]);
+
+            stops.forEach(stop => {
+                const numberedIcon = L.divIcon({
+                    className: '',
+                    html: `<div class="tour-marker">${stop.index}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    popupAnchor: [0, -15]
+                });
+
+                L.marker([stop.latitude, stop.longitude], { icon: numberedIcon })
+                    .bindPopup(`
+                        <strong>Stop ${stop.index}</strong><br/>
+                        ${stop.name}<br/>
+                        Order: ${stop.orderIndex}
+                    `)
+                    .addTo(markersLayer);
+            });
+
+            const bounds = L.latLngBounds(latLngs);
+            map.fitBounds(bounds, { padding: [30, 30] });
+
+            if (stops.length >= 2) {
+                drawRoadRoute(stops);
+            }
+        }
+    </script>
+}

@@ -1,11 +1,13 @@
 ﻿using AudioGuideAdmin.ViewModels.Tours;
 using AudioGuideAPI.Database;
 using AudioGuideAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AudioGuideAdmin.Controllers
 {
+    [Authorize(Roles = "Admin,FoodStallOwner")]
     public class ToursController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,18 +17,54 @@ namespace AudioGuideAdmin.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search)
         {
-            var tours = await _context.Tours
+            var query = _context.Tours
                 .Include(x => x.Translations)
                     .ThenInclude(t => t.Language)
                 .Include(x => x.TourItems)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keyword = search.Trim().ToLower();
+
+                query = query.Where(x =>
+                    x.Translations.Any(t =>
+                        (t.Name != null && t.Name.ToLower().Contains(keyword)) ||
+                        (t.Description != null && t.Description.ToLower().Contains(keyword))
+                    ));
+            }
+
+            var tours = await query
                 .OrderBy(x => x.Id)
                 .ToListAsync();
+
+            ViewBag.Search = search ?? "";
 
             return View(tours);
         }
 
+        public async Task<IActionResult> Details(int id)
+        {
+            var tour = await _context.Tours
+                .Include(x => x.Translations)
+                    .ThenInclude(t => t.Language)
+                .Include(x => x.TourItems)
+                    .ThenInclude(ti => ti.FoodStall)
+                        .ThenInclude(fs => fs.Translations)
+                            .ThenInclude(t => t.Language)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (tour == null)
+            {
+                return NotFound();
+            }
+
+            return View(tour);
+        }
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             await LoadFoodStallOptions();
@@ -64,6 +102,7 @@ namespace AudioGuideAdmin.Controllers
             return View(vm);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TourEditViewModel model)
@@ -115,6 +154,7 @@ namespace AudioGuideAdmin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var tour = await _context.Tours
@@ -199,6 +239,7 @@ namespace AudioGuideAdmin.Controllers
             return View(vm);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TourEditViewModel model)
@@ -261,6 +302,7 @@ namespace AudioGuideAdmin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var tour = await _context.Tours
@@ -277,6 +319,7 @@ namespace AudioGuideAdmin.Controllers
             return View(tour);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -317,7 +360,9 @@ namespace AudioGuideAdmin.Controllers
                 {
                     Id = x.Id,
                     Label = $"{x.Id} - {displayName}",
-                    SearchText = $"{displayName} {x.Address}".Trim()
+                    SearchText = $"{displayName} {x.Address}".Trim(),
+                    Latitude = x.Latitude,
+                    Longitude = x.Longitude
                 };
             }).ToList();
 
@@ -388,6 +433,8 @@ namespace AudioGuideAdmin.Controllers
             public int Id { get; set; }
             public string Label { get; set; } = "";
             public string SearchText { get; set; } = "";
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
         }
     }
 }
