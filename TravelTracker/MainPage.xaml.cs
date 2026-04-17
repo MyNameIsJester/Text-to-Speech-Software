@@ -33,9 +33,7 @@ public partial class MainPage : ContentPage
                 if (_selectedLanguage != null)
                 {
                     Preferences.Set("CurrentLanguage", _selectedLanguage.LanguageCode);
-
                     LanguageService.Instance.SetLanguage(_selectedLanguage.LanguageCode);
-
                     _ = LoadStallsFromApiAsync(_selectedLanguage.LanguageCode);
                 }
             }
@@ -123,9 +121,33 @@ public partial class MainPage : ContentPage
         var button = sender as Button;
         if (button == null) return;
 
+        UpdateCategoryButtonsUI(button);
+
         _currentCategory = button.Text.Replace("🌟 ", "").Replace("🐌 ", "").Replace("🔥 ", "").Replace("🍲 ", "");
 
         FilterList(searchBar.Text?.ToLower() ?? "", _currentCategory);
+    }
+
+    private void UpdateCategoryButtonsUI(Button selectedBtn)
+    {
+        var buttons = new[] { btnCatAll, btnCatOc, btnCatNuong, btnCatLau };
+        bool isDark = Application.Current.RequestedTheme == AppTheme.Dark;
+
+        foreach (var btn in buttons)
+        {
+            if (btn == null) continue;
+
+            if (btn == selectedBtn)
+            {
+                btn.BackgroundColor = Color.FromArgb("#512BD4");
+                btn.TextColor = Colors.White;
+            }
+            else
+            {
+                btn.BackgroundColor = isDark ? Color.FromArgb("#333333") : Color.FromArgb("#E0E0E0");
+                btn.TextColor = isDark ? Colors.White : Colors.Black;
+            }
+        }
     }
 
     private void FilterList(string keyword, string category)
@@ -134,12 +156,27 @@ public partial class MainPage : ContentPage
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            filtered = filtered.Where(s => s.Name.ToLower().Contains(keyword) || s.Specialty.ToLower().Contains(keyword));
+            filtered = filtered.Where(s =>
+                (s.Name != null && s.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                (s.Specialty != null && s.Specialty.Contains(keyword, StringComparison.OrdinalIgnoreCase)));
         }
 
         if (category != "Tất cả" && !string.IsNullOrWhiteSpace(category))
         {
-            filtered = filtered.Where(s => s.Specialty.Contains(category, StringComparison.OrdinalIgnoreCase));
+            filtered = filtered.Where(s =>
+            {
+                bool nameMatches = s.Name != null && s.Name.Contains(category, StringComparison.OrdinalIgnoreCase);
+                bool specialtyMatches = s.Specialty != null && s.Specialty.Contains(category, StringComparison.OrdinalIgnoreCase);
+
+                if (category == "Nướng" || category == "Lẩu")
+                {
+                    bool isSnailStall = s.Name != null && s.Name.Contains("Ốc", StringComparison.OrdinalIgnoreCase);
+
+                    return nameMatches || (specialtyMatches && !isSnailStall);
+                }
+
+                return nameMatches || specialtyMatches;
+            });
         }
 
         Stalls.Clear();

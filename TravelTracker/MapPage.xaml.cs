@@ -36,9 +36,10 @@ public partial class MapPage : ContentPage, IQueryAttributable
 
         var tileSource = new BruTile.Web.HttpTileSource(
             new BruTile.Predefined.GlobalSphericalMercator(),
-            "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-            new[] { "a", "b", "c", "d" },
-            "CartoVoyager");
+            "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+            new[] { "0", "1", "2", "3" },
+            "GoogleMaps");
+
         mapView.Map.Layers.Add(new Mapsui.Tiling.Layers.TileLayer(tileSource));
 
         mapView.PinClicked += async (s, e) =>

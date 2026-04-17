@@ -73,10 +73,28 @@ public class ApiService
                     }
 
                     if (!string.IsNullOrEmpty(stall.ImageUrl))
-                        stall.ImageUrl = stall.ImageUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                    {
+                        if (stall.ImageUrl.StartsWith("/"))
+                        {
+                            stall.ImageUrl = $"http://10.0.2.2:5218{stall.ImageUrl}";
+                        }
+                        else
+                        {
+                            stall.ImageUrl = stall.ImageUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                        }
+                    }
 
                     if (!string.IsNullOrEmpty(stall.AudioUrl))
-                        stall.AudioUrl = stall.AudioUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                    {
+                        if (stall.AudioUrl.StartsWith("/"))
+                        {
+                            stall.AudioUrl = $"http://10.0.2.2:5218{stall.AudioUrl}";
+                        }
+                        else
+                        {
+                            stall.AudioUrl = stall.AudioUrl.Replace("https://localhost:7246", "http://10.0.2.2:5218").Replace("localhost", "10.0.2.2");
+                        }
+                    }
                 }
 
                 return stalls;
