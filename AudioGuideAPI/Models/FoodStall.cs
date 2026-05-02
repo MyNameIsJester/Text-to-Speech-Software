@@ -29,6 +29,9 @@ namespace AudioGuideAPI.Models
 
         public bool IsActive { get; set; } = true;
 
+        [MaxLength(450)]
+        public string? OwnerUserId { get; set; }
+
         public ICollection<FoodStallTranslation> Translations { get; set; }
             = new List<FoodStallTranslation>();
     }

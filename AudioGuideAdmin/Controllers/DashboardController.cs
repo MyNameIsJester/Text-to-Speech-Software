@@ -1,4 +1,5 @@
-﻿using AudioGuideAdmin.ViewModels.Dashboard;
+﻿using AudioGuideAdmin.Services;
+using AudioGuideAdmin.ViewModels.Dashboard;
 using AudioGuideAPI.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace AudioGuideAdmin.Controllers
     public class DashboardController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly WebVisitApiService _webVisitApiService;
 
-        public DashboardController(AppDbContext context)
+        public DashboardController(AppDbContext context, WebVisitApiService webVisitApiService)
         {
             _context = context;
+            _webVisitApiService = webVisitApiService;
         }
 
         public async Task<IActionResult> Index()
@@ -25,15 +28,22 @@ namespace AudioGuideAdmin.Controllers
             var totalTours = await _context.Tours.CountAsync();
 
             var gpsLogs = await _context.PlaybackLogs.CountAsync(x => x.TriggerType == "GPS");
-            var qrLogs = await _context.PlaybackLogs.CountAsync(x => x.TriggerType == "QR");
+            var demoLogs = await _context.PlaybackLogs.CountAsync(x => x.TriggerType == "DEMO");
             var viLogs = await _context.PlaybackLogs.CountAsync(x => x.LanguageCode == "vi");
             var enLogs = await _context.PlaybackLogs.CountAsync(x => x.LanguageCode == "en");
+
+            var completedLogs = await _context.PlaybackLogs.CountAsync(x => x.Status == "Completed");
+            var stoppedLogs = await _context.PlaybackLogs.CountAsync(x => x.Status == "Stopped");
+            var interruptedLogs = await _context.PlaybackLogs.CountAsync(x => x.Status == "Interrupted");
+
+            var totalActualListeningSeconds = await _context.PlaybackLogs
+                .SumAsync(x => (int?)x.ActualDurationSeconds) ?? 0;
 
             var recentPlaybackLogs = await _context.PlaybackLogs
                 .Include(x => x.FoodStall)
                     .ThenInclude(fs => fs.Translations)
                         .ThenInclude(t => t.Language)
-                .OrderByDescending(x => x.PlayedAt)
+                .OrderByDescending(x => x.StartedAt)
                 .Take(5)
                 .Select(x => new RecentPlaybackLogViewModel
                 {
@@ -51,19 +61,24 @@ namespace AudioGuideAdmin.Controllers
                     FoodStallAddress = x.FoodStall.Address ?? "-",
                     LanguageCode = x.LanguageCode,
                     TriggerType = x.TriggerType,
-                    PlayedAt = x.PlayedAt,
-                    DurationSeconds = x.DurationSeconds
+                    Status = x.Status,
+                    StartedAt = x.StartedAt,
+                    EndedAt = x.EndedAt,
+                    ActualDurationSeconds = x.ActualDurationSeconds
                 })
                 .ToListAsync();
 
             var topFoodStallsRaw = await _context.PlaybackLogs
+                .Where(x => x.Status == "Completed")
                 .GroupBy(x => x.FoodStallId)
                 .Select(g => new
                 {
                     FoodStallId = g.Key,
-                    PlaybackCount = g.Count()
+                    PlaybackCount = g.Count(),
+                    TotalActualDurationSeconds = g.Sum(x => x.ActualDurationSeconds)
                 })
                 .OrderByDescending(x => x.PlaybackCount)
+                .ThenByDescending(x => x.TotalActualDurationSeconds)
                 .Take(5)
                 .ToListAsync();
 
@@ -89,7 +104,8 @@ namespace AudioGuideAdmin.Controllers
                                     ? enName
                                     : $"Food Stall {x.Id}",
                             FoodStallAddress = x.Address ?? "-",
-                            PlaybackCount = 0
+                            PlaybackCount = 0,
+                            TotalActualDurationSeconds = 0
                         };
                     });
 
@@ -99,9 +115,20 @@ namespace AudioGuideAdmin.Controllers
                 {
                     var item = topFoodStallMap[x.FoodStallId];
                     item.PlaybackCount = x.PlaybackCount;
+                    item.TotalActualDurationSeconds = x.TotalActualDurationSeconds;
                     return item;
                 })
                 .ToList();
+
+            WebVisitStatsViewModel webVisitStats;
+            try
+            {
+                webVisitStats = await _webVisitApiService.GetStatsAsync();
+            }
+            catch
+            {
+                webVisitStats = new WebVisitStatsViewModel();
+            }
 
             var vm = new DashboardViewModel
             {
@@ -111,10 +138,18 @@ namespace AudioGuideAdmin.Controllers
                 TotalQrMappings = totalQrMappings,
                 TotalTours = totalTours,
 
+                TotalWebVisits = webVisitStats.TotalVisits,
+                ActiveWebUsers = webVisitStats.ActiveUsers,
+
                 GpsLogs = gpsLogs,
-                QrLogs = qrLogs,
+                DemoLogs = demoLogs,
                 ViLogs = viLogs,
                 EnLogs = enLogs,
+
+                CompletedLogs = completedLogs,
+                StoppedLogs = stoppedLogs,
+                InterruptedLogs = interruptedLogs,
+                TotalActualListeningSeconds = totalActualListeningSeconds,
 
                 RecentPlaybackLogs = recentPlaybackLogs,
                 TopFoodStalls = topFoodStalls

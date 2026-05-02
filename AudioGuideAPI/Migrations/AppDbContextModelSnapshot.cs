@@ -44,6 +44,10 @@ namespace AudioGuideAPI.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("OwnerUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PriceRange")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -139,8 +143,11 @@ namespace AudioGuideAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("DurationSeconds")
+                    b.Property<int>("ActualDurationSeconds")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("FoodStallId")
                         .HasColumnType("INTEGER");
@@ -150,7 +157,12 @@ namespace AudioGuideAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("PlayedAt")
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TriggerType")
@@ -260,6 +272,33 @@ namespace AudioGuideAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("TourTranslations");
+                });
+
+            modelBuilder.Entity("WebVisit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("FirstSeenAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastSeenAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("VisitToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WebVisits");
                 });
 
             modelBuilder.Entity("AudioGuideAPI.Models.FoodStallTranslation", b =>

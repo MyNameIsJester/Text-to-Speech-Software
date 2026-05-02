@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -29,7 +29,6 @@
     <Folder Include="Migrations\" />
     <Folder Include="NewFolder3\" />
     <Folder Include="NewFolder4\" />
-    <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\audio\" />
     <Folder Include="wwwroot\en\" />
     <Folder Include="wwwroot\flags\" />

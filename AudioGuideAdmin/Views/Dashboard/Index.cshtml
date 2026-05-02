@@ -71,6 +71,8 @@
 
     .metric-accent-primary .metric-value { color: #0d6efd; }
     .metric-accent-success .metric-value { color: #198754; }
+    .metric-accent-warning .metric-value { color: #b58105; }
+    .metric-accent-danger .metric-value { color: #dc3545; }
 
     .summary-card {
         border: none;
@@ -123,6 +125,16 @@
     .summary-chip-en {
         background: #eef2f7;
         color: #495057;
+    }
+
+    .summary-chip-gps {
+        background: #e8f5e9;
+        color: #198754;
+    }
+
+    .summary-chip-demo {
+        background: #fff3cd;
+        color: #856404;
     }
 
     .panel-card {
@@ -214,7 +226,7 @@
     }
 
     .top-stall-count {
-        min-width: 58px;
+        min-width: 82px;
         text-align: right;
         flex-shrink: 0;
     }
@@ -268,6 +280,24 @@
     <div class="dashboard-section-title">Core Metrics</div>
     <div class="row g-3">
         <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-primary">
+                <div class="card-body">
+                    <div class="metric-label">Total Web Visits</div>
+                    <div class="metric-value">@Model.TotalWebVisits</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-warning">
+                <div class="card-body">
+                    <div class="metric-label">Active Web Users</div>
+                    <div class="metric-value">@Model.ActiveWebUsers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
             <div class="card metric-card">
                 <div class="card-body">
                     <div class="metric-label">Total Food Stalls</div>
@@ -288,7 +318,7 @@
         <div class="col-sm-6 col-xl-3">
             <div class="card metric-card">
                 <div class="card-body">
-                    <div class="metric-label">Total Playback Logs</div>
+                    <div class="metric-label">Total Playback Sessions</div>
                     <div class="metric-value">@Model.TotalPlaybackLogs</div>
                 </div>
             </div>
@@ -308,11 +338,11 @@
 <div class="dashboard-section">
     <div class="dashboard-section-title">Playback Summary</div>
     <div class="row g-3">
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card summary-card">
                 <div class="card-body">
                     <div>
-                        <div class="summary-label">Vietnamese Playback</div>
+                        <div class="summary-label">Vietnamese Sessions</div>
                         <div class="summary-value">@Model.ViLogs</div>
                     </div>
                     <div class="summary-chip summary-chip-vi">VI</div>
@@ -320,14 +350,79 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card summary-card">
                 <div class="card-body">
                     <div>
-                        <div class="summary-label">English Playback</div>
+                        <div class="summary-label">English Sessions</div>
                         <div class="summary-value">@Model.EnLogs</div>
                     </div>
                     <div class="summary-chip summary-chip-en">EN</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div>
+                        <div class="summary-label">GPS Sessions</div>
+                        <div class="summary-value">@Model.GpsLogs</div>
+                    </div>
+                    <div class="summary-chip summary-chip-gps">GPS</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div>
+                        <div class="summary-label">Demo Sessions</div>
+                        <div class="summary-value">@Model.DemoLogs</div>
+                    </div>
+                    <div class="summary-chip summary-chip-demo">DM</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="dashboard-section-title">Playback Status</div>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-success">
+                <div class="card-body">
+                    <div class="metric-label">Completed</div>
+                    <div class="metric-value">@Model.CompletedLogs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-warning">
+                <div class="card-body">
+                    <div class="metric-label">Stopped</div>
+                    <div class="metric-value">@Model.StoppedLogs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-danger">
+                <div class="card-body">
+                    <div class="metric-label">Interrupted</div>
+                    <div class="metric-value">@Model.InterruptedLogs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card metric-card metric-accent-primary">
+                <div class="card-body">
+                    <div class="metric-label">Total Actual Listening</div>
+                    <div class="metric-value">@Model.TotalActualListeningSeconds</div>
                 </div>
             </div>
         </div>
@@ -338,7 +433,7 @@
     <div class="col-xl-7">
         <div class="card panel-card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Recent Playback Logs</span>
+                <span>Recent Playback Sessions</span>
                 <span class="mini-note">Latest 5 records</span>
             </div>
             <div class="card-body p-0">
@@ -347,16 +442,18 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 70px;">Id</th>
-                                <th style="min-width: 260px;">Food Stall</th>
+                                <th style="min-width: 240px;">Food Stall</th>
                                 <th style="width: 90px;">Lang</th>
-                                <th style="width: 180px;">Played At</th>
+                                <th style="width: 110px;">Status</th>
+                                <th style="width: 180px;">Started</th>
+                                <th style="width: 100px;">Actual</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (!Model.RecentPlaybackLogs.Any())
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
+                                    <td colspan="6" class="text-center text-muted py-4">
                                         No playback logs found.
                                     </td>
                                 </tr>
@@ -371,6 +468,7 @@
                                             <div class="recent-log-stall">@item.FoodStallName</div>
                                             <div class="recent-log-address">Stall ID: @item.FoodStallId</div>
                                             <div class="recent-log-address">@item.FoodStallAddress</div>
+                                            <div class="recent-log-address">Trigger: @item.TriggerType</div>
                                         </td>
                                         <td>
                                             @if (item.LanguageCode == "vi")
@@ -386,7 +484,26 @@
                                                 <span class="badge bg-light text-dark playback-lang-badge">@item.LanguageCode</span>
                                             }
                                         </td>
-                                        <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                        <td>
+                                            @if (item.Status == "Completed")
+                                            {
+                                                <span class="badge bg-success">@item.Status</span>
+                                            }
+                                            else if (item.Status == "Stopped")
+                                            {
+                                                <span class="badge bg-warning text-dark">@item.Status</span>
+                                            }
+                                            else if (item.Status == "Interrupted")
+                                            {
+                                                <span class="badge bg-danger">@item.Status</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@item.Status</span>
+                                            }
+                                        </td>
+                                        <td>@item.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                        <td>@item.ActualDurationSeconds s</td>
                                     </tr>
                                 }
                             }
@@ -400,7 +517,7 @@
     <div class="col-xl-5">
         <div class="card panel-card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Top Food Stalls by Playback</span>
+                <span>Top Food Stalls by Completed Playback</span>
                 <span class="mini-note">Top 5</span>
             </div>
             <div class="card-body p-0">
@@ -427,6 +544,7 @@
                             <div class="top-stall-count">
                                 <div class="top-stall-count-value">@item.PlaybackCount</div>
                                 <div class="top-stall-count-label">plays</div>
+                                <div class="top-stall-count-label">@item.TotalActualDurationSeconds s</div>
                             </div>
                         </div>
                     }

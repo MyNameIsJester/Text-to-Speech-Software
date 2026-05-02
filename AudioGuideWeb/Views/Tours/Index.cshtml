@@ -1,0 +1,277 @@
+﻿@model List<AudioGuideWeb.Models.TourViewModel>
+
+@{
+    ViewData["Title"] = "Tour";
+    var currentLanguage = ViewBag.CurrentLanguage as string ?? "vi";
+    var errorMessage = ViewBag.ErrorMessage as string;
+}
+
+<style>
+    .tour-page-header {
+        margin-bottom: 1.4rem;
+    }
+
+    .tour-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin-bottom: 0.45rem;
+        color: #111827;
+    }
+
+    .tour-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        max-width: 860px;
+        line-height: 1.65;
+        margin-bottom: 0;
+    }
+
+    .tour-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .tour-card {
+        position: relative;
+        border: 1px solid #e5e7eb;
+        border-radius: 1.35rem;
+        background: #ffffff;
+        box-shadow: 0 18px 40px rgba(17, 24, 39, 0.06);
+        overflow: hidden;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+        .tour-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 50px rgba(17, 24, 39, 0.10);
+            border-color: #dbe3ef;
+        }
+
+    .tour-card-body {
+        padding: 1.25rem 1.25rem 1rem;
+    }
+
+    .tour-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .tour-stop-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.42rem 0.8rem;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 0.84rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .tour-lang-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.42rem 0.8rem;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .tour-card-name {
+        font-size: 1.18rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.4;
+        margin-bottom: 0.55rem;
+        word-break: break-word;
+    }
+
+    .tour-card-description {
+        color: #4b5563;
+        font-size: 0.95rem;
+        line-height: 1.65;
+        margin-bottom: 1rem;
+        min-height: 4.8rem;
+    }
+
+    .tour-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0 1.25rem 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .tour-card-meta {
+        color: #6b7280;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .tour-card-actions {
+        display: flex;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+    }
+
+    .tour-btn-primary,
+    .tour-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0.68rem 1rem;
+        border-radius: 0.82rem;
+        font-size: 0.92rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.18s ease;
+    }
+
+    .tour-btn-primary {
+        background: #111827;
+        color: #ffffff !important;
+        border: 1px solid #111827;
+    }
+
+        .tour-btn-primary:hover {
+            background: #000000;
+            color: #ffffff !important;
+        }
+
+    .tour-btn-secondary {
+        background: #ffffff;
+        color: #111827 !important;
+        border: 1px solid #d1d5db;
+    }
+
+        .tour-btn-secondary:hover {
+            background: #f9fafb;
+            color: #111827 !important;
+            border-color: #9ca3af;
+        }
+
+    .tour-empty {
+        border: 1px dashed #d1d5db;
+        border-radius: 1.25rem;
+        background: #f9fafb;
+        padding: 2.4rem 1.25rem;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .tour-empty-title {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.35rem;
+    }
+
+    @@media (max-width: 575.98px) {
+        .tour-title {
+            font-size: 1.8rem;
+        }
+
+        .tour-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tour-card-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .tour-card-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .tour-btn-primary,
+        .tour-btn-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="tour-page-header">
+    <h1 class="tour-title">Khám phá các tour</h1>
+    <p class="tour-subtitle">
+        Chọn một tour phù hợp để xem trước lộ trình, danh sách điểm dừng và bắt đầu trải nghiệm theo từng chặng.
+    </p>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger mb-4">
+        @errorMessage
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="tour-empty">
+        <div class="tour-empty-title">Chưa có tour khả dụng</div>
+        <div>Hiện chưa có tour nào đang hoạt động để hiển thị.</div>
+    </div>
+}
+else
+{
+    <div class="tour-grid">
+        @foreach (var tour in Model)
+        {
+            <div class="tour-card">
+                <div class="tour-card-body">
+                    <div class="tour-card-top">
+                        <div class="tour-stop-badge">📍 @tour.StopCount điểm dừng</div>
+                        <div class="tour-lang-chip">Ngôn ngữ: @tour.LanguageCode</div>
+                    </div>
+
+                    <div class="tour-card-name">
+                        @(string.IsNullOrWhiteSpace(tour.Name) ? $"Tour #{tour.Id}" : tour.Name)
+                    </div>
+
+                    <div class="tour-card-description">
+                        @(string.IsNullOrWhiteSpace(tour.Description)
+                            ? "Tour này hiện chưa có mô tả chi tiết."
+                            : tour.Description)
+                    </div>
+                </div>
+
+                <div class="tour-card-footer">
+                    <div class="tour-card-meta">
+                        Sẵn sàng xem trước lộ trình và bắt đầu tour ngay trên bản đồ.
+                    </div>
+
+                    <div class="tour-card-actions">
+                        <a asp-controller="Tours"
+                               asp-action="Details"
+                               asp-route-id="@tour.Id"
+                               asp-route-lang="@currentLanguage"
+                               class="tour-btn-secondary">
+                            Xem chi tiết
+                        </a>
+
+                        <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-route-lang="@currentLanguage"
+                               asp-route-tourId="@tour.Id"
+                               asp-route-startTour="true"
+                               class="tour-btn-primary">
+                            Bắt đầu tour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

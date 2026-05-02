@@ -21,6 +21,8 @@ namespace AudioGuideAPI.Database
         public DbSet<TourItem> TourItems => Set<TourItem>();
         public DbSet<TourTranslation> TourTranslations => Set<TourTranslation>();
 
+        public DbSet<WebVisit> WebVisits { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -61,6 +63,9 @@ namespace AudioGuideAPI.Database
 
                 entity.Property(x => x.MapLink)
                       .HasMaxLength(500);
+
+                entity.Property(x => x.OwnerUserId)
+                      .HasMaxLength(450);
             });
 
             modelBuilder.Entity<FoodStallTranslation>(entity =>
@@ -102,6 +107,9 @@ namespace AudioGuideAPI.Database
                       .HasMaxLength(10);
 
                 entity.Property(x => x.TriggerType)
+                      .HasMaxLength(20);
+
+                entity.Property(x => x.Status)
                       .HasMaxLength(20);
 
                 entity.HasOne(x => x.FoodStall)

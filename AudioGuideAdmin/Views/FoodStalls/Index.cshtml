@@ -197,10 +197,7 @@
                             <th style="width: 90px;">Radius</th>
                             <th style="width: 90px;">Priority</th>
                             <th style="width: 110px;">Status</th>
-                            @if (isAdmin)
-                            {
-                                <th style="min-width: 220px;">Actions</th>
-                            }
+                            <th style="min-width: 220px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,24 +245,24 @@
                                     }
                                 </td>
 
-                                @if (isAdmin)
-                                {
-                                    <td>
-                                        <div class="action-stack">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
-                                                Edit Base
-                                            </a>
+                                <td>
+                                    <div class="action-stack">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                            Edit Base
+                                        </a>
 
-                                            <a asp-action="EditTranslations" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-dark">
-                                                Translations
-                                            </a>
+                                        <a asp-action="EditTranslations" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-dark">
+                                            Translations
+                                        </a>
 
+                                        @if (isAdmin)
+                                        {
                                             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
                                                 Delete
                                             </a>
-                                        </div>
-                                    </td>
-                                }
+                                        }
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>

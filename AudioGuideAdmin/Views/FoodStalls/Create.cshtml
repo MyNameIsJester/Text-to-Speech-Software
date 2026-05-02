@@ -4,6 +4,13 @@
     ViewData["Title"] = "Create Food Stall";
 }
 
+@using System.Text.Json
+@{
+    var ownerLookupJson = ViewBag.OwnerLookupJson as string ?? "[]";
+    var selectedOwnerDisplayText = ViewBag.SelectedOwnerDisplayText as string ?? "";
+    var ownerLookupItems = ViewBag.OwnerLookupItems as IEnumerable<dynamic>;
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">Create Food Stall</h2>
@@ -77,6 +84,34 @@
                 </div>
 
                 <div class="col-12">
+                    <label class="form-label">Owner</label>
+
+                    <input type="text"
+                           id="ownerSearch"
+                           class="form-control"
+                           list="ownerSuggestions"
+                           placeholder="Type owner name or email"
+                           value="@selectedOwnerDisplayText" />
+
+                    <datalist id="ownerSuggestions">
+                        @if (ownerLookupItems != null)
+                        {
+                            foreach (var item in ownerLookupItems)
+                            {
+                                <option value="@item.DisplayText"></option>
+                            }
+                        }
+                    </datalist>
+
+                    <input asp-for="OwnerUserId" type="hidden" id="OwnerUserId" />
+                    <span asp-validation-for="OwnerUserId" class="text-danger"></span>
+
+                    <div class="form-text">
+                        Type to search by owner name or email. Leave empty if no owner is assigned.
+                    </div>
+                </div>
+
+                <div class="col-12">
                     <div class="form-check mt-2">
                         <input asp-for="IsActive" class="form-check-input" />
                         <label asp-for="IsActive" class="form-check-label"></label>
@@ -96,4 +131,29 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (() => {
+            const ownerLookup = @Html.Raw(ownerLookupJson);
+            const ownerSearchInput = document.getElementById("ownerSearch");
+            const ownerUserIdInput = document.getElementById("OwnerUserId");
+
+            function syncOwnerSelection() {
+                const typedValue = (ownerSearchInput.value || "").trim();
+
+                if (!typedValue) {
+                    ownerUserIdInput.value = "";
+                    return;
+                }
+
+                const matched = ownerLookup.find(x => x.DisplayText === typedValue);
+                ownerUserIdInput.value = matched ? matched.Id : "";
+            }
+
+            ownerSearchInput.addEventListener("input", syncOwnerSelection);
+            ownerSearchInput.addEventListener("change", syncOwnerSelection);
+
+            syncOwnerSelection();
+        })();
+    </script>
 }

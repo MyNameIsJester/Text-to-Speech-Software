@@ -3,10 +3,19 @@ using AudioGuideAdmin.Models;
 using AudioGuideAPI.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using AudioGuideAdmin.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpClient<AdminFoodStallApiService>();
+
+builder.Services.AddHttpClient<AdminTourApiService>();
+
+builder.Services.AddHttpClient<WebVisitApiService>();
+
+builder.Services.AddHttpClient<AdminPlaybackLogApiService>();
 
 // Tạo đường dẫn tuyệt đối tới file DB thật của AudioGuideAPI
 var domainDbPath = Path.GetFullPath(

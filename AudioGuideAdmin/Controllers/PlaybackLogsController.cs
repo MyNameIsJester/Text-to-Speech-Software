@@ -1,30 +1,27 @@
-﻿using AudioGuideAPI.Database;
+﻿using AudioGuideAdmin.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AudioGuideAdmin.Controllers
 {
     [Authorize(Roles = "Admin,FoodStallOwner")]
     public class PlaybackLogsController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly AdminPlaybackLogApiService _playbackLogApiService;
 
-        public PlaybackLogsController(AppDbContext context)
+        public PlaybackLogsController(AdminPlaybackLogApiService playbackLogApiService)
         {
-            _context = context;
+            _playbackLogApiService = playbackLogApiService;
         }
 
         public async Task<IActionResult> Index(
             string? languageCode,
             string? triggerType,
-            int? foodStallId)
+            string? status,
+            string? foodStallKeyword)
         {
-            var query = _context.PlaybackLogs
-                .Include(x => x.FoodStall)
-                    .ThenInclude(fs => fs.Translations)
-                        .ThenInclude(t => t.Language)
-                .AsQueryable();
+            var logs = await _playbackLogApiService.GetPlaybackLogsAsync();
+            var query = logs.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(languageCode))
             {
@@ -36,74 +33,41 @@ namespace AudioGuideAdmin.Controllers
                 query = query.Where(x => x.TriggerType == triggerType);
             }
 
-            if (foodStallId.HasValue)
+            if (!string.IsNullOrWhiteSpace(status))
             {
-                query = query.Where(x => x.FoodStallId == foodStallId.Value);
+                query = query.Where(x => x.Status == status);
             }
 
-            var logs = await query
-                .OrderByDescending(x => x.PlayedAt)
-                .ToListAsync();
-
-            var totalLogs = logs.Count;
-            var gpsLogs = logs.Count(x => x.TriggerType == "GPS");
-            var qrLogs = logs.Count(x => x.TriggerType == "QR");
-            var viLogs = logs.Count(x => x.LanguageCode == "vi");
-            var enLogs = logs.Count(x => x.LanguageCode == "en");
-
-            var foodStalls = await _context.FoodStalls
-                .Include(x => x.Translations)
-                    .ThenInclude(t => t.Language)
-                .OrderBy(x => x.Id)
-                .ToListAsync();
-
-            var foodStallOptions = foodStalls.Select(x =>
+            if (!string.IsNullOrWhiteSpace(foodStallKeyword))
             {
-                var viName = x.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
-                var enName = x.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
+                var keyword = foodStallKeyword.Trim().ToLowerInvariant();
 
-                var displayName = !string.IsNullOrWhiteSpace(viName)
-                    ? viName
-                    : !string.IsNullOrWhiteSpace(enName)
-                        ? enName
-                        : (x.Address ?? $"Food Stall {x.Id}");
-
-                return new PlaybackFoodStallOptionViewModel
-                {
-                    Id = x.Id,
-                    Label = $"{x.Id} - {displayName}",
-                    SearchText = $"{displayName} {x.Address}".Trim()
-                };
-            }).ToList();
-
-            string selectedFoodStallLabel = "";
-            if (foodStallId.HasValue)
-            {
-                selectedFoodStallLabel = foodStallOptions
-                    .FirstOrDefault(x => x.Id == foodStallId.Value)?.Label ?? "";
+                query = query.Where(x =>
+                    (!string.IsNullOrWhiteSpace(x.FoodStall?.Address) &&
+                     x.FoodStall.Address.ToLowerInvariant().Contains(keyword)) ||
+                    (x.FoodStall?.Translations?.Any(t =>
+                        !string.IsNullOrWhiteSpace(t.Name) &&
+                        t.Name.ToLowerInvariant().Contains(keyword)) ?? false)
+                );
             }
 
-            ViewBag.LanguageCode = languageCode;
-            ViewBag.TriggerType = triggerType;
-            ViewBag.FoodStallId = foodStallId;
-            ViewBag.SelectedFoodStallLabel = selectedFoodStallLabel;
+            var filteredLogs = query
+                .OrderByDescending(x => x.StartedAt)
+                .ToList();
 
-            ViewBag.TotalLogs = totalLogs;
-            ViewBag.GpsLogs = gpsLogs;
-            ViewBag.QrLogs = qrLogs;
-            ViewBag.ViLogs = viLogs;
-            ViewBag.EnLogs = enLogs;
+            ViewBag.LanguageCode = languageCode ?? "";
+            ViewBag.TriggerType = triggerType ?? "";
+            ViewBag.Status = status ?? "";
+            ViewBag.FoodStallKeyword = foodStallKeyword ?? "";
 
-            ViewBag.FoodStallOptions = foodStallOptions;
+            ViewBag.TotalLogs = filteredLogs.Count;
+            ViewBag.ViLogs = filteredLogs.Count(x => x.LanguageCode == "vi");
+            ViewBag.EnLogs = filteredLogs.Count(x => x.LanguageCode == "en");
+            ViewBag.CompletedLogs = filteredLogs.Count(x => x.Status == "Completed");
+            ViewBag.StoppedLogs = filteredLogs.Count(x => x.Status == "Stopped");
+            ViewBag.InterruptedLogs = filteredLogs.Count(x => x.Status == "Interrupted");
 
-            return View(logs);
-        }
-
-        public class PlaybackFoodStallOptionViewModel
-        {
-            public int Id { get; set; }
-            public string Label { get; set; } = "";
-            public string SearchText { get; set; } = "";
+            return View(filteredLogs);
         }
     }
 }

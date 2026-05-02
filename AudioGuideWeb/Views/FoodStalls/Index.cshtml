@@ -1,0 +1,33 @@
+﻿@model List<AudioGuideWeb.Models.FoodStallViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách quán ăn";
+}
+
+<h2 class="mb-4">Danh sách quán ăn</h2>
+
+<div class="row">
+    @foreach (var stall in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                @if (!string.IsNullOrWhiteSpace(stall.ImageUrl))
+                {
+                    <img src="@stall.ImageUrl"
+                         class="card-img-top"
+                         style="height:200px;object-fit:cover;" />
+                }
+
+                <div class="card-body">
+                    <h5>@stall.Name</h5>
+                    <p>@stall.Address</p>
+                    <p>@stall.Description</p>
+
+                    <a href="/FoodStalls/Details/@stall.Id" class="btn btn-primary btn-sm">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

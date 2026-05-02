@@ -196,23 +196,40 @@ namespace AudioGuideAPI.Database
 
             if (!context.PlaybackLogs.Any())
             {
-                context.PlaybackLogs.Add(new PlaybackLog
-                {
-                    FoodStallId = 1,
-                    LanguageCode = "vi",
-                    TriggerType = "GPS",
-                    PlayedAt = DateTime.Now.AddMinutes(-10),
-                    DurationSeconds = 45
-                });
+                var now = DateTime.UtcNow;
 
-                context.PlaybackLogs.Add(new PlaybackLog
-                {
-                    FoodStallId = 2,
-                    LanguageCode = "en",
-                    TriggerType = "QR",
-                    PlayedAt = DateTime.Now.AddMinutes(-5),
-                    DurationSeconds = 60
-                });
+                context.PlaybackLogs.AddRange(
+                    new PlaybackLog
+                    {
+                        FoodStallId = 1,
+                        LanguageCode = "vi",
+                        TriggerType = "GPS",
+                        Status = "Completed",
+                        StartedAt = now.AddSeconds(-45),
+                        EndedAt = now,
+                        ActualDurationSeconds = 45
+                    },
+                    new PlaybackLog
+                    {
+                        FoodStallId = 2,
+                        LanguageCode = "en",
+                        TriggerType = "GPS",
+                        Status = "Completed",
+                        StartedAt = now.AddSeconds(-60),
+                        EndedAt = now.AddSeconds(-15),
+                        ActualDurationSeconds = 45
+                    },
+                    new PlaybackLog
+                    {
+                        FoodStallId = 3,
+                        LanguageCode = "vi",
+                        TriggerType = "GPS",
+                        Status = "Stopped",
+                        StartedAt = now.AddSeconds(-30),
+                        EndedAt = now.AddSeconds(-10),
+                        ActualDurationSeconds = 20
+                    }
+                );
 
                 await context.SaveChangesAsync();
             }

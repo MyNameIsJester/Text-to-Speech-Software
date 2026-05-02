@@ -7,6 +7,7 @@
   </Folder>
   <Project Path="AudioGuideAdmin/AudioGuideAdmin.csproj" />
   <Project Path="AudioGuideAPI/AudioGuideAPI.csproj" />
+  <Project Path="AudioGuideWeb/AudioGuideWeb.csproj" Id="323fa5e4-0047-4e05-8f81-52802911918a" />
   <Project Path="TravelTracker/TravelTracker.csproj">
     <Deploy Solution="Debug|*" />
   </Project>

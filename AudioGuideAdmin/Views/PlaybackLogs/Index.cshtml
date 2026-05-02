@@ -4,11 +4,16 @@
     ViewData["Title"] = "Playback Logs";
 
     var languageCode = ViewBag.LanguageCode as string ?? "";
+    var triggerType = ViewBag.TriggerType as string ?? "";
+    var status = ViewBag.Status as string ?? "";
     var foodStallKeyword = ViewBag.FoodStallKeyword as string ?? "";
 
     var totalLogs = ViewBag.TotalLogs as int? ?? 0;
     var viLogs = ViewBag.ViLogs as int? ?? 0;
     var enLogs = ViewBag.EnLogs as int? ?? 0;
+    var completedLogs = ViewBag.CompletedLogs as int? ?? 0;
+    var stoppedLogs = ViewBag.StoppedLogs as int? ?? 0;
+    var interruptedLogs = ViewBag.InterruptedLogs as int? ?? 0;
 }
 
 <style>
@@ -82,34 +87,61 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">Playback Logs</h2>
-        <p class="page-subtitle">Track playback activity, language usage, and listening history.</p>
+        <p class="page-subtitle">Track playback sessions, status, and actual listening duration.</p>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-2">
         <div class="card metric-card">
             <div class="card-body">
-                <div class="metric-label">Total Logs</div>
+                <div class="metric-label">Total</div>
                 <div class="metric-value">@totalLogs</div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-2">
         <div class="card metric-card">
             <div class="card-body">
-                <div class="metric-label">VI Logs</div>
+                <div class="metric-label">VI</div>
                 <div class="metric-value">@viLogs</div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-2">
         <div class="card metric-card">
             <div class="card-body">
-                <div class="metric-label">EN Logs</div>
+                <div class="metric-label">EN</div>
                 <div class="metric-value">@enLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label">Completed</div>
+                <div class="metric-value">@completedLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label">Stopped</div>
+                <div class="metric-value">@stoppedLogs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="metric-label">Interrupted</div>
+                <div class="metric-value">@interruptedLogs</div>
             </div>
         </div>
     </div>
@@ -119,7 +151,7 @@
     <div class="card-body">
         <form method="get" asp-action="Index">
             <div class="row g-3 align-items-end">
-                <div class="col-lg-8">
+                <div class="col-lg-4">
                     <label class="filter-label" for="foodStallKeyword">Food Stall</label>
                     <input type="text"
                            id="foodStallKeyword"
@@ -135,6 +167,27 @@
                         <option value="">All</option>
                         <option value="vi" selected="@(languageCode == "vi")">VI</option>
                         <option value="en" selected="@(languageCode == "en")">EN</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="filter-label" for="triggerType">Trigger</label>
+                    <select id="triggerType" name="triggerType" class="form-select">
+                        <option value="">All</option>
+                        <option value="GPS" selected="@(triggerType == "GPS")">GPS</option>
+                        <option value="DEMO" selected="@(triggerType == "DEMO")">DEMO</option>
+                        <option value="TOUR" selected="@(triggerType == "TOUR")">TOUR</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="filter-label" for="status">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="Started" selected="@(status == "Started")">Started</option>
+                        <option value="Completed" selected="@(status == "Completed")">Completed</option>
+                        <option value="Stopped" selected="@(status == "Stopped")">Stopped</option>
+                        <option value="Interrupted" selected="@(status == "Interrupted")">Interrupted</option>
                     </select>
                 </div>
 
@@ -164,11 +217,14 @@
                 <table class="table table-hover align-middle mb-0 log-table">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 80px;">Id</th>
-                            <th style="min-width: 300px;">Food Stall</th>
-                            <th style="width: 110px;">Language</th>
-                            <th style="width: 180px;">Played At</th>
-                            <th style="width: 140px;">Duration</th>
+                            <th style="width: 70px;">Id</th>
+                            <th style="min-width: 260px;">Food Stall</th>
+                            <th style="width: 90px;">Lang</th>
+                            <th style="width: 100px;">Trigger</th>
+                            <th style="width: 120px;">Status</th>
+                            <th style="width: 170px;">Started</th>
+                            <th style="width: 170px;">Ended</th>
+                            <th style="width: 130px;">Actual</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -207,18 +263,11 @@
                                     }
                                 </td>
 
-                                <td>@item.PlayedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
-
-                                <td>
-                                    @if (item.DurationSeconds > 0)
-                                    {
-                                        <span>@item.DurationSeconds sec</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
+                                <td>@item.TriggerType</td>
+                                <td>@item.Status</td>
+                                <td>@item.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td>@(item.EndedAt.HasValue? item.EndedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") : "-")</td>
+                                <td>@item.ActualDurationSeconds sec</td>
                             </tr>
                         }
                     </tbody>

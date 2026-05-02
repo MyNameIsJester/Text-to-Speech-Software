@@ -13,10 +13,15 @@ namespace AudioGuideAPI.Models
         public string LanguageCode { get; set; } = "";
 
         [MaxLength(20)]
-        public string TriggerType { get; set; } = ""; // GPS / QR
+        public string TriggerType { get; set; } = ""; // GPS / DEMO / TOUR
 
-        public DateTime PlayedAt { get; set; }
+        [MaxLength(20)]
+        public string Status { get; set; } = "Started"; // Started / Completed / Stopped / Interrupted
 
-        public int DurationSeconds { get; set; }
+        public DateTime StartedAt { get; set; }
+
+        public DateTime? EndedAt { get; set; }
+
+        public int ActualDurationSeconds { get; set; }
     }
 }

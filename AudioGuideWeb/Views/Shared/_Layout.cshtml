@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Audio Guide</title>
+    <script type="importmap"></script>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AudioGuideWeb.styles.css" asp-append-version="true" />
+
+    <style>
+            body {
+                background: #f7f8fa;
+                color: #1f2937;
+            }
+
+            header {
+                position: relative;
+                z-index: 5000;
+            }
+
+            .app-navbar {
+                position: relative;
+                z-index: 5001;
+                background: #ffffff;
+                border-bottom: 1px solid #e5e7eb;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+            }
+
+                .app-navbar .navbar-brand {
+                    position: relative;
+                    z-index: 5002;
+                    font-weight: 800;
+                    font-size: 1.25rem;
+                    color: #111827 !important;
+                    letter-spacing: -0.02em;
+                }
+
+                .app-navbar .nav-link {
+                    position: relative;
+                    z-index: 5002;
+                    color: #4b5563 !important;
+                    font-weight: 600;
+                    padding: 0.65rem 0.9rem !important;
+                    border-radius: 0.75rem;
+                    transition: all 0.2s ease;
+                }
+
+                    .app-navbar .nav-link:hover {
+                        background: #f3f4f6;
+                        color: #111827 !important;
+                    }
+
+                    .app-navbar .nav-link.active {
+                        background: #111827;
+                        color: #ffffff !important;
+                    }
+
+            .app-page {
+                position: relative;
+                z-index: 1;
+                padding-top: 1.5rem;
+                padding-bottom: 2rem;
+                min-height: calc(100vh - 140px);
+            }
+
+            .app-footer {
+                position: relative;
+                z-index: 1;
+                border-top: 1px solid #e5e7eb;
+                background: #ffffff;
+                color: #6b7280;
+                font-size: 0.95rem;
+                padding: 1rem 0;
+            }
+    </style>
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg app-navbar">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Audio Guide</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                                   asp-controller="Home" asp-action="Index">
+                                Khám phá
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "FoodStalls" ? "active" : "")"
+                                   asp-controller="FoodStalls" asp-action="Index">
+                                Danh sách quán
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-controller="Tours" asp-action="Index"
+                                   class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Tours" ? "active" : "")">
+                                Tour
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container app-page">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <div class="container">
+            &copy; 2026 - Audio Guide - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

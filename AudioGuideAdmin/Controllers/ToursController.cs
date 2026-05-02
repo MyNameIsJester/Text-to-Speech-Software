@@ -1,4 +1,5 @@
-﻿using AudioGuideAdmin.ViewModels.Tours;
+﻿using AudioGuideAdmin.Services;
+using AudioGuideAdmin.ViewModels.Tours;
 using AudioGuideAPI.Database;
 using AudioGuideAPI.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -11,55 +12,45 @@ namespace AudioGuideAdmin.Controllers
     public class ToursController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly AdminTourApiService _tourApi;
 
-        public ToursController(AppDbContext context)
+        public ToursController(AppDbContext context, AdminTourApiService tourApi)
         {
             _context = context;
+            _tourApi = tourApi;
         }
 
         public async Task<IActionResult> Index(string? search)
         {
-            var query = _context.Tours
-                .Include(x => x.Translations)
-                    .ThenInclude(t => t.Language)
-                .Include(x => x.TourItems)
-                .AsQueryable();
+            var tours = await _tourApi.GetToursAsync();
+            var query = tours.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var keyword = search.Trim().ToLower();
+                var keyword = search.Trim().ToLowerInvariant();
 
                 query = query.Where(x =>
                     x.Translations.Any(t =>
-                        (t.Name != null && t.Name.ToLower().Contains(keyword)) ||
-                        (t.Description != null && t.Description.ToLower().Contains(keyword))
+                        (!string.IsNullOrWhiteSpace(t.Name) && t.Name.ToLowerInvariant().Contains(keyword)) ||
+                        (!string.IsNullOrWhiteSpace(t.Description) && t.Description.ToLowerInvariant().Contains(keyword))
                     ));
             }
 
-            var tours = await query
-                .OrderBy(x => x.Id)
-                .ToListAsync();
-
             ViewBag.Search = search ?? "";
 
-            return View(tours);
+            return View(query.OrderBy(x => x.Id).ToList());
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var tour = await _context.Tours
-                .Include(x => x.Translations)
-                    .ThenInclude(t => t.Language)
-                .Include(x => x.TourItems)
-                    .ThenInclude(ti => ti.FoodStall)
-                        .ThenInclude(fs => fs.Translations)
-                            .ThenInclude(t => t.Language)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var tour = await _tourApi.GetTourByIdAsync(id);
 
             if (tour == null)
             {
                 return NotFound();
             }
+
+            await HydrateTourFoodStallDetailsAsync(tour);
 
             return View(tour);
         }
@@ -69,28 +60,18 @@ namespace AudioGuideAdmin.Controllers
         {
             await LoadFoodStallOptions();
 
-            var viLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "vi");
-            var enLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "en");
-
-            if (viLanguage == null || enLanguage == null)
-            {
-                return BadRequest("Languages vi/en not found.");
-            }
-
             var vm = new TourEditViewModel
             {
                 IsActive = true,
                 Vietnamese = new TourTranslationInputViewModel
                 {
-                    LanguageId = viLanguage.Id,
-                    LanguageCode = viLanguage.LanguageCode,
-                    DisplayName = viLanguage.DisplayName
+                    LanguageCode = "vi",
+                    DisplayName = "Tiếng Việt"
                 },
                 English = new TourTranslationInputViewModel
                 {
-                    LanguageId = enLanguage.Id,
-                    LanguageCode = enLanguage.LanguageCode,
-                    DisplayName = enLanguage.DisplayName
+                    LanguageCode = "en",
+                    DisplayName = "English"
                 },
                 Items = new List<TourItemInputViewModel>
                 {
@@ -107,7 +88,7 @@ namespace AudioGuideAdmin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TourEditViewModel model)
         {
-            await PopulateLanguageMetadata(model);
+            PopulateLanguageMetadata(model);
 
             if (!ModelState.IsValid)
             {
@@ -129,27 +110,7 @@ namespace AudioGuideAdmin.Controllers
                 return View(model);
             }
 
-            var tour = new Tour
-            {
-                IsActive = model.IsActive
-            };
-
-            _context.Tours.Add(tour);
-            await _context.SaveChangesAsync();
-
-            await UpsertTourTranslations(tour.Id, model);
-
-            foreach (var item in validItems)
-            {
-                _context.TourItems.Add(new TourItem
-                {
-                    TourId = tour.Id,
-                    FoodStallId = item.FoodStallId,
-                    OrderIndex = item.OrderIndex
-                });
-            }
-
-            await _context.SaveChangesAsync();
+            await _tourApi.CreateAsync(model);
 
             return RedirectToAction(nameof(Index));
         }
@@ -157,14 +118,7 @@ namespace AudioGuideAdmin.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            var tour = await _context.Tours
-                .Include(x => x.Translations)
-                    .ThenInclude(t => t.Language)
-                .Include(x => x.TourItems)
-                    .ThenInclude(ti => ti.FoodStall)
-                        .ThenInclude(fs => fs.Translations)
-                            .ThenInclude(t => t.Language)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var tour = await _tourApi.GetTourByIdAsync(id);
 
             if (tour == null)
             {
@@ -172,17 +126,10 @@ namespace AudioGuideAdmin.Controllers
             }
 
             await LoadFoodStallOptions();
+            var optionMap = await GetFoodStallOptionMapAsync();
 
-            var viLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "vi");
-            var enLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "en");
-
-            if (viLanguage == null || enLanguage == null)
-            {
-                return BadRequest("Languages vi/en not found.");
-            }
-
-            var viTranslation = tour.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi");
-            var enTranslation = tour.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en");
+            var viTranslation = tour.Translations.FirstOrDefault(t => t.Language?.LanguageCode == "vi");
+            var enTranslation = tour.Translations.FirstOrDefault(t => t.Language?.LanguageCode == "en");
 
             var vm = new TourEditViewModel
             {
@@ -191,46 +138,28 @@ namespace AudioGuideAdmin.Controllers
 
                 Vietnamese = new TourTranslationInputViewModel
                 {
-                    TourTranslationId = viTranslation?.Id,
-                    LanguageId = viLanguage.Id,
-                    LanguageCode = viLanguage.LanguageCode,
-                    DisplayName = viLanguage.DisplayName,
+                    LanguageCode = "vi",
+                    DisplayName = "Tiếng Việt",
                     Name = viTranslation?.Name ?? "",
                     Description = viTranslation?.Description
                 },
 
                 English = new TourTranslationInputViewModel
                 {
-                    TourTranslationId = enTranslation?.Id,
-                    LanguageId = enLanguage.Id,
-                    LanguageCode = enLanguage.LanguageCode,
-                    DisplayName = enLanguage.DisplayName,
+                    LanguageCode = "en",
+                    DisplayName = "English",
                     Name = enTranslation?.Name ?? "",
                     Description = enTranslation?.Description
                 },
 
                 Items = tour.TourItems
                     .OrderBy(x => x.OrderIndex)
-                    .Select(x =>
+                    .Select(x => new TourItemInputViewModel
                     {
-                        var viName = x.FoodStall.Translations
-                            .FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
-                        var enName = x.FoodStall.Translations
-                            .FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
-
-                        var label = !string.IsNullOrWhiteSpace(viName)
-                            ? $"{x.FoodStallId} - {viName}"
-                            : !string.IsNullOrWhiteSpace(enName)
-                                ? $"{x.FoodStallId} - {enName}"
-                                : $"{x.FoodStallId} - {x.FoodStall.Address}";
-
-                        return new TourItemInputViewModel
-                        {
-                            TourItemId = x.Id,
-                            FoodStallId = x.FoodStallId,
-                            FoodStallLabel = label,
-                            OrderIndex = x.OrderIndex
-                        };
+                        TourItemId = x.Id,
+                        FoodStallId = x.FoodStallId,
+                        FoodStallLabel = optionMap.TryGetValue(x.FoodStallId, out var label) ? label : $"{x.FoodStallId}",
+                        OrderIndex = x.OrderIndex
                     })
                     .ToList()
             };
@@ -249,7 +178,7 @@ namespace AudioGuideAdmin.Controllers
                 return NotFound();
             }
 
-            await PopulateLanguageMetadata(model);
+            PopulateLanguageMetadata(model);
 
             if (!ModelState.IsValid)
             {
@@ -271,33 +200,13 @@ namespace AudioGuideAdmin.Controllers
                 return View(model);
             }
 
-            var tour = await _context.Tours
-                .Include(x => x.TourItems)
-                .Include(x => x.Translations)
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (tour == null)
+            var existing = await _tourApi.GetTourByIdAsync(id);
+            if (existing == null)
             {
                 return NotFound();
             }
 
-            tour.IsActive = model.IsActive;
-
-            await UpsertTourTranslations(tour.Id, model);
-
-            _context.TourItems.RemoveRange(tour.TourItems);
-
-            foreach (var item in validItems)
-            {
-                _context.TourItems.Add(new TourItem
-                {
-                    TourId = tour.Id,
-                    FoodStallId = item.FoodStallId,
-                    OrderIndex = item.OrderIndex
-                });
-            }
-
-            await _context.SaveChangesAsync();
+            await _tourApi.UpdateAsync(id, model);
 
             return RedirectToAction(nameof(Index));
         }
@@ -305,16 +214,14 @@ namespace AudioGuideAdmin.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var tour = await _context.Tours
-                .Include(x => x.Translations)
-                    .ThenInclude(t => t.Language)
-                .Include(x => x.TourItems)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var tour = await _tourApi.GetTourByIdAsync(id);
 
             if (tour == null)
             {
                 return NotFound();
             }
+
+            await HydrateTourFoodStallDetailsAsync(tour);
 
             return View(tour);
         }
@@ -324,15 +231,14 @@ namespace AudioGuideAdmin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tour = await _context.Tours.FindAsync(id);
+            var tour = await _tourApi.GetTourByIdAsync(id);
 
             if (tour == null)
             {
                 return NotFound();
             }
 
-            _context.Tours.Remove(tour);
-            await _context.SaveChangesAsync();
+            await _tourApi.DeleteAsync(id);
 
             return RedirectToAction(nameof(Index));
         }
@@ -369,50 +275,67 @@ namespace AudioGuideAdmin.Controllers
             ViewBag.FoodStallOptions = options;
         }
 
-        private async Task PopulateLanguageMetadata(TourEditViewModel model)
+        private static void PopulateLanguageMetadata(TourEditViewModel model)
         {
-            var viLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "vi");
-            var enLanguage = await _context.Languages.FirstOrDefaultAsync(x => x.LanguageCode == "en");
+            model.Vietnamese.LanguageCode = "vi";
+            model.Vietnamese.DisplayName = "Tiếng Việt";
 
-            if (viLanguage != null)
-            {
-                model.Vietnamese.LanguageId = viLanguage.Id;
-                model.Vietnamese.LanguageCode = viLanguage.LanguageCode;
-                model.Vietnamese.DisplayName = viLanguage.DisplayName;
-            }
-
-            if (enLanguage != null)
-            {
-                model.English.LanguageId = enLanguage.Id;
-                model.English.LanguageCode = enLanguage.LanguageCode;
-                model.English.DisplayName = enLanguage.DisplayName;
-            }
+            model.English.LanguageCode = "en";
+            model.English.DisplayName = "English";
         }
 
-        private async Task UpsertTourTranslations(int tourId, TourEditViewModel model)
+        private async Task<Dictionary<int, string>> GetFoodStallOptionMapAsync()
         {
-            await UpsertTranslation(tourId, model.Vietnamese);
-            await UpsertTranslation(tourId, model.English);
-        }
+            var foodStalls = await _context.FoodStalls
+                .Include(x => x.Translations)
+                    .ThenInclude(t => t.Language)
+                .OrderBy(x => x.Id)
+                .ToListAsync();
 
-        private async Task UpsertTranslation(int tourId, TourTranslationInputViewModel input)
-        {
-            var translation = await _context.TourTranslations
-                .FirstOrDefaultAsync(x => x.TourId == tourId && x.LanguageId == input.LanguageId);
-
-            if (translation == null)
-            {
-                translation = new TourTranslation
+            return foodStalls.ToDictionary(
+                x => x.Id,
+                x =>
                 {
-                    TourId = tourId,
-                    LanguageId = input.LanguageId
-                };
+                    var viName = x.Translations.FirstOrDefault(t => t.Language.LanguageCode == "vi")?.Name;
+                    var enName = x.Translations.FirstOrDefault(t => t.Language.LanguageCode == "en")?.Name;
 
-                _context.TourTranslations.Add(translation);
+                    var displayName = !string.IsNullOrWhiteSpace(viName)
+                        ? viName
+                        : !string.IsNullOrWhiteSpace(enName)
+                            ? enName
+                            : (x.Address ?? $"Food Stall {x.Id}");
+
+                    return $"{x.Id} - {displayName}";
+                });
+        }
+
+        private async Task HydrateTourFoodStallDetailsAsync(Tour tour)
+        {
+            if (tour.TourItems == null || !tour.TourItems.Any())
+            {
+                return;
             }
 
-            translation.Name = input.Name?.Trim() ?? "";
-            translation.Description = input.Description?.Trim();
+            var foodStallIds = tour.TourItems
+                .Select(x => x.FoodStallId)
+                .Distinct()
+                .ToList();
+
+            var foodStalls = await _context.FoodStalls
+                .Include(x => x.Translations)
+                    .ThenInclude(t => t.Language)
+                .Where(x => foodStallIds.Contains(x.Id))
+                .ToListAsync();
+
+            var foodStallMap = foodStalls.ToDictionary(x => x.Id, x => x);
+
+            foreach (var item in tour.TourItems)
+            {
+                if (foodStallMap.TryGetValue(item.FoodStallId, out var stall))
+                {
+                    item.FoodStall = stall;
+                }
+            }
         }
 
         private static void EnsureAtLeastTwoItems(TourEditViewModel model)
