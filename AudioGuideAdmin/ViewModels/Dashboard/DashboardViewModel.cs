@@ -7,9 +7,9 @@
         public int TotalPlaybackLogs { get; set; }
         public int TotalQrMappings { get; set; }
         public int TotalTours { get; set; }
-
-        public int GpsLogs { get; set; }
+ 
         public int DemoLogs { get; set; }
+        public int TourLogs { get; set; }
 
         public int ViLogs { get; set; }
         public int EnLogs { get; set; }
@@ -19,6 +19,8 @@
         public int InterruptedLogs { get; set; }
 
         public int TotalActualListeningSeconds { get; set; }
+        public int AverageListeningSeconds { get; set; }
+        public double CompletionRatePercent { get; set; }
 
         public List<RecentPlaybackLogViewModel> RecentPlaybackLogs { get; set; } = new();
         public List<TopFoodStallViewModel> TopFoodStalls { get; set; } = new();
@@ -49,7 +51,6 @@
         public string FoodStallName { get; set; } = "";
         public string FoodStallAddress { get; set; } = "";
         public int PlaybackCount { get; set; }
-
         public int TotalActualDurationSeconds { get; set; }
     }
 }

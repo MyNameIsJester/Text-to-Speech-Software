@@ -2,554 +2,661 @@
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    string FormatDuration(int seconds)
+    {
+        if (seconds <= 0) return "0s";
+
+        var time = TimeSpan.FromSeconds(seconds);
+
+        if (time.TotalHours >= 1)
+        {
+            return $"{(int)time.TotalHours}h {time.Minutes}m";
+        }
+
+        if (time.TotalMinutes >= 1)
+        {
+            return $"{time.Minutes}m {time.Seconds}s";
+        }
+
+        return $"{time.Seconds}s";
+    }
+
+    var totalLanguageLogs = Model.ViLogs + Model.EnLogs;
+    var viPercent = totalLanguageLogs > 0 ? Math.Round((double)Model.ViLogs / totalLanguageLogs * 100, 1) : 0;
+    var enPercent = totalLanguageLogs > 0 ? Math.Round((double)Model.EnLogs / totalLanguageLogs * 100, 1) : 0;
+
+    var totalTriggerLogs = Model.DemoLogs + Model.TourLogs;
+    var demoPercent = totalTriggerLogs > 0 ? Math.Round((double)Model.DemoLogs / totalTriggerLogs * 100, 1) : 0;
+    var tourPercent = totalTriggerLogs > 0 ? Math.Round((double)Model.TourLogs / totalTriggerLogs * 100, 1) : 0;
 }
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
+    .dashboard-shell {
+    padding-bottom: 2rem;
+    }
+
     .dashboard-hero {
-        margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
     }
 
     .dashboard-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        line-height: 1.1;
-        color: #212529;
-        margin-bottom: 0.35rem;
+    font-size: 2.35rem;
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
     }
 
     .dashboard-subtitle {
-        color: #6c757d;
-        margin-bottom: 0;
-        font-size: 1rem;
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 0;
     }
 
-    .dashboard-section {
-        margin-bottom: 1.5rem;
+    .dashboard-badge {
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    font-weight: 800;
+    font-size: 0.86rem;
+    white-space: nowrap;
     }
 
-    .dashboard-section-title {
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #7b8794;
-        margin-bottom: 0.85rem;
+    .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
     }
 
     .metric-card {
-        border: none;
-        border-radius: 1rem;
-        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
-        height: 100%;
-        min-height: 112px;
-        overflow: hidden;
-        background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.06);
+    padding: 1.15rem;
+    overflow: hidden;
+    position: relative;
     }
 
-    .metric-card .card-body {
-        padding: 1rem 1.1rem 0.95rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+    .metric-card::after {
+    content: "";
+    position: absolute;
+    right: -28px;
+    top: -28px;
+    width: 90px;
+    height: 90px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.04);
     }
 
     .metric-label {
-        font-size: 0.82rem;
-        color: #6c757d;
-        margin-bottom: 0.4rem;
-        font-weight: 600;
+    color: #64748b;
+    font-weight: 800;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.65rem;
     }
 
     .metric-value {
-        font-size: 2rem;
-        font-weight: 800;
-        line-height: 1;
-        color: #212529;
-        letter-spacing: -0.03em;
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+    letter-spacing: -0.04em;
     }
 
-    .metric-accent-primary .metric-value { color: #0d6efd; }
-    .metric-accent-success .metric-value { color: #198754; }
-    .metric-accent-warning .metric-value { color: #b58105; }
-    .metric-accent-danger .metric-value { color: #dc3545; }
-
-    .summary-card {
-        border: none;
-        border-radius: 1rem;
-        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
-        background: #fff;
-        min-height: 96px;
+    .metric-note {
+    margin-top: 0.55rem;
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 600;
     }
 
-    .summary-card .card-body {
-        padding: 1rem 1.15rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-
-    .summary-label {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: #6c757d;
-        margin-bottom: 0.2rem;
-    }
-
-    .summary-value {
-        font-size: 1.9rem;
-        font-weight: 800;
-        line-height: 1;
-        color: #212529;
-        letter-spacing: -0.03em;
-    }
-
-    .summary-chip {
-        width: 44px;
-        height: 44px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.85rem;
-        font-weight: 800;
-        flex-shrink: 0;
-    }
-
-    .summary-chip-vi {
-        background: #e7f1ff;
-        color: #0d6efd;
-    }
-
-    .summary-chip-en {
-        background: #eef2f7;
-        color: #495057;
-    }
-
-    .summary-chip-gps {
-        background: #e8f5e9;
-        color: #198754;
-    }
-
-    .summary-chip-demo {
-        background: #fff3cd;
-        color: #856404;
+    .panel-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
     }
 
     .panel-card {
-        border: none;
-        border-radius: 1rem;
-        box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.06);
-        overflow: hidden;
-        height: 100%;
-        background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    height: 100%;
     }
 
-    .panel-card .card-header {
-        background: #fff;
-        border-bottom: 1px solid #e9ecef;
-        font-weight: 700;
-        padding: 0.95rem 1.1rem;
+    .panel-header {
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid #eef2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
     }
 
-    .mini-note {
-        font-size: 0.82rem;
-        color: #6c757d;
-        font-weight: 600;
+    .panel-title {
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0;
     }
 
-    .recent-log-table th {
-        white-space: nowrap;
-        font-size: 0.88rem;
+    .panel-note {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 700;
     }
 
-    .recent-log-table td {
-        vertical-align: middle;
-        font-size: 0.94rem;
+    .panel-body {
+    padding: 1.15rem;
     }
 
-    .recent-log-stall {
-        font-weight: 700;
-        color: #212529;
+    .chart-wrap {
+    height: 280px;
+    position: relative;
     }
 
-    .recent-log-address {
-        font-size: 0.85rem;
-        color: #6c757d;
+    .health-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1rem;
     }
 
-    .playback-lang-badge {
-        min-width: 40px;
-        text-align: center;
-        border-radius: 999px;
+    .health-card {
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    border-radius: 1rem;
+    padding: 0.9rem;
     }
 
-    .top-stall-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.8rem;
-        padding: 0.95rem 1rem;
-        border-bottom: 1px solid #f1f3f5;
+    .health-label {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 800;
+    margin-bottom: 0.35rem;
     }
 
-    .top-stall-item:last-child {
-        border-bottom: none;
+    .health-value {
+    color: #0f172a;
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
     }
 
-    .top-stall-rank {
-        width: 2.1rem;
-        height: 2.1rem;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #111827;
-        color: #fff;
-        font-size: 0.88rem;
-        font-weight: 800;
-        flex-shrink: 0;
-        box-shadow: 0 0.125rem 0.35rem rgba(17, 24, 39, 0.18);
+    .progress-block {
+    margin-bottom: 1rem;
     }
 
-    .top-stall-name {
-        font-weight: 700;
-        color: #212529;
-        margin-bottom: 0.2rem;
-        line-height: 1.35;
+    .progress-head {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #334155;
+    margin-bottom: 0.45rem;
     }
 
-    .top-stall-meta {
-        font-size: 0.84rem;
-        color: #6c757d;
-        line-height: 1.35;
+    .soft-progress {
+    height: 0.7rem;
+    background: #eef2f7;
+    border-radius: 999px;
+    overflow: hidden;
     }
 
-    .top-stall-count {
-        min-width: 82px;
-        text-align: right;
-        flex-shrink: 0;
+    .soft-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: #111827;
     }
 
-    .top-stall-count-value {
-        font-weight: 800;
-        font-size: 1rem;
-        color: #212529;
-        line-height: 1.1;
+    .soft-progress-bar.blue {
+    background: #2563eb;
     }
 
-    .top-stall-count-label {
-        font-size: 0.8rem;
-        color: #6c757d;
+    .soft-progress-bar.green {
+    background: #16a34a;
+    }
+
+    .soft-progress-bar.amber {
+    background: #f59e0b;
+    }
+
+    .table-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    }
+
+    .playback-table th {
+    color: #64748b;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    }
+
+    .playback-table td {
+    vertical-align: middle;
+    font-size: 0.92rem;
+    }
+
+    .stall-name {
+    font-weight: 900;
+    color: #0f172a;
+    }
+
+    .stall-meta {
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    }
+
+    .leaderboard-item {
+    display: flex;
+    gap: 0.85rem;
+    padding: 0.95rem 1.15rem;
+    border-bottom: 1px solid #eef2f7;
+    }
+
+    .leaderboard-item:last-child {
+    border-bottom: none;
+    }
+
+    .leaderboard-rank {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: #0f172a;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+    }
+
+    .leaderboard-main {
+    flex: 1;
+    min-width: 0;
+    }
+
+    .leaderboard-name {
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1.35;
+    }
+
+    .leaderboard-meta {
+    color: #64748b;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    }
+
+    .leaderboard-count {
+    text-align: right;
+    flex-shrink: 0;
+    }
+
+    .leaderboard-count-value {
+    font-weight: 900;
+    color: #0f172a;
+    font-size: 1.05rem;
+    }
+
+    .leaderboard-count-label {
+    color: #64748b;
+    font-size: 0.78rem;
     }
 
     .empty-panel {
-        text-align: center;
-        color: #6c757d;
-        padding: 2rem 1rem;
+    color: #64748b;
+    padding: 2rem 1rem;
+    text-align: center;
     }
 
     @@media (max-width: 1199.98px) {
-        .dashboard-title {
-            font-size: 2rem;
-        }
+    .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-        .metric-card {
-            min-height: 106px;
-        }
+    .panel-grid {
+    grid-template-columns: 1fr;
+    }
     }
 
     @@media (max-width: 767.98px) {
-        .dashboard-title {
-            font-size: 1.8rem;
-        }
+    .dashboard-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    }
 
-        .metric-card .card-body,
-        .summary-card .card-body {
-            padding: 0.95rem 1rem;
-        }
+    .dashboard-title {
+    font-size: 1.9rem;
+    }
+
+    .metric-grid {
+    grid-template-columns: 1fr;
+    }
+
+    .health-row {
+    grid-template-columns: 1fr;
+    }
     }
 </style>
 
-<div class="dashboard-hero">
-    <div class="dashboard-title">Dashboard</div>
-    <p class="dashboard-subtitle">System overview for Audio Guide Phố Ẩm Thực Vĩnh Khánh.</p>
-</div>
+<div class="dashboard-shell">
+    <div class="dashboard-hero">
+        <div>
+            <h1 class="dashboard-title">Analytics Dashboard</h1>
+            <p class="dashboard-subtitle">
+                Operational overview for Audio Guide Phố Ẩm Thực Vĩnh Khánh.
+            </p>
+        </div>
 
-<div class="dashboard-section">
-    <div class="dashboard-section-title">Core Metrics</div>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-primary">
-                <div class="card-body">
-                    <div class="metric-label">Total Web Visits</div>
-                    <div class="metric-value">@Model.TotalWebVisits</div>
+        <div class="dashboard-badge">
+            Live dashboard
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <div class="metric-label">Web visits</div>
+            <div class="metric-value">@Model.TotalWebVisits</div>
+            <div class="metric-note">@Model.ActiveWebUsers active users now</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Playback sessions</div>
+            <div class="metric-value">@Model.TotalPlaybackLogs</div>
+            <div class="metric-note">@Model.CompletedLogs completed sessions</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Actual listening</div>
+            <div class="metric-value">@FormatDuration(Model.TotalActualListeningSeconds)</div>
+            <div class="metric-note">Average @FormatDuration(Model.AverageListeningSeconds)</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Completion rate</div>
+            <div class="metric-value">@Model.CompletionRatePercent%</div>
+            <div class="metric-note">Completed / all playback sessions</div>
+        </div>
+    </div>
+
+    <div class="panel-grid">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h2 class="panel-title">Playback Health</h2>
+                <span class="panel-note">Completed, stopped, interrupted</span>
+            </div>
+
+            <div class="panel-body">
+                <div class="chart-wrap">
+                    <canvas id="playbackStatusChart"></canvas>
+                </div>
+
+                <div class="health-row">
+                    <div class="health-card">
+                        <div class="health-label">Completed</div>
+                        <div class="health-value">@Model.CompletedLogs</div>
+                    </div>
+
+                    <div class="health-card">
+                        <div class="health-label">Stopped</div>
+                        <div class="health-value">@Model.StoppedLogs</div>
+                    </div>
+
+                    <div class="health-card">
+                        <div class="health-label">Interrupted</div>
+                        <div class="health-value">@Model.InterruptedLogs</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-warning">
-                <div class="card-body">
-                    <div class="metric-label">Active Web Users</div>
-                    <div class="metric-value">@Model.ActiveWebUsers</div>
-                </div>
+        <div class="panel-card">
+            <div class="panel-header">
+                <h2 class="panel-title">Distribution</h2>
+                <span class="panel-note">Language and trigger type</span>
             </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card">
-                <div class="card-body">
-                    <div class="metric-label">Total Food Stalls</div>
-                    <div class="metric-value">@Model.TotalFoodStalls</div>
+            <div class="panel-body">
+                <div class="progress-block">
+                    <div class="progress-head">
+                        <span>Vietnamese sessions</span>
+                        <span>@viPercent%</span>
+                    </div>
+                    <div class="soft-progress">
+                        <div class="soft-progress-bar blue" style="width:@viPercent%"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-success">
-                <div class="card-body">
-                    <div class="metric-label">Active Food Stalls</div>
-                    <div class="metric-value">@Model.ActiveFoodStalls</div>
+                <div class="progress-block">
+                    <div class="progress-head">
+                        <span>English sessions</span>
+                        <span>@enPercent%</span>
+                    </div>
+                    <div class="soft-progress">
+                        <div class="soft-progress-bar" style="width:@enPercent%"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card">
-                <div class="card-body">
-                    <div class="metric-label">Total Playback Sessions</div>
-                    <div class="metric-value">@Model.TotalPlaybackLogs</div>
+                <hr />
+
+                <div class="progress-block">
+                    <div class="progress-head">
+                        <span>Demo sessions</span>
+                        <span>@demoPercent%</span>
+                    </div>
+                    <div class="soft-progress">
+                        <div class="soft-progress-bar amber" style="width:@demoPercent%"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card">
-                <div class="card-body">
-                    <div class="metric-label">Total Tours</div>
-                    <div class="metric-value">@Model.TotalTours</div>
+                <div class="progress-block">
+                    <div class="progress-head">
+                        <span>Tour sessions</span>
+                        <span>@tourPercent%</span>
+                    </div>
+                    <div class="soft-progress">
+                        <div class="soft-progress-bar green" style="width:@tourPercent%"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="dashboard-section">
-    <div class="dashboard-section-title">Playback Summary</div>
-    <div class="row g-3">
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div>
-                        <div class="summary-label">Vietnamese Sessions</div>
-                        <div class="summary-value">@Model.ViLogs</div>
-                    </div>
-                    <div class="summary-chip summary-chip-vi">VI</div>
-                </div>
+    <div class="panel-grid">
+        <div class="table-card">
+            <div class="panel-header">
+                <h2 class="panel-title">Recent Playback Sessions</h2>
+                <span class="panel-note">Latest 5 records</span>
             </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div>
-                        <div class="summary-label">English Sessions</div>
-                        <div class="summary-value">@Model.EnLogs</div>
-                    </div>
-                    <div class="summary-chip summary-chip-en">EN</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div>
-                        <div class="summary-label">GPS Sessions</div>
-                        <div class="summary-value">@Model.GpsLogs</div>
-                    </div>
-                    <div class="summary-chip summary-chip-gps">GPS</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body">
-                    <div>
-                        <div class="summary-label">Demo Sessions</div>
-                        <div class="summary-value">@Model.DemoLogs</div>
-                    </div>
-                    <div class="summary-chip summary-chip-demo">DM</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="dashboard-section">
-    <div class="dashboard-section-title">Playback Status</div>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-success">
-                <div class="card-body">
-                    <div class="metric-label">Completed</div>
-                    <div class="metric-value">@Model.CompletedLogs</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-warning">
-                <div class="card-body">
-                    <div class="metric-label">Stopped</div>
-                    <div class="metric-value">@Model.StoppedLogs</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-danger">
-                <div class="card-body">
-                    <div class="metric-label">Interrupted</div>
-                    <div class="metric-value">@Model.InterruptedLogs</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card metric-card metric-accent-primary">
-                <div class="card-body">
-                    <div class="metric-label">Total Actual Listening</div>
-                    <div class="metric-value">@Model.TotalActualListeningSeconds</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-xl-7">
-        <div class="card panel-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Recent Playback Sessions</span>
-                <span class="mini-note">Latest 5 records</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 recent-log-table">
-                        <thead class="table-light">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 playback-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Food Stall</th>
+                            <th>Lang</th>
+                            <th>Trigger</th>
+                            <th>Status</th>
+                            <th>Started</th>
+                            <th>Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.RecentPlaybackLogs.Any())
+                        {
                             <tr>
-                                <th style="width: 70px;">Id</th>
-                                <th style="min-width: 240px;">Food Stall</th>
-                                <th style="width: 90px;">Lang</th>
-                                <th style="width: 110px;">Status</th>
-                                <th style="width: 180px;">Started</th>
-                                <th style="width: 100px;">Actual</th>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No playback logs found.
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.RecentPlaybackLogs.Any())
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.RecentPlaybackLogs)
                             {
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        No playback logs found.
+                                    <td class="fw-bold">#@item.Id</td>
+                                    <td>
+                                        <div class="stall-name">@item.FoodStallName</div>
+                                        <div class="stall-meta">@item.FoodStallAddress</div>
+                                        <div class="stall-meta">Stall ID: @item.FoodStallId</div>
                                     </td>
+                                    <td>
+                                        @if (item.LanguageCode == "vi")
+                                        {
+                                            <span class="badge rounded-pill bg-primary">VI</span>
+                                        }
+                                        else if (item.LanguageCode == "en")
+                                        {
+                                            <span class="badge rounded-pill bg-secondary">EN</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-light text-dark">@item.LanguageCode</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-light text-dark">@item.TriggerType</span>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Completed")
+                                        {
+                                            <span class="badge rounded-pill bg-success">@item.Status</span>
+                                        }
+                                        else if (item.Status == "Stopped")
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark">@item.Status</span>
+                                        }
+                                        else if (item.Status == "Interrupted")
+                                        {
+                                            <span class="badge rounded-pill bg-danger">@item.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-secondary">@item.Status</span>
+                                        }
+                                    </td>
+                                    <td>@item.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@FormatDuration(item.ActualDurationSeconds)</td>
                                 </tr>
                             }
-                            else
-                            {
-                                @foreach (var item in Model.RecentPlaybackLogs)
-                                {
-                                    <tr>
-                                        <td class="fw-semibold">@item.Id</td>
-                                        <td>
-                                            <div class="recent-log-stall">@item.FoodStallName</div>
-                                            <div class="recent-log-address">Stall ID: @item.FoodStallId</div>
-                                            <div class="recent-log-address">@item.FoodStallAddress</div>
-                                            <div class="recent-log-address">Trigger: @item.TriggerType</div>
-                                        </td>
-                                        <td>
-                                            @if (item.LanguageCode == "vi")
-                                            {
-                                                <span class="badge bg-primary playback-lang-badge">VI</span>
-                                            }
-                                            else if (item.LanguageCode == "en")
-                                            {
-                                                <span class="badge bg-secondary playback-lang-badge">EN</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-light text-dark playback-lang-badge">@item.LanguageCode</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (item.Status == "Completed")
-                                            {
-                                                <span class="badge bg-success">@item.Status</span>
-                                            }
-                                            else if (item.Status == "Stopped")
-                                            {
-                                                <span class="badge bg-warning text-dark">@item.Status</span>
-                                            }
-                                            else if (item.Status == "Interrupted")
-                                            {
-                                                <span class="badge bg-danger">@item.Status</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">@item.Status</span>
-                                            }
-                                        </td>
-                                        <td>@item.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
-                                        <td>@item.ActualDurationSeconds s</td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
 
-    <div class="col-xl-5">
-        <div class="card panel-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Top Food Stalls by Completed Playback</span>
-                <span class="mini-note">Top 5</span>
+        <div class="panel-card">
+            <div class="panel-header">
+                <h2 class="panel-title">Top Food Stalls</h2>
+                <span class="panel-note">By completed playback</span>
             </div>
-            <div class="card-body p-0">
-                @if (!Model.TopFoodStalls.Any())
+
+            @if (!Model.TopFoodStalls.Any())
+            {
+                <div class="empty-panel">
+                    No playback data found.
+                </div>
+            }
+            else
+            {
+                @for (int i = 0; i < Model.TopFoodStalls.Count; i++)
                 {
-                    <div class="empty-panel">
-                        No playback data found.
+                    var item = Model.TopFoodStalls[i];
+
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">@(i + 1)</div>
+
+                        <div class="leaderboard-main">
+                            <div class="leaderboard-name">@item.FoodStallName</div>
+                            <div class="leaderboard-meta">@item.FoodStallAddress</div>
+                            <div class="leaderboard-meta">Stall ID: @item.FoodStallId</div>
+                        </div>
+
+                        <div class="leaderboard-count">
+                            <div class="leaderboard-count-value">@item.PlaybackCount</div>
+                            <div class="leaderboard-count-label">plays</div>
+                            <div class="leaderboard-count-label">@FormatDuration(item.TotalActualDurationSeconds)</div>
+                        </div>
                     </div>
                 }
-                else
-                {
-                    @for (int i = 0; i < Model.TopFoodStalls.Count; i++)
-                    {
-                        var item = Model.TopFoodStalls[i];
-                        <div class="top-stall-item">
-                            <div class="top-stall-rank">@(i + 1)</div>
-
-                            <div class="flex-grow-1">
-                                <div class="top-stall-name">@item.FoodStallName</div>
-                                <div class="top-stall-meta">Stall ID: @item.FoodStallId</div>
-                                <div class="top-stall-meta">@item.FoodStallAddress</div>
-                            </div>
-
-                            <div class="top-stall-count">
-                                <div class="top-stall-count-value">@item.PlaybackCount</div>
-                                <div class="top-stall-count-label">plays</div>
-                                <div class="top-stall-count-label">@item.TotalActualDurationSeconds s</div>
-                            </div>
-                        </div>
-                    }
-                }
-            </div>
+            }
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+        const statusCanvas = document.getElementById("playbackStatusChart");
+        if (!statusCanvas) return;
+
+        new Chart(statusCanvas, {
+        type: "doughnut",
+        data: {
+        labels: ["Completed", "Stopped", "Interrupted"],
+        datasets: [{
+        data: [
+        @Model.CompletedLogs,
+        @Model.StoppedLogs,
+        @Model.InterruptedLogs
+        ],
+        backgroundColor: [
+        "#16a34a",
+        "#f59e0b",
+        "#dc2626"
+        ],
+        borderColor: "#ffffff",
+        borderWidth: 4,
+        hoverOffset: 8
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+        legend: {
+        position: "bottom",
+        labels: {
+        usePointStyle: true,
+        boxWidth: 8,
+        font: {
+        weight: "700"
+        }
+        }
+        },
+        tooltip: {
+        callbacks: {
+        label: function (context) {
+        return `${context.label}: ${context.raw}`;
+        }
+        }
+        }
+        }
+        }
+        });
+        })();
+    </script>
+}
