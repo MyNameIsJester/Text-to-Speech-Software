@@ -14,14 +14,14 @@ namespace AudioGuideAPI.Controllers
     public class TtsController : ControllerBase
     {
         private readonly ElevenLabsTtsService _elevenLabsTtsService;
-        private readonly GoogleTranslateTtsService _googleTranslateTtsService;
+        private readonly FptTtsService _fptTtsService;
 
         public TtsController(
             ElevenLabsTtsService elevenLabsTtsService,
-            GoogleTranslateTtsService googleTranslateTtsService)
+            FptTtsService fptTtsService)
         {
             _elevenLabsTtsService = elevenLabsTtsService;
-            _googleTranslateTtsService = googleTranslateTtsService;
+            _fptTtsService = fptTtsService;
         }
 
         [HttpPost("synthesize")]
@@ -38,15 +38,13 @@ namespace AudioGuideAPI.Controllers
             {
                 byte[] audioBytes;
 
-                if (normalizedLanguageCode == "en")
+                if (normalizedLanguageCode == "vi")
+                {
+                    audioBytes = await _fptTtsService.SynthesizeAsync(request.Text);
+                }
+                else if (normalizedLanguageCode == "en")
                 {
                     audioBytes = await _elevenLabsTtsService.SynthesizeAsync(
-                        request.Text,
-                        normalizedLanguageCode);
-                }
-                else if (normalizedLanguageCode == "vi")
-                {
-                    audioBytes = await _googleTranslateTtsService.SynthesizeAsync(
                         request.Text,
                         normalizedLanguageCode);
                 }
@@ -55,7 +53,7 @@ namespace AudioGuideAPI.Controllers
                     return BadRequest($"LanguageCode không hỗ trợ: '{request.LanguageCode}'.");
                 }
 
-                var fileName = $"tts-{Guid.NewGuid():N}.mp3";
+                var fileName = $"tts-{normalizedLanguageCode}-{Guid.NewGuid():N}.mp3";
                 return File(audioBytes, "audio/mpeg", fileName);
             }
             catch (Exception ex)
@@ -63,6 +61,8 @@ namespace AudioGuideAPI.Controllers
                 return StatusCode(500, new
                 {
                     message = "TTS generation failed.",
+                    provider = normalizedLanguageCode == "vi" ? "FPT.AI" : "ElevenLabs",
+                    languageCode = normalizedLanguageCode,
                     detail = ex.Message
                 });
             }
@@ -73,11 +73,12 @@ namespace AudioGuideAPI.Controllers
         {
             return Ok(new
             {
-                message = "TTS controller is ready."
+                message = "TTS controller is ready.",
+                viProvider = "FPT.AI",
+                enProvider = "ElevenLabs"
             });
         }
 
-        // Hai endpoint này hiện chỉ phản ánh provider ElevenLabs (phục vụ debug tiếng Anh).
         [HttpGet("voices")]
         public async Task<IActionResult> GetVoices()
         {
@@ -90,7 +91,7 @@ namespace AudioGuideAPI.Controllers
             {
                 return StatusCode(500, new
                 {
-                    message = "Không lấy được danh sách voices.",
+                    message = "Không lấy được danh sách voices ElevenLabs.",
                     detail = ex.Message
                 });
             }
@@ -108,7 +109,7 @@ namespace AudioGuideAPI.Controllers
             {
                 return StatusCode(500, new
                 {
-                    message = "Không lấy được danh sách models.",
+                    message = "Không lấy được danh sách models ElevenLabs.",
                     detail = ex.Message
                 });
             }
@@ -119,7 +120,10 @@ namespace AudioGuideAPI.Controllers
             return languageCode?.Trim().ToLowerInvariant() switch
             {
                 "en" => "en",
+                "en-us" => "en",
+                "en-gb" => "en",
                 "vi" => "vi",
+                "vi-vn" => "vi",
                 _ => "vi"
             };
         }

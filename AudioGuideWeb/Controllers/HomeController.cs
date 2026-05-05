@@ -13,11 +13,17 @@ namespace AudioGuideWeb.Controllers
             _apiService = apiService;
         }
 
-        public async Task<IActionResult> Index(string lang = "vi", int? tourId = null, bool startTour = false)
+        public async Task<IActionResult> Index(
+            string lang = "vi",
+            string? voiceLang = null,
+            int? tourId = null,
+            bool startTour = false)
         {
+            voiceLang ??= lang;
+
             var vm = new HomeIndexViewModel
             {
-                CurrentLanguage = lang,
+                CurrentLanguage = voiceLang,
                 SelectedTourId = tourId,
                 StartTourRequested = startTour,
                 IsTourMode = startTour && tourId.HasValue
@@ -26,24 +32,31 @@ namespace AudioGuideWeb.Controllers
             try
             {
                 vm.Languages = await _apiService.GetLanguagesAsync();
-                vm.FoodStalls = await _apiService.GetFoodStallsAsync(lang);
+
+                // Quan trọng: dữ liệu quán dùng để phát TTS lấy theo voiceLang
+                vm.FoodStalls = await _apiService.GetFoodStallsAsync(voiceLang);
 
                 if (vm.IsTourMode && tourId.HasValue)
                 {
-                    vm.SelectedTour = await _apiService.GetTourByIdAsync(tourId.Value, lang);
+                    // Quan trọng: tour + stops dùng để phát TTS lấy theo voiceLang
+                    vm.SelectedTour = await _apiService.GetTourByIdAsync(tourId.Value, voiceLang);
 
                     if (vm.SelectedTour == null)
                     {
                         vm.IsTourMode = false;
                         vm.StartTourRequested = false;
                         vm.SelectedTourId = null;
-                        vm.ErrorMessage = "Không tìm thấy tour được chọn hoặc tour hiện không khả dụng.";
+                        vm.ErrorMessage = lang == "en"
+                            ? "The selected tour was not found or is currently unavailable."
+                            : "Không tìm thấy tour được chọn hoặc tour hiện không khả dụng.";
                     }
                 }
             }
             catch (Exception ex)
             {
-                vm.ErrorMessage = $"Không thể tải dữ liệu từ API: {ex.Message}";
+                vm.ErrorMessage = lang == "en"
+                    ? $"Could not load data from API: {ex.Message}"
+                    : $"Không thể tải dữ liệu từ API: {ex.Message}";
             }
 
             return View(vm);

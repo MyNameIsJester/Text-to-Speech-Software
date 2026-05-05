@@ -1,9 +1,44 @@
 ﻿@model AudioGuideWeb.Models.TourViewModel
 
 @{
-    ViewData["Title"] = "Chi tiết tour";
-    var currentLanguage = ViewBag.CurrentLanguage as string ?? "vi";
+    var currentLanguage = Context.Request.Query["lang"].FirstOrDefault()
+        ?? ViewBag.CurrentLanguage as string
+        ?? "vi";
+
+    var currentVoiceLang = Context.Request.Query["voiceLang"].FirstOrDefault() ?? currentLanguage;
+    var isEnglish = currentLanguage == "en";
+
+    string T(string vi, string en) => isEnglish ? en : vi;
+
+    ViewData["Title"] = T("Chi tiết tour", "Tour details");
     var orderedStops = Model.Stops.OrderBy(x => x.OrderIndex).ToList();
+
+    var ui = new
+    {
+        pageTitle = T("Chi tiết tour", "Tour details"),
+        pageSubtitle = T(
+            "Xem trước lộ trình, danh sách điểm dừng và chuẩn bị bắt đầu trải nghiệm tour theo từng chặng.",
+            "Preview the route, review the stop list, and get ready to start the step-by-step tour experience."
+        ),
+        startTour = T("Bắt đầu tour", "Start tour"),
+        backToList = T("Quay lại danh sách tour", "Back to tour list"),
+        infoTitle = T("Thông tin tour", "Tour information"),
+        stopCount = T("điểm dừng", "stops"),
+        language = T("Ngôn ngữ", "Language"),
+        noDescription = T("Tour này hiện chưa có mô tả chi tiết.", "This tour does not have a detailed description yet."),
+        stopList = T("Danh sách điểm dừng", "Stop list"),
+        noStops = T("Tour này hiện chưa có điểm dừng hợp lệ.", "This tour does not have valid stops yet."),
+        stopFallback = T("Điểm dừng", "Stop"),
+        order = T("Thứ tự", "Order"),
+        address = T("Địa chỉ", "Address"),
+        noAddress = T("Chưa có địa chỉ", "No address available"),
+        mapNote = T(
+            "Bản đồ này hiển thị trước các điểm dừng của tour theo đúng thứ tự để bạn dễ hình dung lộ trình trước khi bắt đầu.",
+            "This map previews the tour stops in the correct order so you can understand the route before starting."
+        ),
+        popupStop = T("Điểm dừng", "Stop"),
+        noName = T("Không có tên", "No name")
+    };
 }
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -229,26 +264,26 @@
 </style>
 
 <div class="tour-details-header">
-    <h1 class="tour-details-title">Chi tiết tour</h1>
-    <p class="tour-details-subtitle">
-        Xem trước lộ trình, danh sách điểm dừng và chuẩn bị bắt đầu trải nghiệm tour theo từng chặng.
-    </p>
+    <h1 class="tour-details-title">@ui.pageTitle</h1>
+    <p class="tour-details-subtitle">@ui.pageSubtitle</p>
 
     <div class="tour-details-actions">
         <a asp-controller="Home"
            asp-action="Index"
            asp-route-lang="@currentLanguage"
+           asp-route-voiceLang="@currentVoiceLang"
            asp-route-tourId="@Model.Id"
            asp-route-startTour="true"
            class="tour-btn-primary">
-            Bắt đầu tour
+            @ui.startTour
         </a>
 
         <a asp-controller="Tours"
            asp-action="Index"
            asp-route-lang="@currentLanguage"
+           asp-route-voiceLang="@currentVoiceLang"
            class="tour-btn-secondary">
-            Quay lại danh sách tour
+            @ui.backToList
         </a>
     </div>
 </div>
@@ -257,11 +292,11 @@
     <div class="col-xl-5">
         <div class="summary-card mb-4">
             <div class="summary-card-body">
-                <div class="card-section-title">Thông tin tour</div>
+                <div class="card-section-title">@ui.infoTitle</div>
 
                 <div class="summary-meta">
-                    <div class="summary-chip">📍 @Model.StopCount điểm dừng</div>
-                    <div class="summary-chip">Ngôn ngữ: @Model.LanguageCode</div>
+                    <div class="summary-chip">📍 @Model.StopCount @ui.stopCount</div>
+                    <div class="summary-chip">@ui.language: @Model.LanguageCode</div>
                 </div>
 
                 <div class="tour-main-name">
@@ -269,20 +304,18 @@
                 </div>
 
                 <p class="tour-main-description">
-                    @(string.IsNullOrWhiteSpace(Model.Description)
-                        ? "Tour này hiện chưa có mô tả chi tiết."
-                        : Model.Description)
+                    @(string.IsNullOrWhiteSpace(Model.Description) ? ui.noDescription : Model.Description)
                 </p>
             </div>
         </div>
 
         <div class="stops-card">
             <div class="stops-card-body">
-                <div class="card-section-title">Danh sách điểm dừng</div>
+                <div class="card-section-title">@ui.stopList</div>
 
                 @if (!orderedStops.Any())
                 {
-                    <div class="text-muted">Tour này hiện chưa có điểm dừng hợp lệ.</div>
+                    <div class="text-muted">@ui.noStops</div>
                 }
                 else
                 {
@@ -297,18 +330,18 @@
                                 <div>
                                     <div class="stop-name">
                                         @(string.IsNullOrWhiteSpace(stop.Name)
-                                            ? $"Điểm dừng #{stop.OrderIndex}"
+                                            ? $"{ui.stopFallback} #{stop.OrderIndex}"
                                             : stop.Name)
                                     </div>
 
                                     <div class="stop-meta">
-                                        Thứ tự: @stop.OrderIndex
+                                        @ui.order: @stop.OrderIndex
                                     </div>
 
                                     <div class="stop-meta">
-                                        Địa chỉ:
+                                        @ui.address:
                                         @(string.IsNullOrWhiteSpace(stop.Address)
-                                            ? "Chưa có địa chỉ"
+                                            ? ui.noAddress
                                             : stop.Address)
                                     </div>
                                 </div>
@@ -325,7 +358,7 @@
             <div id="tourPreviewMap"></div>
 
             <div class="route-note">
-                Bản đồ này hiển thị trước các điểm dừng của tour theo đúng thứ tự để bạn dễ hình dung lộ trình trước khi bắt đầu.
+                @ui.mapNote
             </div>
         </div>
     </div>
@@ -337,6 +370,8 @@
             crossorigin=""></script>
 
     <script>
+        const uiText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ui));
+
         const stops = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             orderedStops.Select((x, index) => new
             {
@@ -435,9 +470,9 @@
 
                 L.marker([stop.Latitude, stop.Longitude], { icon: numberedIcon })
                     .bindPopup(`
-                        <strong>Điểm dừng ${stop.Index}</strong><br/>
-                        ${stop.Name ?? "Không có tên"}<br/>
-                        ${stop.Address ?? "Chưa có địa chỉ"}
+                        <strong>${uiText.popupStop} ${stop.Index}</strong><br/>
+                        ${stop.Name ?? uiText.noName}<br/>
+                        ${stop.Address ?? uiText.noAddress}
                     `)
                     .addTo(map);
             });
@@ -449,5 +484,13 @@
                 drawRoadRoute(stops);
             }
         }
+
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 300);
+
+        window.addEventListener("resize", () => {
+            map.invalidateSize();
+        });
     </script>
 }

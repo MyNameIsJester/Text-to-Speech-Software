@@ -1,33 +1,272 @@
 ﻿@model List<AudioGuideWeb.Models.FoodStallViewModel>
 
 @{
-    ViewData["Title"] = "Danh sách quán ăn";
+    var currentLang = Context.Request.Query["lang"].FirstOrDefault() ?? "vi";
+    var currentVoiceLang = Context.Request.Query["voiceLang"].FirstOrDefault() ?? currentLang;
+    var isEnglish = currentLang == "en";
+
+    string T(string vi, string en) => isEnglish ? en : vi;
+
+    ViewData["Title"] = T("Danh sách quán ăn", "Food stalls");
+
+    var ui = new
+    {
+        pageTitle = T("Danh sách quán ăn", "Food stalls"),
+        pageSubtitle = T(
+            "Tìm kiếm và khám phá các quán nổi bật trong khu phố ẩm thực Vĩnh Khánh.",
+            "Search and explore featured food stalls in Vinh Khanh Food Street."
+        ),
+        searchLabel = T("Tìm kiếm quán", "Search food stalls"),
+        searchPlaceholder = T(
+            "Nhập tên quán, địa chỉ hoặc món đặc trưng...",
+            "Enter stall name, address, or specialty..."
+        ),
+        emptyResult = T(
+            "Không tìm thấy quán phù hợp với từ khóa hiện tại.",
+            "No food stalls match your current keyword."
+        ),
+        noImage = T("Chưa có ảnh", "No image available"),
+        details = T("Xem chi tiết", "Details"),
+        showOnMap = T("Hiển thị trên bản đồ web", "Show on web map")
+    };
 }
 
-<h2 class="mb-4">Danh sách quán ăn</h2>
+<style>
+    .stall-page-header {
+        margin-bottom: 1.25rem;
+    }
 
-<div class="row">
+    .stall-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.35rem;
+    }
+
+    .stall-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+    .stall-search-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        margin-bottom: 1.25rem;
+    }
+
+    .stall-search-input {
+        border-radius: 0.85rem;
+        padding: 0.75rem 0.9rem;
+    }
+
+    .stall-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 1.15rem;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+        .stall-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
+        }
+
+    .stall-card-image {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
+
+    .stall-card-body {
+        padding: 1rem;
+    }
+
+    .stall-card-title {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.35;
+        margin-bottom: 0.45rem;
+    }
+
+    .stall-card-address {
+        color: #475569;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin-bottom: 0.7rem;
+    }
+
+    .stall-card-desc {
+        color: #334155;
+        font-size: 0.94rem;
+        line-height: 1.6;
+        margin-bottom: 0.9rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .stall-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .stall-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .stall-card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .empty-result {
+        display: none;
+        padding: 1.25rem;
+        border-radius: 1rem;
+        background: #ffffff;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+        text-align: center;
+    }
+
+    @@media (max-width: 575.98px) {
+        .stall-title {
+            font-size: 1.75rem;
+        }
+
+        .stall-card-image {
+            height: 190px;
+        }
+    }
+</style>
+
+<div class="stall-page-header">
+    <h1 class="stall-title">@ui.pageTitle</h1>
+    <p class="stall-subtitle">@ui.pageSubtitle</p>
+</div>
+
+<div class="stall-search-card">
+    <label for="stallSearchInput" class="form-label fw-bold">@ui.searchLabel</label>
+    <input id="stallSearchInput"
+           type="search"
+           class="form-control stall-search-input"
+           placeholder="@ui.searchPlaceholder" />
+</div>
+
+<div id="emptyResult" class="empty-result mb-4">
+    @ui.emptyResult
+</div>
+
+<div class="row g-4" id="stallGrid">
     @foreach (var stall in Model)
     {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        var searchableText = $"{stall.Name} {stall.Address} {stall.Specialty}".ToLowerInvariant();
+
+        <div class="col-md-6 col-xl-4 stall-item" data-search="@searchableText">
+            <article class="stall-card h-100">
                 @if (!string.IsNullOrWhiteSpace(stall.ImageUrl))
                 {
                     <img src="@stall.ImageUrl"
-                         class="card-img-top"
-                         style="height:200px;object-fit:cover;" />
+                         alt="@stall.Name"
+                         class="stall-card-image" />
+                }
+                else
+                {
+                    <div class="stall-card-image d-flex align-items-center justify-content-center text-muted">
+                        @ui.noImage
+                    </div>
                 }
 
-                <div class="card-body">
-                    <h5>@stall.Name</h5>
-                    <p>@stall.Address</p>
-                    <p>@stall.Description</p>
+                <div class="stall-card-body">
+                    <h2 class="stall-card-title">@stall.Name</h2>
 
-                    <a href="/FoodStalls/Details/@stall.Id" class="btn btn-primary btn-sm">
-                        Xem chi tiết
-                    </a>
+                    <div class="stall-card-address">
+                        @stall.Address
+                    </div>
+
+                    <div class="stall-chip-row">
+                        @if (!string.IsNullOrWhiteSpace(stall.Specialty))
+                        {
+                            <span class="stall-chip">@stall.Specialty</span>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(stall.PriceRange))
+                        {
+                            <span class="stall-chip">@stall.PriceRange</span>
+                        }
+                    </div>
+
+                    <p class="stall-card-desc">@stall.Description</p>
+
+                    <div class="stall-card-actions">
+                        <a asp-controller="FoodStalls"
+                               asp-action="Details"
+                               asp-route-id="@stall.Id"
+                               asp-route-lang="@currentLang"
+                               asp-route-voiceLang="@currentVoiceLang"
+                               class="btn btn-primary btn-sm">
+                            @ui.details
+                        </a>
+
+                        <a asp-controller="Home"
+                               asp-action="Index"
+                               asp-route-lang="@currentLang"
+                               asp-route-voiceLang="@currentVoiceLang"
+                               asp-route-focusStallId="@stall.Id"
+                               class="btn btn-outline-dark btn-sm">
+                            @ui.showOnMap
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </article>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const input = document.getElementById("stallSearchInput");
+            const items = Array.from(document.querySelectorAll(".stall-item"));
+            const emptyResult = document.getElementById("emptyResult");
+
+            if (!input) return;
+
+            input.addEventListener("input", () => {
+                const keyword = input.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                items.forEach(item => {
+                    const source = item.dataset.search || "";
+                    const isMatch = source.includes(keyword);
+
+                    item.style.display = isMatch ? "" : "none";
+
+                    if (isMatch) visibleCount++;
+                });
+
+                emptyResult.style.display = visibleCount === 0 ? "block" : "none";
+            });
+        })();
+    </script>
+}

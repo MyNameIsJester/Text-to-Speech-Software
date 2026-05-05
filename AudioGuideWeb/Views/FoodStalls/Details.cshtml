@@ -1,26 +1,206 @@
 ﻿@model AudioGuideWeb.Models.FoodStallViewModel
 
 @{
-    ViewData["Title"] = Model.Name ?? "Chi tiết quán";
+    var currentLang = Context.Request.Query["lang"].FirstOrDefault() ?? Model.LanguageCode ?? "vi";
+    var currentVoiceLang = Context.Request.Query["voiceLang"].FirstOrDefault() ?? currentLang;
+    var isEnglish = currentLang == "en";
+
+    string T(string vi, string en) => isEnglish ? en : vi;
+
+    ViewData["Title"] = Model.Name ?? T("Chi tiết quán", "Food stall details");
+
+    var ui = new
+    {
+        noImage = T("Chưa có ảnh", "No image available"),
+        detailKicker = T("Chi tiết quán ăn", "Food stall details"),
+        address = T("Địa chỉ", "Address"),
+        specialty = T("Món đặc trưng", "Specialty"),
+        priceRange = T("Khoảng giá", "Price range"),
+        noAddress = T("Chưa có địa chỉ", "No address available"),
+        notUpdated = T("Chưa cập nhật", "Not updated"),
+        showOnMap = T("Hiển thị trên bản đồ web", "Show on web map"),
+        openGoogleMaps = T("Mở Google Maps", "Open Google Maps"),
+        backToList = T("Quay lại danh sách", "Back to list")
+    };
 }
 
-<h2>@Model.Name</h2>
+<style>
+    .detail-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
 
-@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-{
-    <img src="@Model.ImageUrl"
-         style="width:100%;max-height:300px;object-fit:cover;" />
-}
+    .detail-hero {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1.35rem;
+        overflow: hidden;
+        box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+    }
 
-<p><strong>Địa chỉ:</strong> @Model.Address</p>
-<p><strong>Món đặc trưng:</strong> @Model.Specialty</p>
-<p><strong>Giá:</strong> @Model.PriceRange</p>
+    .detail-image {
+        width: 100%;
+        height: 390px;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
 
-<p>@Model.Description</p>
+    .detail-content {
+        padding: 1.35rem;
+    }
 
-@if (!string.IsNullOrWhiteSpace(Model.MapLink))
-{
-    <a href="@Model.MapLink" target="_blank" class="btn btn-outline-primary">
-        Mở Google Maps
-    </a>
-}
+    .detail-kicker {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.45rem;
+    }
+
+    .detail-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.75rem;
+    }
+
+    .detail-desc {
+        color: #334155;
+        font-size: 1rem;
+        line-height: 1.75;
+        margin-bottom: 1.2rem;
+    }
+
+    .detail-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .detail-info-card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 0.9rem;
+    }
+
+    .detail-info-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.35rem;
+    }
+
+    .detail-info-value {
+        color: #0f172a;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+    }
+
+        .detail-actions .btn {
+            border-radius: 0.85rem;
+            font-weight: 700;
+            padding: 0.62rem 0.95rem;
+        }
+
+    @@media (max-width: 767.98px) {
+        .detail-image {
+            height: 260px;
+        }
+
+        .detail-title {
+            font-size: 1.65rem;
+        }
+
+        .detail-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="detail-shell">
+    <article class="detail-hero">
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl"
+                 alt="@Model.Name"
+                 class="detail-image" />
+        }
+        else
+        {
+            <div class="detail-image d-flex align-items-center justify-content-center text-muted">
+                @ui.noImage
+            </div>
+        }
+
+        <div class="detail-content">
+            <div class="detail-kicker">@ui.detailKicker</div>
+            <h1 class="detail-title">@Model.Name</h1>
+
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <div class="detail-info-label">@ui.address</div>
+                    <div class="detail-info-value">
+                        @(string.IsNullOrWhiteSpace(Model.Address) ? ui.noAddress : Model.Address)
+                    </div>
+                </div>
+
+                <div class="detail-info-card">
+                    <div class="detail-info-label">@ui.specialty</div>
+                    <div class="detail-info-value">
+                        @(string.IsNullOrWhiteSpace(Model.Specialty) ? ui.notUpdated : Model.Specialty)
+                    </div>
+                </div>
+
+                <div class="detail-info-card">
+                    <div class="detail-info-label">@ui.priceRange</div>
+                    <div class="detail-info-value">
+                        @(string.IsNullOrWhiteSpace(Model.PriceRange) ? ui.notUpdated : Model.PriceRange)
+                    </div>
+                </div>
+            </div>
+
+            <p class="detail-desc">@Model.Description</p>
+
+            <div class="detail-actions">
+                <a asp-controller="Home"
+                       asp-action="Index"
+                       asp-route-lang="@currentLang"
+                       asp-route-voiceLang="@currentVoiceLang"
+                       asp-route-focusStallId="@Model.Id"
+                       class="btn btn-primary">
+                    @ui.showOnMap
+                </a>
+
+                @if (!string.IsNullOrWhiteSpace(Model.MapLink))
+                {
+                    <a href="@Model.MapLink"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="btn btn-outline-primary">
+                        @ui.openGoogleMaps
+                    </a>
+                }
+
+                <a asp-controller="FoodStalls"
+                       asp-action="Index"
+                       asp-route-lang="@currentLang"
+                       asp-route-voiceLang="@currentVoiceLang"
+                       class="btn btn-outline-dark">
+                    @ui.backToList
+                </a>
+            </div>
+        </div>
+    </article>
+</div>

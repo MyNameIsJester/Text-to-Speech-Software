@@ -1,7 +1,60 @@
 ﻿@model AudioGuideWeb.Models.HomeIndexViewModel
 
 @{
-    ViewData["Title"] = "Khám phá";
+    var currentLang = Context.Request.Query["lang"].FirstOrDefault() ?? Model.CurrentLanguage ?? "vi";
+    var currentVoiceLang = Context.Request.Query["voiceLang"].FirstOrDefault() ?? currentLang;
+    var isEnglish = currentLang == "en";
+
+    string T(string vi, string en) => isEnglish ? en : vi;
+
+    ViewData["Title"] = T("Khám phá", "Explore");
+    var ui = new
+    {
+        exploreTitle = T("Khám phá phố ẩm thực Vĩnh Khánh", "Explore Vinh Khanh Food Street"),
+        exploreSubtitle = T(
+            "Xem các quán ăn nổi bật trên bản đồ và mô phỏng vị trí trực tiếp để nghe phần giới thiệu phù hợp.",
+            "View featured food stalls on the map and simulate your position to hear the matching narration."
+        ),
+        toolbarHint = T(
+            "Chạm trực tiếp lên bản đồ để xác định vị trí và kích hoạt thuyết minh.",
+            "Tap directly on the map to set your position and trigger narration."
+        ),
+        tourMode = T("Chế độ Tour", "Tour mode"),
+        exploreMode = T("Chế độ Khám phá", "Explore mode"),
+        noNarration = T("Chưa phát thuyết minh", "No narration playing"),
+        tourReady = T("Sẵn sàng mô phỏng hành trình trên bản đồ.", "Ready to simulate the tour on the map."),
+        noSimulatedPosition = T("Chưa có vị trí mô phỏng nào được chọn.", "No simulated position has been selected."),
+        nextStop = T("Chặng tiếp theo", "Next stop"),
+        progress = T("Tiến độ", "Progress"),
+        completedTour = T("Đã hoàn tất hành trình.", "The tour has been completed."),
+        finishedStop = T("Đã xong chặng này.", "This stop is completed."),
+        nextIs = T("Tiếp theo là", "Next is"),
+        currentNearest = T("Vị trí hiện tại gần nhất với", "Your current position is closest to"),
+        outsideTour = T("không thuộc hành trình hiện tại.", "is not part of the current tour."),
+        wrongStopPrefix = T("Bạn đang ở", "You are at"),
+        wrongStopMiddle = T("nhưng chặng hiện tại là", "but the current stop is"),
+        stillNear = T("Bạn vẫn đang ở gần", "You are still near"),
+        notReplay = T("nên nội dung chưa phát lại.", "so the narration has not replayed yet."),
+        playingAt = T("Đang phát nội dung tại", "Playing narration at"),
+        playingPlace = T("Đang phát nội dung cho địa điểm này.", "Playing narration for this place."),
+        noContentStop = T("Điểm dừng này hiện chưa có nội dung để phát.", "This stop does not have narration content yet."),
+        noContentPlace = T("Quán này hiện chưa có nội dung để phát.", "This place does not have narration content yet."),
+        cannotStartStop = T("Không thể bắt đầu nội dung cho điểm dừng này.", "Cannot start narration for this stop."),
+        cannotStartPlace = T("Không thể bắt đầu nội dung cho địa điểm này.", "Cannot start narration for this place."),
+        showOnMap = T("Đang hiển thị quán này trên bản đồ web.", "Showing this stall on the web map."),
+        details = T("Xem chi tiết", "Details"),
+        openMap = T("Mở bản đồ", "Open map"),
+        noAddress = T("Chưa có địa chỉ", "No address available"),
+        inTourStop = T("Thuộc hành trình • chặng", "In tour • stop"),
+        nextButton = T("Tới chặng tiếp theo", "Go to next stop"),
+        stillListen = T("Vẫn nghe", "Listen anyway"),
+        backToExplore = T("Quay lại chế độ Khám phá", "Back to Explore mode"),
+        simulatedPosition = T("Vị trí mô phỏng hiện tại", "Current simulated position"),
+        distanceFromYou = T("Cách bạn", "Distance from you"),
+        remaining = T("Còn", "Remaining"),
+        stop = T("Chặng", "Stop"),
+        stopFallback = T("Điểm dừng", "Stop")
+    };
 }
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -33,8 +86,46 @@
         color: #64748b;
         font-size: 1.02rem;
         max-width: 920px;
-        margin-bottom: 0;
+        margin-bottom: 1rem;
         line-height: 1.55;
+    }
+
+    .narration-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 0.9rem 1rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 1rem 1rem 0.9rem;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        margin-bottom: 1rem;
+    }
+
+    .toolbar-group {
+        min-width: 240px;
+        flex: 1 1 260px;
+    }
+
+    .toolbar-label {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.45rem;
+    }
+
+    .toolbar-hint {
+        width: 100%;
+        font-size: 0.92rem;
+        color: #6b7280;
+        line-height: 1.55;
+        margin-top: -0.1rem;
+    }
+
+    .map-shell {
+        margin-bottom: 1rem;
     }
 
     .map-stage {
@@ -54,265 +145,84 @@
         height: 100%;
     }
 
-    .floating-card {
+    .map-status-card {
         position: absolute;
+        top: 1rem;
+        left: 1rem;
         z-index: 1000;
+        width: 360px;
+        max-width: calc(100% - 2rem);
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(14px);
         border: 1px solid rgba(229, 231, 235, 0.95);
-        border-radius: 1.2rem;
-        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12);
-    }
-
-    .control-card {
-        top: 1rem;
-        left: 1rem;
-        width: 370px;
-        padding: 1rem;
-    }
-
-    .control-card.tour-mode {
-        width: 390px;
-        max-height: calc(100% - 2rem);
-        overflow-y: auto;
-    }
-
-    .control-card.tour-mode::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .control-card.tour-mode::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 999px;
-    }
-
-    .info-card {
-        left: 1rem;
-        bottom: 1rem;
-        width: 390px;
-        padding: 1rem;
-    }
-
-    .floating-title {
-        font-size: 0.76rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #6b7280;
-        font-weight: 800;
-        margin-bottom: 0.6rem;
-    }
-
-    .control-main-title {
-        font-size: 1.12rem;
-        font-weight: 800;
-        color: #111827;
-        margin-bottom: 0.2rem;
-        line-height: 1.35;
-    }
-
-    .control-subtitle {
-        color: #6b7280;
-        font-size: 0.93rem;
-        line-height: 1.55;
-        margin-bottom: 1rem;
-    }
-
-    .floating-divider {
-        height: 1px;
-        background: #eef2f7;
-        margin: 0.95rem 0;
-    }
-
-    .inline-hint {
-        margin-top: 0.7rem;
-        font-size: 0.9rem;
-        color: #6b7280;
-        line-height: 1.55;
-    }
-
-    .info-state-label {
-        font-size: 0.76rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #6b7280;
-        font-weight: 800;
-        margin-bottom: 0.55rem;
-    }
-
-    .info-state-title {
-        font-size: 1.12rem;
-        font-weight: 800;
-        color: #111827;
-        line-height: 1.35;
-        margin-bottom: 0.35rem;
-    }
-
-    .info-state-text {
-        color: #4b5563;
-        font-size: 0.96rem;
-        line-height: 1.6;
-        margin-bottom: 0.8rem;
-    }
-
-    .info-chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 0.85rem;
-    }
-
-    .info-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.42rem 0.72rem;
-        border-radius: 999px;
-        background: #f3f4f6;
-        color: #374151;
-        font-size: 0.86rem;
-        font-weight: 700;
-    }
-
-    .info-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.55rem;
-    }
-
-    .map-mode-badge {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        z-index: 1000;
-        background: rgba(15, 23, 42, 0.9);
-        color: #fff;
-        border-radius: 999px;
-        padding: 0.58rem 0.9rem;
-        font-size: 0.88rem;
-        font-weight: 800;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
-    }
-
-    .tour-status-overlay {
-        position: absolute;
-        top: 4.2rem;
-        right: 1rem;
-        z-index: 1000;
-        width: 290px;
-        max-width: calc(100% - 2rem);
-        background: rgba(255, 255, 255, 0.97);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(229, 231, 235, 0.95);
-        border-radius: 1.2rem;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+        border-radius: 1.15rem;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
         overflow: hidden;
     }
 
-    .tour-status-overlay-body {
+    .map-status-body {
         padding: 1rem;
     }
 
-    .tour-status-kicker {
-        font-size: 0.74rem;
+    .map-status-kicker {
+        font-size: 0.76rem;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #6b7280;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-    }
-
-    .tour-status-main {
-        font-size: 1.02rem;
-        font-weight: 800;
-        color: #111827;
-        line-height: 1.35;
-        margin-bottom: 0.35rem;
-    }
-
-    .tour-status-sub {
-        color: #4b5563;
-        font-size: 0.92rem;
-        line-height: 1.6;
-        margin-bottom: 0.8rem;
-    }
-
-    .tour-status-chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-bottom: 0.85rem;
-    }
-
-    .tour-status-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.38rem 0.68rem;
-        border-radius: 999px;
-        background: #eef2ff;
-        color: #3730a3;
-        font-size: 0.82rem;
-        font-weight: 700;
-    }
-
-    .tour-status-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .tour-summary-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .tour-summary-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.42rem 0.72rem;
-        border-radius: 999px;
-        background: #eef2ff;
-        color: #3730a3;
-        font-size: 0.86rem;
-        font-weight: 700;
-    }
-
-    .tour-next-stop-box {
-        padding: 0.95rem;
-        border-radius: 1rem;
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        margin-bottom: 1rem;
-    }
-
-    .tour-next-stop-label {
-        font-size: 0.74rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
         color: #6b7280;
         font-weight: 800;
         margin-bottom: 0.45rem;
     }
 
-    .tour-next-stop-name {
-        font-size: 1.02rem;
+    .map-status-title {
+        font-size: 1.08rem;
         font-weight: 800;
         color: #111827;
-        line-height: 1.4;
-        margin-bottom: 0.2rem;
+        line-height: 1.35;
+        margin-bottom: 0.32rem;
     }
 
-    .tour-next-stop-meta {
-        color: #6b7280;
-        font-size: 0.88rem;
-        line-height: 1.5;
+    .map-status-text {
+        color: #4b5563;
+        font-size: 0.94rem;
+        line-height: 1.6;
+        margin-bottom: 0.75rem;
     }
 
-    .tour-action-row {
+    .map-status-chips {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 0.2rem;
+        gap: 0.45rem;
+    }
+
+    .map-status-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.38rem 0.68rem;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .tour-action-bar {
+        position: absolute;
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 1000;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        justify-content: flex-start;
+        pointer-events: none;
+    }
+
+    .tour-action-bar .btn,
+    .tour-action-bar a {
+        pointer-events: auto;
+        border-radius: 0.85rem;
+        font-weight: 700;
     }
 
     .custom-user-marker {
@@ -469,12 +379,8 @@
 
     @@media (max-width: 1199.98px) {
         .map-stage {
-            height: 74vh;
-            min-height: 590px;
-        }
-
-        .control-card.tour-mode {
-            width: 375px;
+            height: 72vh;
+            min-height: 600px;
         }
     }
 
@@ -483,61 +389,65 @@
             font-size: 2rem;
         }
 
+        .map-shell {
+            padding: 0 0.35rem;
+        }
+
         .map-stage {
-            min-height: 980px;
-            height: auto;
+            height: 780px;
+            min-height: 780px;
         }
 
-        .control-card,
-        .control-card.tour-mode {
-            top: 0.85rem;
-            left: 0.85rem;
-            right: 0.85rem;
+        .map-status-card {
             width: auto;
-            max-height: none;
-            overflow-y: visible;
-        }
-
-        .info-card {
-            left: 0.85rem;
-            right: 0.85rem;
-            bottom: 0.85rem;
-            width: auto;
-        }
-
-        #poiMap {
-            min-height: 980px;
-        }
-
-        .tour-status-overlay {
-            top: auto;
-            right: 0.85rem;
-            left: 0.85rem;
-            bottom: 0.85rem;
-            width: auto;
+            right: 1rem;
             max-width: none;
-        }
-
-        .map-mode-badge {
-            top: auto;
-            right: 0.85rem;
-            bottom: 12.7rem;
         }
     }
 
     @@media (max-width: 575.98px) {
         .explore-title {
-            font-size: 1.75rem;
+            font-size: 1.8rem;
         }
 
-        .control-card,
-        .info-card {
+        .narration-toolbar {
             padding: 0.9rem;
+            border-radius: 0.95rem;
         }
 
-        .tour-next-stop-name,
-        .tour-status-main {
-            font-size: 0.98rem;
+        .toolbar-group {
+            min-width: 100%;
+            flex-basis: 100%;
+        }
+
+        .map-shell {
+            padding: 0 0.45rem;
+        }
+
+        .map-stage {
+            height: 720px;
+            min-height: 720px;
+            border-radius: 1.1rem;
+        }
+
+        .map-status-card {
+            top: 0.8rem;
+            left: 0.8rem;
+            right: 0.8rem;
+            width: auto;
+        }
+
+        .tour-action-bar {
+            left: 0.8rem;
+            right: 0.8rem;
+            bottom: 0.8rem;
+            gap: 0.45rem;
+        }
+
+        .tour-action-bar .btn,
+        .tour-action-bar a {
+            flex: 1 1 auto;
+            text-align: center;
         }
     }
 
@@ -547,19 +457,11 @@
     .leaflet-control-container {
         z-index: 1 !important;
     }
-
-    .floating-card,
-    .map-mode-badge,
-    .tour-status-overlay {
-        z-index: 1000;
-    }
 </style>
 
 <div class="explore-hero">
-    <h1 class="explore-title">Khám phá phố ẩm thực Vĩnh Khánh</h1>
-    <p class="explore-subtitle">
-        Xem các quán ăn nổi bật trên bản đồ, theo dõi vị trí của bạn và nghe giới thiệu tự động khi đến gần địa điểm phù hợp.
-    </p>
+    <h1 class="explore-title">@ui.exploreTitle</h1>
+    <p class="explore-subtitle">@ui.exploreSubtitle</p>
 </div>
 
 @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
@@ -569,199 +471,98 @@
     </div>
 }
 
-<div class="map-stage">
-    <div id="poiMap"></div>
+<div class="narration-toolbar">
+    <div class="toolbar-group">
+        <form method="get" asp-action="Index" id="narrationLanguageForm">
+            <input type="hidden" name="lang" value="@currentLang" />
 
-    <div id="mapModeBadge" class="map-mode-badge">GPS thật</div>
+            @if (Model.IsTourMode && Model.SelectedTour != null)
+            {
+                <input type="hidden" name="tourId" value="@Model.SelectedTour.Id" />
+                <input type="hidden" name="startTour" value="true" />
+            }
 
-    @if (Model.IsTourMode && Model.SelectedTour != null)
-    {
-        <div id="tourStatusOverlay" class="tour-status-overlay">
-            <div class="tour-status-overlay-body">
-                <div class="tour-status-kicker">Hành trình</div>
-                <div id="tourStatusMain" class="tour-status-main">Sẵn sàng bắt đầu</div>
-                <div id="tourStatusSub" class="tour-status-sub">Chọn đúng địa điểm trên bản đồ hoặc tiếp tục tới chặng kế tiếp.</div>
+            @if (Context.Request.Query.ContainsKey("focusStallId"))
+            {
+                <input type="hidden" name="focusStallId" value="@Context.Request.Query["focusStallId"]" />
+            }
 
-                <div id="tourStatusChipRow" class="tour-status-chip-row" style="display:none;">
-                    <div id="tourStatusChip1" class="tour-status-chip"></div>
-                    <div id="tourStatusChip2" class="tour-status-chip"></div>
+            <label for="langNarration" class="toolbar-label">@T("Ngôn ngữ thuyết minh", "Narration language")</label>
+            <select id="langNarration" name="voiceLang" class="form-select" onchange="this.form.submit()">
+                @foreach (var language in Model.Languages)
+                {
+                    if (language.LanguageCode == currentVoiceLang)
+                    {
+                        <option value="@language.LanguageCode" selected>@language.DisplayName</option>
+                    }
+                    else
+                    {
+                        <option value="@language.LanguageCode">@language.DisplayName</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+
+    <div class="toolbar-hint">
+        @ui.toolbarHint
+    </div>
+</div>
+
+<div class="map-shell">
+    <div class="map-stage">
+        <div id="poiMap"></div>
+
+        <div class="map-status-card">
+            <div class="map-status-body">
+                <div id="statusModeLabel" class="map-status-kicker">
+                    @(Model.IsTourMode ? ui.tourMode : ui.exploreMode)
                 </div>
 
-                <div id="tourStatusActions" class="tour-status-actions">
-                    <button type="button" id="tourStatusPrimaryButton" class="btn btn-primary btn-sm" style="display:none;"></button>
-                    <button type="button" id="tourStatusSecondaryButton" class="btn btn-outline-secondary btn-sm" style="display:none;"></button>
+                <div id="statusTitle" class="map-status-title">
+                    @(Model.IsTourMode && Model.SelectedTour != null
+                        ? (string.IsNullOrWhiteSpace(Model.SelectedTour.Name) ? $"Tour #{Model.SelectedTour.Id}" : Model.SelectedTour.Name)
+                        : ui.noNarration)
+                </div>
+
+                <div id="statusText" class="map-status-text">
+                    @if (Model.IsTourMode && Model.SelectedTour != null)
+                    {
+                        @ui.tourReady
+                    }
+                    else
+                    {
+                        @ui.noSimulatedPosition
+                    }
+                </div>
+
+                <div id="statusChipRow" class="map-status-chips" style="display:none;">
+                    <div id="statusChip1" class="map-status-chip"></div>
+                    <div id="statusChip2" class="map-status-chip"></div>
                 </div>
             </div>
         </div>
-    }
 
-    <div class="floating-card control-card @(Model.IsTourMode ? "tour-mode" : "")">
-        @if (!Model.IsTourMode || Model.SelectedTour == null)
+        @if (Model.IsTourMode && Model.SelectedTour != null)
         {
-            <div id="exploreControlPanel">
-                <div class="floating-title">Điều khiển</div>
-                <div class="control-main-title">Trải nghiệm thuyết minh</div>
-                <div class="control-subtitle">
-                    Chọn ngôn ngữ, bật GPS thật hoặc chuyển sang bản đồ để thử trực tiếp trên màn hình.
-                </div>
+            <div class="tour-action-bar">
+                <button type="button" id="tourMapPrimaryButton" class="btn btn-warning btn-sm">
+                    @ui.nextButton
+                </button>
 
-                <div class="mb-3">
-                    <form method="get" asp-action="Index" id="languageForm">
-                        <label for="langExplore" class="form-label">Ngôn ngữ</label>
-                        <select id="langExplore" name="lang" class="form-select" onchange="this.form.submit()">
-                            @foreach (var language in Model.Languages)
-                            {
-                                if (language.LanguageCode == Model.CurrentLanguage)
-                                {
-                                    <option value="@language.LanguageCode" selected>@language.DisplayName</option>
-                                }
-                                else
-                                {
-                                    <option value="@language.LanguageCode">@language.DisplayName</option>
-                                }
-                            }
-                        </select>
-                    </form>
-                </div>
+                <button type="button" id="tourMapSecondaryButton" class="btn btn-outline-secondary btn-sm" style="display:none;"></button>
 
-                <div class="mb-3">
-                    <label for="locationMode" class="form-label">Cách di chuyển</label>
-                    <select id="locationMode" class="form-select">
-                        <option value="real" selected>GPS thật</option>
-                        <option value="demo">Trên bản đồ</option>
-                    </select>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" id="btnStartTracking" class="btn btn-primary">
-                        Bắt đầu
-                    </button>
-
-                    <button type="button" id="btnStopTracking" class="btn btn-outline-secondary">
-                        Dừng
-                    </button>
-                </div>
-
-                <div class="floating-divider"></div>
-
-                <div id="controlHint" class="inline-hint">
-                    Bật GPS thật để lấy vị trí hiện tại hoặc chạm trực tiếp lên bản đồ để thử nhanh.
-                </div>
-            </div>
-        }
-        else
-        {
-            var orderedStops = Model.SelectedTour.Stops
-                .OrderBy(x => x.OrderIndex)
-                .ToList();
-
-            var nextStop = orderedStops.FirstOrDefault();
-
-            <div id="tourControlPanel">
-                <div class="floating-title">Hành trình</div>
-                <div class="control-main-title">
-                    @(string.IsNullOrWhiteSpace(Model.SelectedTour.Name) ? $"Tour #{Model.SelectedTour.Id}" : Model.SelectedTour.Name)
-                </div>
-
-                <div class="tour-summary-row">
-                    <div class="tour-summary-chip" id="tourStopCountChip">@Model.SelectedTour.StopCount điểm dừng</div>
-                    <div class="tour-summary-chip" id="tourProgressChip">Tiến độ: 0/@Model.SelectedTour.StopCount</div>
-                </div>
-
-                <div class="mb-3">
-                    <form method="get" asp-action="Index" id="tourLanguageForm">
-                        <input type="hidden" name="tourId" value="@Model.SelectedTour.Id" />
-                        <input type="hidden" name="startTour" value="true" />
-
-                        <label for="langTour" class="form-label">Ngôn ngữ</label>
-                        <select id="langTour" name="lang" class="form-select" onchange="this.form.submit()">
-                            @foreach (var language in Model.Languages)
-                            {
-                                if (language.LanguageCode == Model.CurrentLanguage)
-                                {
-                                    <option value="@language.LanguageCode" selected>@language.DisplayName</option>
-                                }
-                                else
-                                {
-                                    <option value="@language.LanguageCode">@language.DisplayName</option>
-                                }
-                            }
-                        </select>
-                    </form>
-                </div>
-
-                <div class="mb-3">
-                    <label for="locationMode" class="form-label">Cách di chuyển</label>
-                    <select id="locationMode" class="form-select">
-                        <option value="real" selected>GPS thật</option>
-                        <option value="demo">Trên bản đồ</option>
-                    </select>
-                </div>
-
-                <div class="tour-next-stop-box">
-                    <div class="tour-next-stop-label">Chặng tiếp theo</div>
-                    <div id="tourNextStopName" class="tour-next-stop-name">
-                        @(nextStop == null
-                            ? "Bạn đã hoàn thành hành trình"
-                            : (string.IsNullOrWhiteSpace(nextStop.Name) ? $"Điểm dừng #{nextStop.OrderIndex}" : nextStop.Name))
-                    </div>
-                    <div id="tourNextStopOrder" class="tour-next-stop-meta">
-                        @if (nextStop != null)
-                        {
-                            @:Chặng @nextStop.OrderIndex
-                        }
-                    </div>
-                </div>
-
-                <div class="tour-action-row">
-                    <button type="button" id="btnTourStartReal" class="btn btn-primary">
-                        Bắt đầu
-                    </button>
-
-                    <button type="button" id="btnTourSimulateNext" class="btn btn-warning" style="display:none;">
-                        Tới chặng tiếp theo
-                    </button>
-
-                    <button type="button" id="btnStopTracking" class="btn btn-outline-secondary">
-                        Dừng
-                    </button>
-
-                    <a asp-controller="Home"
-                       asp-action="Index"
-                       asp-route-lang="@Model.CurrentLanguage"
-                       id="btnExitTour"
-                       class="btn btn-outline-dark">
-                        Thoát
-                    </a>
-                </div>
-
-                <div id="controlHint" class="inline-hint">
-                    Chạm vào bản đồ để chọn địa điểm hoặc tiếp tục theo hành trình.
-                </div>
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   asp-route-lang="@currentLang"
+                   asp-route-voiceLang="@currentVoiceLang"
+                   id="tourMapExitButton"
+                   class="btn btn-outline-dark btn-sm">
+                    @ui.backToExplore
+                </a>
             </div>
         }
     </div>
-
-    @if (!Model.IsTourMode)
-    {
-        <div class="floating-card info-card">
-            <div class="info-state-label">Địa điểm đang được giới thiệu</div>
-            <div id="infoTitle" class="info-state-title">Chưa có địa điểm nào đang phát nội dung.</div>
-            <div id="infoText" class="info-state-text">
-                Khi bạn ở đủ gần một quán, hệ thống sẽ phát nội dung phù hợp.
-            </div>
-
-            <div id="infoChips" class="info-chip-row" style="display:none;">
-                <div id="infoChip1" class="info-chip"></div>
-                <div id="infoChip2" class="info-chip"></div>
-            </div>
-
-            <div class="info-actions">
-                <a id="infoDetailsLink" href="#" class="btn btn-primary btn-sm" style="display:none;">Xem chi tiết</a>
-                <a id="infoMapLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm" style="display:none;">Mở bản đồ</a>
-            </div>
-        </div>
-    }
 </div>
 
 <audio id="audioPlayer" preload="auto"></audio>
@@ -786,7 +587,6 @@
             }
 
             const visitKey = "audioGuideVisitToken";
-
             let visitToken = localStorage.getItem(visitKey);
 
             if (!visitToken) {
@@ -794,8 +594,12 @@
                 localStorage.setItem(visitKey, visitToken);
             }
 
-            const currentLanguage = "@Model.CurrentLanguage";
+            const currentLanguage = "@currentVoiceLang";
+            const currentInterfaceLanguage = "@currentLang";
             const isTourMode = @Model.IsTourMode.ToString().ToLowerInvariant();
+            const uiText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ui));
+
+            const focusStallId = Number("@(Context.Request.Query["focusStallId"].FirstOrDefault() ?? "0")");
 
             const rawSelectedTour = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedTour));
             const selectedTour = rawSelectedTour
@@ -818,40 +622,18 @@
 
             const audioPlayer = document.getElementById("audioPlayer");
 
-            const btnStartTracking = document.getElementById("btnStartTracking");
-            const btnTourStartReal = document.getElementById("btnTourStartReal");
-            const btnTourSimulateNext = document.getElementById("btnTourSimulateNext");
-            const btnStopTracking = document.getElementById("btnStopTracking");
-            const btnExitTour = document.getElementById("btnExitTour");
-            const locationModeSelect = document.getElementById("locationMode");
+            const statusModeLabel = document.getElementById("statusModeLabel");
+            const statusTitle = document.getElementById("statusTitle");
+            const statusText = document.getElementById("statusText");
+            const statusChipRow = document.getElementById("statusChipRow");
+            const statusChip1 = document.getElementById("statusChip1");
+            const statusChip2 = document.getElementById("statusChip2");
 
-            const mapModeBadge = document.getElementById("mapModeBadge");
-            const controlHint = document.getElementById("controlHint");
+            const tourMapPrimaryButton = document.getElementById("tourMapPrimaryButton");
+            const tourMapSecondaryButton = document.getElementById("tourMapSecondaryButton");
 
-            const infoTitle = document.getElementById("infoTitle");
-            const infoText = document.getElementById("infoText");
-            const infoChips = document.getElementById("infoChips");
-            const infoChip1 = document.getElementById("infoChip1");
-            const infoChip2 = document.getElementById("infoChip2");
-            const infoDetailsLink = document.getElementById("infoDetailsLink");
-            const infoMapLink = document.getElementById("infoMapLink");
-
-            const tourProgressChip = document.getElementById("tourProgressChip");
-            const tourNextStopName = document.getElementById("tourNextStopName");
-            const tourNextStopOrder = document.getElementById("tourNextStopOrder");
-
-            const tourStatusMain = document.getElementById("tourStatusMain");
-            const tourStatusSub = document.getElementById("tourStatusSub");
-            const tourStatusChipRow = document.getElementById("tourStatusChipRow");
-            const tourStatusChip1 = document.getElementById("tourStatusChip1");
-            const tourStatusChip2 = document.getElementById("tourStatusChip2");
-            const tourStatusPrimaryButton = document.getElementById("tourStatusPrimaryButton");
-            const tourStatusSecondaryButton = document.getElementById("tourStatusSecondaryButton");
-
-            let watchId = null;
             let currentTriggeredStallId = null;
             let currentTriggeredAt = 0;
-            let currentMode = "real";
 
             let activePlaybackSession = null;
             let currentNearestStallId = null;
@@ -884,7 +666,7 @@
                     audioUrl: stall.audioUrl ?? stall.AudioUrl ?? "",
                     priority: Number(stall.priority ?? stall.Priority),
                     mapLink: stall.mapLink ?? stall.MapLink ?? "",
-                    languageCode: stall.languageCode ?? stall.LanguageCode ?? currentLanguage
+                    languageCode: currentLanguage
                 }));
             }
 
@@ -898,16 +680,28 @@
 
             function getNextTourStop() {
                 const orderedStops = getOrderedTourStops();
+
                 for (const stop of orderedStops) {
                     if (!completedTourStopIds.includes(Number(stop.foodStallId))) {
                         return stop;
                     }
                 }
+
                 return null;
             }
 
             function getCompletedTourStopCount() {
                 return completedTourStopIds.length;
+            }
+
+            function markTourStopCompleted(foodStallId) {
+                if (!isTourMode) return;
+
+                const stopId = Number(foodStallId);
+
+                if (!completedTourStopIds.includes(stopId)) {
+                    completedTourStopIds.push(stopId);
+                }
             }
 
             function findTourStopByFoodStallId(foodStallId) {
@@ -924,120 +718,152 @@
                 return index >= 0 ? index + 1 : null;
             }
 
-            function updateTourPanelUi() {
-                if (!isTourMode || !selectedTour) return;
+            function setStatusCard(modeLabel, title, text, chip1 = null, chip2 = null) {
+                if (statusModeLabel) statusModeLabel.textContent = modeLabel;
+                if (statusTitle) statusTitle.textContent = title;
+                if (statusText) statusText.innerHTML = text;
 
-                const nextStop = getNextTourStop();
-                const completedCount = getCompletedTourStopCount();
-                const totalCount = Number(selectedTour.stopCount ?? 0);
+                if (statusChipRow && statusChip1 && statusChip2) {
+                    if (chip1 || chip2) {
+                        statusChipRow.style.display = "flex";
 
-                if (tourProgressChip) {
-                    tourProgressChip.textContent = `Tiến độ: ${completedCount}/${totalCount}`;
-                }
+                        if (chip1) {
+                            statusChip1.style.display = "inline-flex";
+                            statusChip1.textContent = chip1;
+                        } else {
+                            statusChip1.style.display = "none";
+                            statusChip1.textContent = "";
+                        }
 
-                if (tourNextStopName && tourNextStopOrder) {
-                    if (!nextStop) {
-                        tourNextStopName.textContent = "Bạn đã hoàn thành hành trình";
-                        tourNextStopOrder.textContent = "Không còn chặng tiếp theo";
+                        if (chip2) {
+                            statusChip2.style.display = "inline-flex";
+                            statusChip2.textContent = chip2;
+                        } else {
+                            statusChip2.style.display = "none";
+                            statusChip2.textContent = "";
+                        }
                     } else {
-                        tourNextStopName.textContent = nextStop.name || `Điểm dừng #${nextStop.orderIndex}`;
-                        tourNextStopOrder.textContent = `Chặng ${nextStop.orderIndex}`;
+                        statusChipRow.style.display = "none";
+                        statusChip1.style.display = "none";
+                        statusChip2.style.display = "none";
+                        statusChip1.textContent = "";
+                        statusChip2.textContent = "";
                     }
                 }
             }
 
-            function updateTourActionButtons() {
-                if (!isTourMode) return;
-
-                const isDemo = currentMode === "demo";
-
-                if (btnTourStartReal) {
-                    btnTourStartReal.style.display = isDemo ? "none" : "inline-block";
-                }
-
-                if (btnTourSimulateNext) {
-                    btnTourSimulateNext.style.display = isDemo ? "inline-block" : "none";
-                    btnTourSimulateNext.textContent = "Tới chặng tiếp theo";
-                }
-            }
-
-            function setTourStatusActions(primaryText = null, primaryHandler = null, secondaryText = null, secondaryHandler = null) {
-                if (tourStatusPrimaryButton) {
+            function setTourActionButtons(primaryText = null, primaryHandler = null, secondaryText = null, secondaryHandler = null) {
+                if (tourMapPrimaryButton) {
                     if (primaryText && primaryHandler) {
-                        tourStatusPrimaryButton.style.display = "inline-block";
-                        tourStatusPrimaryButton.textContent = primaryText;
-                        tourStatusPrimaryButton.onclick = primaryHandler;
+                        tourMapPrimaryButton.style.display = "inline-block";
+                        tourMapPrimaryButton.textContent = primaryText;
+                        tourMapPrimaryButton.onclick = primaryHandler;
                     } else {
-                        tourStatusPrimaryButton.style.display = "none";
-                        tourStatusPrimaryButton.textContent = "";
-                        tourStatusPrimaryButton.onclick = null;
+                        tourMapPrimaryButton.style.display = "none";
+                        tourMapPrimaryButton.textContent = "";
+                        tourMapPrimaryButton.onclick = null;
                     }
                 }
 
-                if (tourStatusSecondaryButton) {
+                if (tourMapSecondaryButton) {
                     if (secondaryText && secondaryHandler) {
-                        tourStatusSecondaryButton.style.display = "inline-block";
-                        tourStatusSecondaryButton.textContent = secondaryText;
-                        tourStatusSecondaryButton.onclick = secondaryHandler;
+                        tourMapSecondaryButton.style.display = "inline-block";
+                        tourMapSecondaryButton.textContent = secondaryText;
+                        tourMapSecondaryButton.onclick = secondaryHandler;
                     } else {
-                        tourStatusSecondaryButton.style.display = "none";
-                        tourStatusSecondaryButton.textContent = "";
-                        tourStatusSecondaryButton.onclick = null;
+                        tourMapSecondaryButton.style.display = "none";
+                        tourMapSecondaryButton.textContent = "";
+                        tourMapSecondaryButton.onclick = null;
                     }
                 }
             }
 
-            function clearTourStatusActions() {
-                setTourStatusActions();
+            function clearTourActionButtons() {
+                setTourActionButtons(
+                    uiText.nextButton,
+                    async () => await simulateNextTourStop(),
+                    null,
+                    null
+                );
+
                 pendingTourBypassTarget = null;
             }
 
-            function setTourStatusOverlay(main, sub, chip1 = null, chip2 = null) {
-                if (!tourStatusMain || !tourStatusSub) return;
+            function updateTourStatusSummary(subTextOverride = null, chip2Override = null) {
+                if (!isTourMode || !selectedTour) return;
 
-                tourStatusMain.textContent = main;
-                tourStatusSub.innerHTML = sub;
-
-                if (tourStatusChipRow && tourStatusChip1 && tourStatusChip2) {
-                    if (chip1 || chip2) {
-                        tourStatusChipRow.style.display = "flex";
-                        tourStatusChip1.textContent = chip1 || "";
-                        tourStatusChip2.textContent = chip2 || "";
-                    } else {
-                        tourStatusChipRow.style.display = "none";
-                        tourStatusChip1.textContent = "";
-                        tourStatusChip2.textContent = "";
-                    }
-                }
-            }
-
-            function markCurrentTourStopCompleted() {
-                if (!isTourMode) return;
-
+                const completedCount = getCompletedTourStopCount();
+                const totalCount = Number(selectedTour.stopCount ?? 0);
                 const nextStop = getNextTourStop();
-                if (!nextStop) return;
 
-                const stopId = Number(nextStop.foodStallId);
+                const tourName = selectedTour.name && selectedTour.name.trim() !== ""
+                    ? selectedTour.name
+                    : `Tour #${selectedTour.id}`;
 
-                if (!completedTourStopIds.includes(stopId)) {
-                    completedTourStopIds.push(stopId);
+                if (!nextStop) {
+                    setStatusCard(
+                        uiText.tourMode,
+                        tourName,
+                        uiText.completedTour,
+                        `${uiText.progress} ${completedCount}/${totalCount}`,
+                        null
+                    );
+                    return;
                 }
 
-                updateTourPanelUi();
+                setStatusCard(
+                    uiText.tourMode,
+                    tourName,
+                    subTextOverride ?? `${uiText.nextStop}: <strong>${nextStop.name || ("Stop #" + nextStop.orderIndex)}</strong>.`,
+                    `${uiText.progress} ${completedCount}/${totalCount}`,
+                    chip2Override ?? `${uiText.nextStop} ${nextStop.orderIndex}`
+                );
             }
 
-            function mapTourStopToRuntimeTarget(tourStop) {
-                if (!tourStop) return null;
+            function setExploreIdleStatus(nearest = null) {
+                if (nearest) {
+                    setStatusCard(
+                        uiText.exploreMode,
+                        uiText.noNarration,
+                        `${uiText.currentNearest} <strong>${nearest.name}</strong>.`,
+                        `${nearest.distance.toFixed(1)} m`,
+                        null
+                    );
+                } else {
+                    setStatusCard(
+                        uiText.exploreMode,
+                        uiText.noNarration,
+                        uiText.noSimulatedPosition,
+                        null,
+                        null
+                    );
+                }
+            }
 
-                const allFoodStalls = getFoodStalls();
-                const matchedFoodStall = allFoodStalls.find(x => x.id === Number(tourStop.foodStallId));
+            function setExploreActiveStatus(target, secondaryText) {
+                setStatusCard(
+                    uiText.exploreMode,
+                    target.name,
+                    secondaryText,
+                    `${uiText.distanceFromYou ?? "Distance"} ${target.distance.toFixed(1)} m`,
+                    null
+                );
+            }
 
-                if (!matchedFoodStall) return null;
+            function haversineDistanceMeters(lat1, lon1, lat2, lon2) {
+                const toRad = deg => deg * Math.PI / 180;
+                const R = 6371000;
 
-                return {
-                    ...matchedFoodStall,
-                    distance: 0
-                };
+                const dLat = toRad(lat2 - lat1);
+                const dLon = toRad(lon2 - lon1);
+
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
             }
 
             const defaultCenter = [10.7588, 106.6857];
@@ -1057,6 +883,8 @@
                 iconSize: [18, 18],
                 iconAnchor: [9, 9]
             });
+
+            let userMarker = null;
 
             function createPoiIcon(mode, stallId) {
                 const inTour = isTourMode && isFoodStallInTour(stallId);
@@ -1081,120 +909,27 @@
                 });
             }
 
-            let userMarker = null;
-
-            function setModeUiText() {
-                if (isTourMode) {
-                    if (currentMode === "demo") {
-                        mapModeBadge.textContent = "Tour • Trên bản đồ";
-                        controlHint.textContent = "Chạm vào bản đồ để chọn địa điểm hoặc tiếp tục theo hành trình.";
-                    } else {
-                        mapModeBadge.textContent = "Tour • GPS thật";
-                        controlHint.textContent = "Di chuyển tới đúng chặng tiếp theo để nội dung tự động phát.";
-                    }
-                } else {
-                    if (currentMode === "demo") {
-                        mapModeBadge.textContent = "Trên bản đồ";
-                        controlHint.textContent = "Chạm trực tiếp lên bản đồ để thử nhanh.";
-                    } else {
-                        mapModeBadge.textContent = "GPS thật";
-                        controlHint.textContent = "Bật GPS thật rồi nhấn “Bắt đầu” để lấy vị trí hiện tại.";
-                    }
-                }
-            }
-
-            function setInfoPanelEmpty(title, text, nearest = null) {
-                if (isTourMode) {
-                    const chip1 = nearest ? nearest.name : null;
-                    const chip2 = nearest ? `${nearest.distance.toFixed(1)} m` : null;
-                    setTourStatusOverlay(title, text, chip1, chip2);
-                    return;
-                }
-
-                infoTitle.textContent = title;
-                infoText.innerHTML = text;
-
-                if (nearest) {
-                    infoChips.style.display = "flex";
-                    infoChip1.textContent = `Gần nhất: ${nearest.name}`;
-                    infoChip2.textContent = `${nearest.distance.toFixed(1)} m`;
-                } else {
-                    infoChips.style.display = "none";
-                }
-
-                infoDetailsLink.style.display = "none";
-                infoMapLink.style.display = "none";
-                infoDetailsLink.href = "#";
-                infoMapLink.href = "#";
-            }
-
-            function setInfoPanelForTarget(target, secondaryText) {
-                if (isTourMode) {
-                    setTourStatusOverlay(
-                        target.name,
-                        secondaryText,
-                        currentMode === "demo" ? "Trên bản đồ" : "GPS thật",
-                        null
-                    );
-                    return;
-                }
-
-                infoTitle.textContent = target.name;
-                infoText.innerHTML = secondaryText;
-
-                infoChips.style.display = "flex";
-                infoChip1.textContent = `Cách bạn ${target.distance.toFixed(1)} m`;
-                infoChip2.textContent = currentMode === "demo" ? "Trên bản đồ" : "GPS thật";
-
-                infoDetailsLink.style.display = "inline-block";
-                infoDetailsLink.href = `/FoodStalls/Details/${target.id}?lang=${encodeURIComponent(currentLanguage)}`;
-
-                if (target.mapLink && target.mapLink.trim() !== "") {
-                    infoMapLink.style.display = "inline-block";
-                    infoMapLink.href = target.mapLink;
-                } else {
-                    infoMapLink.style.display = "none";
-                    infoMapLink.href = "#";
-                }
-            }
-
-            function haversineDistanceMeters(lat1, lon1, lat2, lon2) {
-                const toRad = deg => deg * Math.PI / 180;
-                const R = 6371000;
-
-                const dLat = toRad(lat2 - lat1);
-                const dLon = toRad(lon2 - lon1);
-
-                const a =
-                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                return R * c;
-            }
-
             function buildPopupHtml(stall) {
                 const imageHtml = stall.imageUrl
                     ? `<img src="${stall.imageUrl}" alt="${stall.name}" class="popup-image" />`
                     : "";
 
                 const mapLinkHtml = stall.mapLink
-                    ? `<a href="${stall.mapLink}" target="_blank" rel="noopener noreferrer" class="popup-btn-secondary">Mở bản đồ</a>`
+                    ? `<a href="${stall.mapLink}" target="_blank" rel="noopener noreferrer" class="popup-btn-secondary">${uiText.openMap}</a>`
                     : "";
 
                 const tourHintHtml = isTourMode && isFoodStallInTour(stall.id)
-                    ? `<div style="margin-top:0.55rem; color:#6b7280; font-size:0.85rem;">Thuộc hành trình • chặng ${getTourSequenceNumber(stall.id)}</div>`
+                    ? `<div style="margin-top:0.55rem; color:#6b7280; font-size:0.85rem;">${uiText.inTourStop} ${getTourSequenceNumber(stall.id)}</div>`
                     : "";
 
                 return `
                     <div class="popup-shell">
                         ${imageHtml}
                         <div class="popup-title">${stall.name}</div>
-                        <div class="popup-address">${stall.address || "Chưa có địa chỉ"}</div>
+                        <div class="popup-address">${stall.address || uiText.noAddress}</div>
                         ${tourHintHtml}
                         <div class="popup-actions">
-                            <a href="/FoodStalls/Details/${stall.id}?lang=${encodeURIComponent(currentLanguage)}" class="popup-btn-primary">Xem chi tiết</a>
+                            <a href="/FoodStalls/Details/${stall.id}?lang=${encodeURIComponent(currentInterfaceLanguage)}&voiceLang=${encodeURIComponent(currentLanguage)}" class="popup-btn-primary">${uiText.details}</a>
                             ${mapLinkHtml}
                         </div>
                     </div>
@@ -1214,7 +949,7 @@
                     marker.on("click", async (e) => {
                         L.DomEvent.stopPropagation(e);
 
-                        if (isTourMode && currentMode === "demo") {
+                        if (isTourMode) {
                             await handleTourDemoPoiSelection(stall.id);
                             return;
                         }
@@ -1248,7 +983,7 @@
             function updateUserMarker(lat, lng) {
                 if (!userMarker) {
                     userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-                    userMarker.bindPopup("Vị trí hiện tại của bạn");
+                    userMarker.bindPopup(uiText.simulatedPosition);
                 } else {
                     userMarker.setLatLng([lat, lng]);
                 }
@@ -1320,9 +1055,8 @@
             }
 
             function focusOnStall(stallId) {
-                const stalls = getFoodStalls();
-                const stall = stalls.find(x => x.id === stallId);
-                const marker = poiMarkers.get(stallId);
+                const stall = getFoodStalls().find(x => x.id === Number(stallId));
+                const marker = poiMarkers.get(Number(stallId));
 
                 if (!stall || !marker) return;
 
@@ -1331,7 +1065,33 @@
                     duration: 0.8
                 });
 
-                openActivePopup(stallId);
+                openActivePopup(stall.id);
+            }
+
+            function focusStallFromQueryIfNeeded() {
+                if (!focusStallId || focusStallId <= 0) return;
+
+                const stall = getFoodStalls().find(x => Number(x.id) === Number(focusStallId));
+                if (!stall) return;
+
+                activeTargetStallId = stall.id;
+                currentNearestStallId = stall.id;
+
+                updateMapMarkerStates();
+
+                setTimeout(() => {
+                    focusOnStall(stall.id);
+                }, 350);
+
+                if (!isTourMode) {
+                    setExploreActiveStatus(
+                        {
+                            ...stall,
+                            distance: 0
+                        },
+                        uiText.showOnMap
+                    );
+                }
             }
 
             function updateNearestPoi(lat, lng) {
@@ -1356,22 +1116,11 @@
             }
 
             function resolveTarget(userLat, userLng) {
-                const stalls = getFoodStalls();
-
-                const candidates = stalls
-                    .map(stall => {
-                        const distance = haversineDistanceMeters(
-                            userLat,
-                            userLng,
-                            stall.latitude,
-                            stall.longitude
-                        );
-
-                        return {
-                            ...stall,
-                            distance
-                        };
-                    })
+                const candidates = getFoodStalls()
+                    .map(stall => ({
+                        ...stall,
+                        distance: haversineDistanceMeters(userLat, userLng, stall.latitude, stall.longitude)
+                    }))
                     .filter(stall => stall.distance <= stall.radius);
 
                 if (candidates.length === 0) return null;
@@ -1380,6 +1129,7 @@
                     if (a.priority !== b.priority) {
                         return a.priority - b.priority;
                     }
+
                     return a.distance - b.distance;
                 });
 
@@ -1387,16 +1137,11 @@
             }
 
             function resolveClickedPoi(lat, lng) {
-                const stalls = getFoodStalls();
-
-                const candidates = stalls
-                    .map(stall => {
-                        const distance = haversineDistanceMeters(lat, lng, stall.latitude, stall.longitude);
-                        return {
-                            ...stall,
-                            distance
-                        };
-                    })
+                const candidates = getFoodStalls()
+                    .map(stall => ({
+                        ...stall,
+                        distance: haversineDistanceMeters(lat, lng, stall.latitude, stall.longitude)
+                    }))
                     .filter(stall => stall.distance <= stall.radius)
                     .sort((a, b) => a.distance - b.distance);
 
@@ -1467,7 +1212,7 @@
 
             function shouldSkipTrigger(target) {
                 const now = Date.now();
-                return currentTriggeredStallId === target.id && (now - currentTriggeredAt) < cooldownMs;
+                return currentTriggeredStallId === Number(target.id) && (now - currentTriggeredAt) < cooldownMs;
             }
 
             async function fetchRoute(fromLat, fromLng, toLat, toLng) {
@@ -1522,6 +1267,7 @@
                 if (!isTourMode) return;
 
                 const nextStop = getNextTourStop();
+
                 if (!nextStop) {
                     clearRoute();
                     return;
@@ -1560,12 +1306,10 @@
             }
 
             async function startPlaybackSession(target) {
-                const triggerType = isTourMode ? "TOUR" : (currentMode === "demo" ? "DEMO" : "GPS");
-
                 const payload = {
-                    foodStallId: target.id,
+                    foodStallId: Number(target.id),
                     languageCode: target.languageCode || currentLanguage,
-                    triggerType: triggerType
+                    triggerType: isTourMode ? "TOUR" : "DEMO"
                 };
 
                 const response = await fetch(`${apiBaseUrl}/api/PlaybackLogs/start`, {
@@ -1586,15 +1330,16 @@
             async function finishPlaybackSession(status) {
                 if (!activePlaybackSession) return;
 
-                const finishedTargetId = activePlaybackSession.targetId;
+                const finishedSession = activePlaybackSession;
+                const finishedTargetId = Number(finishedSession.targetId);
 
                 const actualDurationSeconds = Math.max(
                     0,
-                    Math.round((Date.now() - activePlaybackSession.startedAtMs) / 1000)
+                    Math.round((Date.now() - finishedSession.startedAtMs) / 1000)
                 );
 
                 const payload = {
-                    playbackLogId: activePlaybackSession.playbackLogId,
+                    playbackLogId: finishedSession.playbackLogId,
                     status: status,
                     actualDurationSeconds: actualDurationSeconds
                 };
@@ -1612,56 +1357,41 @@
                         console.error("Finish playback thất bại:", response.status);
                     }
 
-                    if (status === "Completed" && isTourMode) {
-                        const currentNextStop = getNextTourStop();
+                    if (status === "Completed" && isTourMode && finishedSession.shouldCompleteTourStop) {
+                        markTourStopCompleted(finishedTargetId);
+                        await refreshRoute();
 
-                        if (currentNextStop && Number(currentNextStop.foodStallId) === Number(finishedTargetId)) {
-                            markCurrentTourStopCompleted();
-                            await refreshRoute();
+                        const upcomingStop = getNextTourStop();
 
-                            const upcomingStop = getNextTourStop();
+                        if (upcomingStop) {
+                            currentNearestStallId = Number(upcomingStop.foodStallId);
+                            activeTargetStallId = null;
+                            updateMapMarkerStates();
 
-                            if (upcomingStop) {
-                                currentNearestStallId = Number(upcomingStop.foodStallId);
-                                activeTargetStallId = null;
-                                updateMapMarkerStates();
+                            updateTourStatusSummary(
+                                `${uiText.finishedStop} ${uiText.nextIs} <strong>${upcomingStop.name ?? ("Stop #" + upcomingStop.orderIndex)}</strong>.`,
+                                `${uiText.nextStop} ${upcomingStop.orderIndex}`
+                            );
 
-                                setTourStatusOverlay(
-                                    "Đã xong chặng này",
-                                    `Tiếp theo là <strong>${upcomingStop.name ?? ("Điểm dừng #" + upcomingStop.orderIndex)}</strong>.`,
-                                    `Chặng ${upcomingStop.orderIndex}`,
-                                    null
-                                );
+                            clearTourActionButtons();
+                        } else {
+                            currentNearestStallId = null;
+                            activeTargetStallId = null;
+                            updateMapMarkerStates();
+                            clearRoute();
 
-                                setTourStatusActions(
-                                    currentMode === "demo" ? "Tới chặng tiếp theo" : null,
-                                    currentMode === "demo" ? async () => await simulateNextTourStop() : null,
-                                    null,
-                                    null
-                                );
-                            } else {
-                                currentNearestStallId = null;
-                                activeTargetStallId = null;
-                                updateMapMarkerStates();
-                                clearRoute();
+                            setStatusCard(
+                                uiText.tourMode,
+                                selectedTour?.name || "Tour",
+                                uiText.completedTour,
+                                `${uiText.progress} ${getCompletedTourStopCount()}/${Number(selectedTour?.stopCount ?? 0)}`,
+                                null
+                            );
 
-                                setTourStatusOverlay(
-                                    "Hoàn tất 🎉",
-                                    "Bạn đã đi hết hành trình này.",
-                                    null,
-                                    null
-                                );
-
-                                setTourStatusActions(
-                                    "Quay lại",
-                                    () => { window.location.href = "@Url.Action("Index", "Home", new { lang = Model.CurrentLanguage })"; },
-                                    null,
-                                    null
-                                );
-                            }
+                            setTourActionButtons(null, null, null, null);
                         }
                     } else if (status !== "Completed" && isTourMode) {
-                        clearTourStatusActions();
+                        clearTourActionButtons();
                     }
                 } catch (error) {
                     console.error("Lỗi khi finish playback:", error);
@@ -1723,17 +1453,36 @@
             }
 
             async function playTarget(target) {
-                currentTriggeredStallId = target.id;
+                const targetId = Number(target.id);
+
+                currentTriggeredStallId = targetId;
                 currentTriggeredAt = Date.now();
-                activeTargetStallId = target.id;
+                activeTargetStallId = targetId;
 
-                setInfoPanelForTarget(
-                    target,
-                    "Đang phát nội dung cho địa điểm này."
-                );
+                const expectedTourStop = isTourMode ? getNextTourStop() : null;
+                const shouldCompleteTourStop =
+                    isTourMode &&
+                    expectedTourStop &&
+                    Number(expectedTourStop.foodStallId) === targetId;
 
-                clearTourStatusActions();
-                focusOnStall(target.id);
+                if (isTourMode) {
+                    const totalCount = Number(selectedTour?.stopCount ?? 0);
+                    setStatusCard(
+                        uiText.tourMode,
+                        selectedTour?.name || "Tour",
+                        `${uiText.playingAt} <strong>${target.name}</strong>.`,
+                        `${uiText.progress} ${getCompletedTourStopCount()}/${totalCount}`,
+                        shouldCompleteTourStop ? `${uiText.nextStop} ${expectedTourStop.orderIndex}` : null
+                    );
+                } else {
+                    setExploreActiveStatus(
+                        target,
+                        uiText.playingPlace
+                    );
+                }
+
+                clearTourActionButtons();
+                focusOnStall(targetId);
                 updateMapMarkerStates();
 
                 await interruptActivePlaybackIfAny();
@@ -1744,7 +1493,8 @@
                     activePlaybackSession = {
                         playbackLogId: startResult.playbackLogId,
                         startedAtMs: Date.now(),
-                        targetId: target.id,
+                        targetId: targetId,
+                        shouldCompleteTourStop: shouldCompleteTourStop,
                         type: target.audioUrl && target.audioUrl.trim() !== "" ? "audio" : "tts"
                     };
 
@@ -1762,19 +1512,22 @@
                         audioPlayer.currentTime = 0;
                         await audioPlayer.play();
                     } else {
-                        setInfoPanelForTarget(
-                            target,
-                            "Quán này hiện chưa có nội dung để phát."
-                        );
+                        if (isTourMode) {
+                            updateTourStatusSummary(uiText.noContentStop);
+                        } else {
+                            setExploreActiveStatus(target, uiText.noContentPlace);
+                        }
+
                         await finishPlaybackSession("Stopped");
                     }
                 } catch (error) {
                     console.error("Không thể bắt đầu playback session:", error);
 
-                    setInfoPanelForTarget(
-                        target,
-                        "Không thể bắt đầu nội dung cho địa điểm này."
-                    );
+                    if (isTourMode) {
+                        updateTourStatusSummary(uiText.cannotStartStop);
+                    } else {
+                        setExploreActiveStatus(target, uiText.cannotStartPlace);
+                    }
 
                     activePlaybackSession = null;
                     activeTargetStallId = null;
@@ -1794,44 +1547,32 @@
                     updateMapMarkerStates();
                     clearRoute();
 
-                    setTourStatusOverlay(
-                        "Hoàn tất!",
-                        "Bạn đã đi hết hành trình này."
-                    );
-
-                    setTourStatusActions(
-                        "Quay lại",
-                        () => { window.location.href = btnExitTour ? btnExitTour.href : "@Url.Action("Index", "Home", new { lang = Model.CurrentLanguage })"; },
-                        null,
+                    setStatusCard(
+                        uiText.tourMode,
+                        selectedTour?.name || "Tour",
+                        uiText.completedTour,
+                        `${uiText.progress} ${getCompletedTourStopCount()}/${Number(selectedTour?.stopCount ?? 0)}`,
                         null
                     );
 
+                    setTourActionButtons(null, null, null, null);
                     return;
                 }
 
                 const nextStop = context.nextStop;
                 const displayDistance = currentRouteDistance ?? context.straightDistanceToNextStop;
-
                 currentNearestStallId = Number(nextStop.foodStallId);
 
                 if (context.type === "EMPTY") {
                     activeTargetStallId = null;
                     updateMapMarkerStates();
 
-                    setTourStatusOverlay(
-                        nextStop.name ?? ("Điểm dừng #" + nextStop.orderIndex),
-                        `Còn <strong>${displayDistance.toFixed(1)} m</strong> tới chặng tiếp theo.`,
-                        `Chặng ${nextStop.orderIndex}`,
-                        null
+                    updateTourStatusSummary(
+                        `${uiText.currentNearest} <strong>${stopName(nextStop)}</strong>.`,
+                        `${displayDistance.toFixed(1)} m`
                     );
 
-                    setTourStatusActions(
-                        currentMode === "demo" ? "Tới chặng tiếp theo" : null,
-                        currentMode === "demo" ? async () => await simulateNextTourStop() : null,
-                        null,
-                        null
-                    );
-
+                    clearTourActionButtons();
                     return;
                 }
 
@@ -1840,14 +1581,12 @@
                     updateMapMarkerStates();
                     openActivePopup(context.matchedPoi.id);
 
-                    setTourStatusOverlay(
-                        "Không nằm trong hành trình",
-                        `<strong>${context.matchedPoi.name}</strong> không thuộc tour hiện tại. Còn <strong>${displayDistance.toFixed(1)} m</strong> tới chặng tiếp theo.`,
-                        `Chặng ${nextStop.orderIndex}`,
-                        null
+                    updateTourStatusSummary(
+                        `<strong>${context.matchedPoi.name}</strong> ${uiText.outsideTour}`,
+                        `${displayDistance.toFixed(1)} m`
                     );
 
-                    clearTourStatusActions();
+                    clearTourActionButtons();
                     return;
                 }
 
@@ -1861,17 +1600,15 @@
                         distance: context.straightDistanceToNextStop
                     };
 
-                    setTourStatusOverlay(
-                        "Chưa tới lượt",
-                        `Bạn đang ở <strong>${context.matchedPoi.name}</strong> (chặng ${context.matchedTourStop.orderIndex}), nhưng chặng hiện tại là <strong>${nextStop.name ?? ("Điểm dừng #" + nextStop.orderIndex)}</strong>.`,
-                        `Còn ${displayDistance.toFixed(1)} m`,
-                        `Chặng ${nextStop.orderIndex}`
+                    updateTourStatusSummary(
+                        `${uiText.wrongStopPrefix} <strong>${context.matchedPoi.name}</strong>, ${uiText.wrongStopMiddle} <strong>${stopName(nextStop)}</strong>.`,
+                        distanceChip(displayDistance)
                     );
 
-                    setTourStatusActions(
-                        null,
-                        null,
-                        "Vẫn nghe",
+                    setTourActionButtons(
+                        uiText.nextButton,
+                        async () => await simulateNextTourStop(),
+                        uiText.stillListen,
                         async () => await playBypassTourTarget()
                     );
 
@@ -1885,15 +1622,16 @@
                     };
 
                     if (shouldSkipTrigger(runtimeTarget)) {
-                        activeTargetStallId = runtimeTarget.id;
+                        activeTargetStallId = Number(runtimeTarget.id);
                         updateMapMarkerStates();
                         openActivePopup(runtimeTarget.id);
 
-                        setInfoPanelForTarget(
-                            runtimeTarget,
-                            "Bạn vẫn đang ở gần chặng này nên nội dung chưa phát lại."
+                        updateTourStatusSummary(
+                            `${uiText.stillNear} <strong>${runtimeTarget.name}</strong> ${uiText.notReplay}`,
+                            stopChip(context.matchedTourStop.orderIndex)
                         );
-                        clearTourStatusActions();
+
+                        clearTourActionButtons();
                         return;
                     }
 
@@ -1901,7 +1639,7 @@
                 }
             }
 
-            async function processLocation(lat, lng, sourceLabel) {
+            async function processLocation(lat, lng) {
                 if (isTourMode) {
                     await processTourLocation(lat, lng);
                     return;
@@ -1915,26 +1653,18 @@
                 if (!target) {
                     activeTargetStallId = null;
                     updateMapMarkerStates();
-
-                    setInfoPanelEmpty(
-                        "Chưa có địa điểm nào đang phát nội dung.",
-                        nearest
-                            ? `Bạn chưa ở đủ gần quán nào để phát tự động. Quán gần nhất hiện là <strong>${nearest.name}</strong>.`
-                            : "Hệ thống chưa xác định được quán gần nhất.",
-                        nearest
-                    );
-
+                    setExploreIdleStatus(nearest);
                     return;
                 }
 
                 if (shouldSkipTrigger(target)) {
-                    activeTargetStallId = target.id;
+                    activeTargetStallId = Number(target.id);
                     updateMapMarkerStates();
                     openActivePopup(target.id);
 
-                    setInfoPanelForTarget(
+                    setExploreActiveStatus(
                         target,
-                        "Bạn vẫn đang ở gần địa điểm này nên nội dung chưa phát lại."
+                        `${uiText.stillNear} <strong>${target.name}</strong> ${uiText.notReplay}`
                     );
 
                     return;
@@ -1943,125 +1673,21 @@
                 await playTarget(target);
             }
 
-            async function onGpsSuccess(position) {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-
-                await processLocation(
-                    userLat,
-                    userLng,
-                    `Sai số khoảng ${position.coords.accuracy.toFixed(1)} m`
-                );
-            }
-
-            function onGpsError(error) {
-                let message = "Không thể lấy vị trí hiện tại.";
-
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        message = "Bạn đã từ chối quyền truy cập vị trí.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message = "Thiết bị chưa xác định được vị trí hiện tại.";
-                        break;
-                    case error.TIMEOUT:
-                        message = "Hết thời gian chờ lấy vị trí.";
-                        break;
-                }
-
-                setInfoPanelEmpty(
-                    "Không lấy được vị trí hiện tại.",
-                    message
-                );
-            }
-
-            function stopRealGpsIfNeeded() {
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                    watchId = null;
-                }
-            }
-
-            function startRealGpsTracking() {
-                if (!("geolocation" in navigator)) {
-                    setInfoPanelEmpty(
-                        "Không hỗ trợ định vị.",
-                        "Trình duyệt này không hỗ trợ GPS."
-                    );
-                    return;
-                }
-
-                stopRealGpsIfNeeded();
-
-                watchId = navigator.geolocation.watchPosition(
-                    onGpsSuccess,
-                    onGpsError,
-                    {
-                        enableHighAccuracy: true,
-                        maximumAge: 5000,
-                        timeout: 10000
-                    }
-                );
-
-                if (isTourMode) {
-                    const nextStop = getNextTourStop();
-                    setTourStatusOverlay(
-                        nextStop ? (nextStop.name ?? ("Điểm dừng #" + nextStop.orderIndex)) : "Hành trình đang chạy",
-                        nextStop
-                            ? `Di chuyển tới chặng này để nội dung tự động phát.`
-                            : "Hiện chưa có chặng nào sẵn sàng."
-                    );
-                    clearTourStatusActions();
-                } else {
-                    setInfoPanelEmpty(
-                        "Đang xác định vị trí...",
-                        "Vui lòng chờ trong giây lát để lấy vị trí hiện tại."
-                    );
-                }
-            }
-
-            async function stopTracking() {
-                stopRealGpsIfNeeded();
-
-                if (activePlaybackSession) {
-                    await finishPlaybackSession("Stopped");
-                }
-
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                audioPlayer.removeAttribute("src");
-                audioPlayer.load();
-                clearGeneratedAudioUrl();
-
-                activeTargetStallId = null;
-                updateMapMarkerStates();
-                clearRoute();
-
-                if (isTourMode) {
-                    setTourStatusOverlay(
-                        "Đã dừng",
-                        "Bạn có thể tiếp tục trên bản đồ hoặc quay lại khám phá."
-                    );
-                    clearTourStatusActions();
-                } else {
-                    setInfoPanelEmpty(
-                        "Đã dừng theo dõi vị trí.",
-                        "Bạn có thể bật lại GPS thật hoặc chuyển sang bản đồ bất cứ lúc nào."
-                    );
-                }
-            }
-
             async function simulateNextTourStop() {
-                if (!isTourMode || currentMode !== "demo") return;
+                if (!isTourMode) return;
 
                 const nextStop = getNextTourStop();
 
                 if (!nextStop) {
-                    setTourStatusOverlay(
-                        "Hoàn tất 🎉",
-                        "Không còn chặng nào để tiếp tục."
+                    setStatusCard(
+                        uiText.tourMode,
+                        selectedTour?.name || "Tour",
+                        uiText.completedTour,
+                        `${uiText.progress} ${getCompletedTourStopCount()}/${Number(selectedTour?.stopCount ?? 0)}`,
+                        null
                     );
-                    clearTourStatusActions();
+
+                    setTourActionButtons(null, null, null, null);
                     clearRoute();
                     return;
                 }
@@ -2074,7 +1700,7 @@
 
                 const target = pendingTourBypassTarget;
                 pendingTourBypassTarget = null;
-                clearTourStatusActions();
+                clearTourActionButtons();
 
                 focusOnStall(target.id);
                 await playTarget(target);
@@ -2087,16 +1713,15 @@
                 const context = classifyTourPosition(lat, lng);
 
                 if (context.type === "COMPLETED") {
-                    setTourStatusOverlay(
-                        "Hoàn tất 🎉",
-                        "Bạn đã đi hết hành trình này."
-                    );
-                    setTourStatusActions(
-                        "Quay lại",
-                        () => { window.location.href = btnExitTour ? btnExitTour.href : "@Url.Action("Index", "Home", new { lang = Model.CurrentLanguage })"; },
-                        null,
+                    setStatusCard(
+                        uiText.tourMode,
+                        selectedTour?.name || "Tour",
+                        uiText.completedTour,
+                        `${uiText.progress} ${getCompletedTourStopCount()}/${Number(selectedTour?.stopCount ?? 0)}`,
                         null
                     );
+
+                    setTourActionButtons(null, null, null, null);
                     clearRoute();
                     return;
                 }
@@ -2108,19 +1733,12 @@
                     activeTargetStallId = null;
                     updateMapMarkerStates();
 
-                    setTourStatusOverlay(
-                        "Chưa đúng vị trí",
-                        `Còn <strong>${displayDistance.toFixed(1)} m</strong> tới chặng tiếp theo.`,
-                        `Chặng ${context.nextStop.orderIndex}`,
-                        null
+                    updateTourStatusSummary(
+                        `${uiText.currentNearest} <strong>${stopName(context.nextStop)}</strong>.`,
+                        `${displayDistance.toFixed(1)} m`
                     );
 
-                    setTourStatusActions(
-                        "Tới chặng tiếp theo",
-                        async () => await simulateNextTourStop(),
-                        null,
-                        null
-                    );
+                    clearTourActionButtons();
                     return;
                 }
 
@@ -2143,16 +1761,15 @@
                 const context = classifyTourPosition(clickedStall.latitude, clickedStall.longitude);
 
                 if (context.type === "COMPLETED") {
-                    setTourStatusOverlay(
-                        "Hoàn tất 🎉",
-                        "Bạn đã đi hết hành trình này."
-                    );
-                    setTourStatusActions(
-                        "Quay lại",
-                        () => { window.location.href = btnExitTour ? btnExitTour.href : "@Url.Action("Index", "Home", new { lang = Model.CurrentLanguage })"; },
-                        null,
+                    setStatusCard(
+                        uiText.tourMode,
+                        selectedTour?.name || "Tour",
+                        uiText.completedTour,
+                        `${uiText.progress} ${getCompletedTourStopCount()}/${Number(selectedTour?.stopCount ?? 0)}`,
                         null
                     );
+
+                    setTourActionButtons(null, null, null, null);
                     clearRoute();
                     return;
                 }
@@ -2162,28 +1779,12 @@
                     activeTargetStallId = null;
                     updateMapMarkerStates();
 
-                    setTourStatusOverlay(
-                        "Không nằm trong hành trình",
-                        `<strong>${context.matchedPoi.name}</strong> không thuộc tour hiện tại.`,
-                        null,
+                    updateTourStatusSummary(
+                        `<strong>${context.matchedPoi.name}</strong> ${uiText.outsideTour}`,
                         null
                     );
 
-                    setTourStatusActions(
-                        "Tiếp tục",
-                        () => {
-                            clearTourStatusActions();
-                            setTourStatusOverlay(
-                                context.nextStop.name ?? ("Điểm dừng #" + context.nextStop.orderIndex),
-                                "Tiếp tục tới chặng tiếp theo."
-                            );
-                        },
-                        "Khám phá",
-                        () => {
-                            window.location.href = btnExitTour ? btnExitTour.href : "@Url.Action("Index", "Home", new { lang = Model.CurrentLanguage })";
-                        }
-                    );
-
+                    clearTourActionButtons();
                     return;
                 }
 
@@ -2197,17 +1798,15 @@
                         distance: context.straightDistanceToNextStop
                     };
 
-                    setTourStatusOverlay(
-                        "Chưa tới lượt",
-                        `Đây là chặng ${context.matchedTourStop.orderIndex}, bạn đang ở chặng ${context.nextStop.orderIndex}.`,
-                        null,
-                        null
+                    updateTourStatusSummary(
+                        `${uiText.wrongStopPrefix} <strong>${context.matchedPoi.name}</strong>, ${uiText.wrongStopMiddle} <strong>${stopName(context.nextStop)}</strong>.`,
+                        stopChip(context.matchedTourStop.orderIndex)
                     );
 
-                    setTourStatusActions(
-                        "Tới chặng tiếp theo",
+                    setTourActionButtons(
+                        uiText.nextButton,
                         async () => await simulateNextTourStop(),
-                        "Vẫn nghe",
+                        uiText.stillListen,
                         async () => await playBypassTourTarget()
                     );
 
@@ -2224,14 +1823,15 @@
                     };
 
                     if (shouldSkipTrigger(runtimeTarget)) {
-                        activeTargetStallId = runtimeTarget.id;
+                        activeTargetStallId = Number(runtimeTarget.id);
                         updateMapMarkerStates();
 
-                        setInfoPanelForTarget(
-                            runtimeTarget,
-                            "Bạn vẫn đang ở gần chặng này nên nội dung chưa phát lại."
+                        updateTourStatusSummary(
+                            `${uiText.stillNear} <strong>${runtimeTarget.name}</strong> ${uiText.notReplay}`,
+                            stopChip(context.matchedTourStop.orderIndex)
                         );
-                        clearTourStatusActions();
+
+                        clearTourActionButtons();
                         return;
                     }
 
@@ -2239,63 +1839,16 @@
                 }
             }
 
-            function updateModeUi() {
-                currentMode = locationModeSelect.value;
-                updateTourActionButtons();
-                updateTourPanelUi();
-                setModeUiText();
-
+            function initializeScreen() {
                 if (isTourMode) {
-                    const nextStop = getNextTourStop();
-
-                    if (currentMode === "demo") {
-                        stopRealGpsIfNeeded();
-
-                        setTourStatusOverlay(
-                            nextStop ? (nextStop.name ?? ("Điểm dừng #" + nextStop.orderIndex)) : "Sẵn sàng",
-                            nextStop
-                                ? `Chọn trực tiếp trên bản đồ hoặc tiếp tục tới chặng này.`
-                                : "Hiện chưa có chặng nào sẵn sàng."
-                        );
-
-                        setTourStatusActions(
-                            nextStop ? "Tới chặng tiếp theo" : null,
-                            nextStop ? async () => await simulateNextTourStop() : null,
-                            null,
-                            null
-                        );
-                    } else {
-                        setTourStatusOverlay(
-                            nextStop ? (nextStop.name ?? ("Điểm dừng #" + nextStop.orderIndex)) : "Sẵn sàng",
-                            nextStop
-                                ? `Bấm “Bắt đầu” rồi di chuyển tới chặng này.`
-                                : "Hiện chưa có chặng nào sẵn sàng."
-                        );
-
-                        clearTourStatusActions();
-                    }
-
-                    return;
-                }
-
-                if (currentMode === "demo") {
-                    stopRealGpsIfNeeded();
-
-                    setInfoPanelEmpty(
-                        "Chế độ bản đồ đã bật.",
-                        "Hãy chạm trực tiếp lên bản đồ để đặt vị trí thử."
-                    );
+                    updateTourStatusSummary();
+                    clearTourActionButtons();
                 } else {
-                    setInfoPanelEmpty(
-                        "Sẵn sàng trải nghiệm.",
-                        "Bấm “Bắt đầu” để lấy vị trí hiện tại."
-                    );
+                    setExploreIdleStatus();
                 }
             }
 
             map.on("click", async (e) => {
-                if (currentMode !== "demo") return;
-
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
 
@@ -2304,47 +1857,11 @@
                     return;
                 }
 
-                await processLocation(lat, lng, "Đã đặt vị trí bằng cách nhấn trên bản đồ");
+                await processLocation(lat, lng);
             });
-
-            if (btnStartTracking) {
-                btnStartTracking.addEventListener("click", async () => {
-                    if (locationModeSelect.value === "real") {
-                        startRealGpsTracking();
-                    } else {
-                        setInfoPanelEmpty(
-                            "Chế độ bản đồ đã bật.",
-                            "Hãy chạm trực tiếp lên bản đồ để đặt vị trí thử."
-                        );
-                    }
-                });
-            }
-
-            if (btnTourStartReal) {
-                btnTourStartReal.addEventListener("click", async () => {
-                    startRealGpsTracking();
-                });
-            }
-
-            if (btnTourSimulateNext) {
-                btnTourSimulateNext.addEventListener("click", async () => {
-                    await simulateNextTourStop();
-                });
-            }
-
-            if (btnStopTracking) {
-                btnStopTracking.addEventListener("click", async () => {
-                    await stopTracking();
-                });
-            }
-
-            if (locationModeSelect) {
-                locationModeSelect.addEventListener("change", updateModeUi);
-            }
 
             async function startVisitTracking() {
                 try {
-                    console.log("Tracking start...");
                     const response = await fetch(`${apiBaseUrl}/api/WebVisits/start`, {
                         method: "POST",
                         headers: {
@@ -2365,7 +1882,6 @@
             function startHeartbeat() {
                 setInterval(async () => {
                     try {
-                        console.log("Heartbeat...");
                         const response = await fetch(`${apiBaseUrl}/api/WebVisits/heartbeat`, {
                             method: "POST",
                             headers: {
@@ -2384,10 +1900,18 @@
             }
 
             renderPoiMarkers();
-            updateTourPanelUi();
-            updateTourActionButtons();
-            setModeUiText();
-            updateModeUi();
+            initializeScreen();
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+
+            window.addEventListener("resize", () => {
+                map.invalidateSize();
+            });
+
+            focusStallFromQueryIfNeeded();
+
             startVisitTracking();
             startHeartbeat();
         })();
